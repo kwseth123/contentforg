@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" width="200" height="50">
+  <defs>
+    <style>
+      .logo-text { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; font-weight: 800; font-size: 28px; fill: #1e40af; letter-spacing: 2px; }
+    </style>
+  </defs>
+  <!-- Distribution/logistics icon: simplified box with arrow -->
+  <g transform="translate(8, 6)">
+    <!-- Box -->
+    <rect x="0" y="8" width="30" height="28" rx="3" fill="none" stroke="#1e40af" stroke-width="2.5"/>
+    <!-- Box flap lines -->
+    <polyline points="0,18 15,12 30,18" fill="none" stroke="#1e40af" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Arrow pointing right -->
+    <line x1="10" y1="28" x2="24" y2="28" stroke="#1e40af" stroke-width="2.5" stroke-linecap="round"/>
+    <polyline points="20,23 25,28 20,33" fill="none" stroke="#1e40af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Text -->
+  <text x="48" y="36" class="logo-text">APEX</text>
+</svg>

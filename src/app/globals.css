@@ -1,26 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════
+   ContentForg Design System v2
+   CSS Variables — overridden by ThemeProvider at runtime
+   ═══════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --accent: #6366F1;
+  --accent-hover: #4F46E5;
+  --accent-light: #F5F4FF;
+  --accent-border: #E0DFFF;
+  --sidebar-bg: #FFFFFF;
+  --sidebar-border: #F0F0F0;
+  --content-bg: #FAFAFA;
+  --card-bg: #FFFFFF;
+  --card-border: #EEEEEE;
+  --text-primary: #111111;
+  --text-secondary: #888888;
+  --text-muted: #CCCCCC;
+  --nav-active-bg: #F5F4FF;
+  --nav-active-text: #111111;
+  --nav-default-text: #AAAAAA;
+  --text-inverse: #FFFFFF;
+
+  /* Legacy bridge */
+  --background: var(--content-bg);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Inter', var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--content-bg);
+  color: var(--text-primary);
 }
+
+/* ═══════════════════════════════════════════════
+   Button System
+   ═══════════════════════════════════════════════ */
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--text-inverse);
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+.btn-accent:hover { background-color: var(--accent-hover); }
+.btn-accent:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-weight: 500;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+.btn-secondary:hover { border-color: var(--accent-border); color: var(--accent); }
+
+/* ═══════════════════════════════════════════════
+   Card System
+   ═══════════════════════════════════════════════ */
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 22px 24px;
+}
+
+.card-sm {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+}
+
+/* ═══════════════════════════════════════════════
+   Content Pill (for content type selectors)
+   ═══════════════════════════════════════════════ */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.pill:hover { border-color: var(--accent-border); color: var(--text-primary); }
+.pill-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════
+   Nav dot indicator
+   ═══════════════════════════════════════════════ */
+
+.nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   Range Slider
+   ═══════════════════════════════════════════════ */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--card-border);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════
+   Prose
+   ═══════════════════════════════════════════════ */
+
+.prose h1, .prose h2, .prose h3 { font-weight: 600; color: var(--text-primary); }
+.prose ul { list-style-type: disc; padding-left: 1.5em; }
+.prose ol { list-style-type: decimal; padding-left: 1.5em; }
+.prose strong { font-weight: 600; }
+
+/* ═══════════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ═══════════════════════════════════════════════
+   Sidebar Transition
+   ═══════════════════════════════════════════════ */
+
+.sidebar-transition { transition: width 0.2s ease; }

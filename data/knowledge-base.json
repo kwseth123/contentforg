@@ -1,0 +1,232 @@
+{
+  "companyName": "Endpoint Automation Solution ",
+  "tagline": "One platform. Endless possibilities.",
+  "website": "https://endpointas.com/",
+  "aboutUs": "For over 36 years, we’ve been on the forefront of developing mobile warehouse, manufacturing and supplying operation solutions.\n",
+  "products": [
+    {
+      "id": "aeab35f1-695d-420b-ae7d-2ed5a8a322ec",
+      "name": "Endpoint Cloud  ",
+      "description": "Endpoint Cloud is a modern, workflow-based warehouse and operations platform designed to eliminate complexity, reduce friction, and scale with your business. Instead of forcing customers into rigid feature tiers, Endpoint Cloud aligns directly with how operations actually run—across inbound, storage, outbound, production, and performance workflows.\n\nBuilt for real-time execution and visibility, Endpoint Cloud connects your people, processes, and systems through a single, unified platform with all features included, no per-user or per-device licensing, and transparent pricing.",
+      "keyFeatures": [
+        "1. Workflow-Based Architecture",
+        "2. Real-Time ERP & System Integration",
+        "3. All Features Included (No Feature Gating)",
+        "Scalable, Cloud-Native Platform",
+        "Real-Time Visibility & Analytics",
+        "Pre-Configured Solution Bundles"
+      ],
+      "pricing": "16,800"
+    },
+    {
+      "id": "8c323e4a-3b8c-488f-8b16-5b3f64b050c7",
+      "name": "Endpoint Mobile Sales",
+      "description": "Simplifies invoicing and sales order processes. Empowers sales teams with real-time inventory visibility to close deals faster and deliver exceptional customer experiences.",
+      "keyFeatures": [
+        "Real-time inventory visibility",
+        "Fast deal closing",
+        "Enhanced customer experiences"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "b141d452-d9d8-47b5-8075-6d5cb48530a4",
+      "name": "Endpoint Procurement",
+      "description": "Optimizes organizational purchasing decisions and manages the entire procurement process. Eliminates excess inventory and ensures necessary materials arrive just in time.",
+      "keyFeatures": [
+        "Complete procurement process management",
+        "Excess inventory elimination",
+        "Just-in-time material delivery"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "8c49aa8a-4352-4b47-8597-61b3c911ddaa",
+      "name": "Endpoint Warehouse",
+      "description": "Revolutionizes warehouse management by providing teams with tools to pick, pack, and ship orders efficiently.",
+      "keyFeatures": [
+        "Barcode scanning",
+        "Shipping label generation",
+        "Real-time inventory location tracking",
+        "Multi-facility support",
+        "ERP integration"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "55612199-1460-41bd-8ec7-2380b41483a3",
+      "name": "Endpoint Manufacturing",
+      "description": "Enhances production efficiency and helps take control of manufacturing operations. Enables confident and speedy decision-making.",
+      "keyFeatures": [
+        "Manufacturing operation control",
+        "Confident decision-making tools",
+        "Production efficiency enhancement"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "66bb9772-27a7-461d-841f-504d2070b118",
+      "name": "Endpoint Payments",
+      "description": "Streamlines AP and AR payment processes for improved financial operations.",
+      "keyFeatures": [
+        "AP payment processing",
+        "AR payment processing",
+        "Streamlined financial operations"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "10d0e7e3-5eb4-40f8-8746-b3a10ac78a87",
+      "name": "[NEW] Enterprise Inventory Solution",
+      "description": "A full-featured, complex inventory solution that integrates with many platforms.",
+      "keyFeatures": [
+        "Multi-platform integration",
+        "Complex inventory management",
+        "Full-featured capabilities"
+      ],
+      "pricing": ""
+    }
+  ],
+  "differentiators": "Real-time ERP integration – Every scan reads and writes back into Sage in real time, eliminating manual entry, delays, and disconnected processes.\nEmbedded and cloud deployment options – Endpoint offers both embedded solutions built natively inside Sage 100 and cloud solutions that support growth into Intacct and beyond.\nTop-tier customer support – Endpoint’s customer-first culture emphasizes responsiveness, accountability, and fast help when issues arise.\nScalable platform for growth – The platform is designed to scale with customers through unified architecture, stronger integrations, and infrastructure built for expansion.\nDeep ERP ecosystem integration – Endpoint is positioned around ERP-centric operational workflows, with strong integration across Sage, Intacct, Acumatica, and other ecosystems.\nWorkflow-driven operational execution – Products are built around real warehouse and manufacturing workflows, helping customers improve execution, adoption, and time-to-value.\nConfigurability without heavy custom development –",
+  "icp": {
+    "industries": [
+      "Small to mid-sized distribution and manufacturing companies",
+      "Operations outgrowing ERP-only inventory management",
+      "Businesses frustrated with complex WMS pricing and limitations",
+      "Manufacturing",
+      "Medical Devices",
+      "Energy",
+      "E-Commerce",
+      "Distribution"
+    ],
+    "companySize": "Revenue: $10M – $250M",
+    "personas": [
+      "VP / Director of Operations",
+      "Warehouse Manager",
+      "Chief Operating Officer",
+      "Chief Financial Officer",
+      "Chief Product Officer",
+      "Vice President of Sales",
+      "Vice President of Business Development",
+      "Warehouse managers",
+      "Manufacturing operations teams",
+      "Procurement teams",
+      "Sales teams",
+      "Warehouse Operators"
+    ]
+  },
+  "competitors": [
+    {
+      "id": "9c20e5a5-c489-4a76-b0ff-727bd83e722e",
+      "name": "Scanforce",
+      "howWeBeatThem": "Endpoint Cloud goes beyond traditional scanning solutions like ScanForce by delivering a complete, workflow-driven operational platform. While ScanForce enhances Sage with barcode scanning and transaction efficiency, Endpoint Cloud manages the entire warehouse lifecycle in real time—from receiving and storage to picking, shipping, production, and analytics. Built for scalability, it eliminates per-user and per-device licensing, allowing operations to grow without added complexity or cost barriers. With advanced capabilities like wave picking, directed workflows, and real-time visibility included from day one, Endpoint Cloud empowers organizations to improve accuracy, increase throughput, and gain full control over their operations—all within a modern, cloud-native environment designed for long-term growth."
+    }
+  ],
+  "brandVoice": {
+    "tone": "Professional, trustworthy, and solution-focused with emphasis on partnership and results. Uses confident language about capabilities while maintaining approachable customer service focus.",
+    "wordsToUse": [
+      "automation",
+      "revolutionize",
+      "streamline",
+      "optimize",
+      "efficiency",
+      "trust",
+      "partnership",
+      "transformation",
+      "end-to-end",
+      "comprehensive"
+    ],
+    "wordsToAvoid": []
+  },
+  "caseStudies": [
+    {
+      "id": "ccb272ed-34d6-4c3d-a983-2391e3e5f960",
+      "title": "Parman Energy Warehouse Implementation",
+      "content": "Implemented Endpoint Warehouse to determine product variance for customer shipments. Achieved easy ERP integration with exceptional customer service and immediate support response."
+    },
+    {
+      "id": "219b621e-5ecf-4613-b3f6-905ae811206b",
+      "title": "Manufacturing Company SAGE ERP Integration",
+      "content": "Streamlined inventory processes, reduced receiving time by days, enabled real-time inventory visibility across two facilities, and reduced overhead costs by cutting data entry."
+    },
+    {
+      "id": "d6ecf936-26fb-41c0-a998-d1050bc5af58",
+      "title": "Medical Devices Company Efficiency Improvement",
+      "content": "Achieved dramatically reduced errors and increased efficiency, enabling more orders to be processed with fewer mistakes requiring fixes."
+    },
+    {
+      "id": "57254c51-42f9-4da4-90ff-67518d5138c7",
+      "title": "[NEW] Manufacturing Warehousing Automation",
+      "content": "Added automation and control to warehousing processes without disrupting existing operations, delivering gradual transformation as requested by the client."
+    },
+    {
+      "id": "f65e8d22-bb6e-4107-8fbb-ea6d71ea4740",
+      "title": "Parman Energy - Product Variance Management",
+      "content": "Parman Energy implemented Endpoint Warehouse to find out the variance of products they can ship to customers. Easy to use, easy ERP integration, with excellent customer service and support team providing immediate help."
+    },
+    {
+      "id": "b9cb8e57-b6b9-4cb1-b328-6abc805dcd9f",
+      "title": "Manufacturing Company - SAGE ERP Integration",
+      "content": "Mid-market manufacturing company streamlined inventory processes, made receiving to POs faster by days, gained real-time inventory visibility across two facilities, and reduced overhead costs by cutting data entry."
+    },
+    {
+      "id": "e3c26293-7880-48c7-80ac-c3f947c4b698",
+      "title": "Medical Devices Company - Error Reduction",
+      "content": "Small medical devices business dramatically reduced errors and increased efficiency, getting more orders out the door with fewer mistakes through the user-friendly software experience."
+    },
+    {
+      "id": "92a72503-0318-4386-9263-2c7bbddb1c69",
+      "title": "Manufacturing Automation Implementation",
+      "content": "Small manufacturing company added automation and control to warehousing process without disrupting existing processes, taking gradual steps toward advanced functionality."
+    }
+  ],
+  "uploadedDocuments": [],
+  "logoPath": "/uploads/logo.svg",
+  "brandGuidelines": {
+    "colors": {
+      "primary": "#E42226",
+      "secondary": "#38262D",
+      "accent": "#84767A",
+      "background": "#FFFFFF",
+      "text": "#000000"
+    },
+    "fonts": {
+      "primary": "Bricolage Grotesque",
+      "secondary": "Outfit",
+      "sizes": {
+        "h1": 28,
+        "h2": 18,
+        "h3": 14,
+        "body": 11
+      }
+    },
+    "logos": {
+      "primaryPath": "/uploads/logo.svg",
+      "secondaryPath": "/uploads/logo-secondary.svg",
+      "placement": "top-left"
+    },
+    "voice": {
+      "guidelinesText": "Clear, concise, conversational, smart, thoughtful, and insightful. Start with the main point of your message. Use contractions, sentence case, and end everything with punctuation. Consider real needs, and offer genuine help, empathy, and advice. When you have data to back up your point, use it.",
+      "documentContent": "\n\n\n\n\n\n\n\nBrand Guidelines.\n\nVersion 1.3 / February 2025\n\n\n\nTable of contents.\n\n\n\n\n\n\n\n\n\n\n\nSECTION A:\n\nBrand overview.\n\n\n\n\n\nSECTION B:\n\nVisual identity.\n\nA1 | Company overview.\t04\n\nA2 | Brand strategy.\t09\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nB1 | Brand Marks.\t16\n\nB2 | Typography.\t23\n\nB3 | Color.\t28\n\nB4 | Imagery.\t32\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n02 — Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\n\n\n\n\n\n\n\n\n\n\nSECTION A:\n\nBrand overview.\n\n\n\n\n\n\n\n\n\n 03\n\n\n\n\n\n\n\n\n\n\n\n\n\nA1:\n\nCompany overview.\n\n\n\n\n\n“Start by knowing what you want and who you are, build credibility around it and deliver it online in a compelling way.”\n\n\n\n\n\n\n\n- KRISTA NEHER\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 04\n\n\n\nA1.1 - Who we are.\n\n\n\n\n\n\n\n\n\n\n\nThe Endpoint Automation Solutions Brand Guidelines serve as a comprehensive re-source to ensure consistency and clarity in how the Endpoint brand is presented across all touchpoints.\n\n\n\n\n\nThese guidelines provide a framework for maintaining a cohesive visual identity, tone of voice, and messaging that reflects our commitment to innovation and excellence in ERP and automation\n\nsolutions. By adhering to these standards, we strengthen our brand’s impact, build trust with our audience, and communicate our values effectively. Whether you’re designing, writing, or strategizing, this document is your guide to embodying the Endpoint brand.\n\nA strong, unified brand ensures that every interaction—whether with clients, partners, or employees—reinforces our mission and vision. These guidelines are designed to empower teams with the tools and knowledge to create aligned and professional communications that resonate with our audience. From logos and colors to messaging and imagery, each element plays a vital role in telling Endpoint’s story with authenticity and confidence.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nA1.2 - Mission, Vision, & Values.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nOUR MISSION:\n\n\n\nOur purpose is to delight our customers and protect our partners through seamless, efficient, and simple automation solutions.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nA1.2 - Mission, Vision, & Values.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nOUR VISION:\n\n\n\nBecome the heart of an operation by interfacing and integrating with each operational endpoint, creating a fully efficient environment of excellence.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nA1.2 - Mission, Vision, & Values.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nOUR CORE VALUES:\n\nBuild enduring relationships.\n\nWe believe the best way to accomplish our goals is through collaboration. Open and honest\n\ncommunication is key, and builds enduring relationships that make anything possible.\n\n\n\nBe receptive.\n\nNew ideas can come from many places. Here, we strive to be adventurous and creative in thought and open-minded and receptive to the new ideas from any member of the team.\n\n\n\nPursue excellence.\n\nWe encourage our team members to reach beyond their skills to get to the next level. Our\n\nhope is for everyone to achieve excellence in their position through growth and learning.\n\n\n\nHave character & work ethic.\n\nBeing responsible is not the same as holding yourself accountable for ensuring the job is done right and taking the hit when it is not. Every member of our team is expected to\n\ndemonstrate a willingness not only to complete their own tasks but to follow projects and issues through to their conclusions, helping others on the team along the way.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\n\n\n\n\nA2:\n\nBrand strategy.\n\n\n\n“If people believe they share values with a company, they will stay loyal to the brand.”\n\n\n\n\n\n- HOWARD SCHULTZ\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 09\n\n\n\nA2.1 - Elements of value.\n\n\n\n\n\n\n\n\n\n\n\nElements of value.\n\nThese values are the intersecting attributes that Endpoint offers customers with the elements of a brand that our target demographic values most.\n\n\n\n\n\n\n\n\n\n\n\nInnovation.\n\nWe provide innovative capabilities\n\nto our platform all the time.\n\n\n\n\n\n\n\n\n\n\n\nFlexibility.\n\nWe listen to our users and enhance the capabilities of our platform to adjust to important needs.\n\n\n\n\n\n\n\n\n\n\n\nCommitment.\n\nWe are committed to our partners\n\nand end-users’ success. It drives us.\n\nResponsiveness.\n\nWe responds promptly and are\n\nalways keen to help our customers.\n\n\n\n\n\n\n\n\n\n\n\nStability.\n\nWe’ve been around since the ‘80s,\n\nand are here to stay. Count on it!\n\nExpertise.\n\nWe are experts at this, and understand your pains, because we’ve lived it, too.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nA2.2 - The Golden Circle.\n\n\n\nOur “Why”.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWe create and support software solutions for major ERP platforms to help mid-market manufacturing and distribution operations to organize & optimize every point in their supply chain and business.\n\n\n\n\n\n\n\n\n\nWhat\n\nSERVICE\n\n\n\n\n\nThe way we help operations improve efficiency is by boosting the capabilities of the platforms they already use, and getting them comfortable with them.\n\n\n\n\n\n\n\n\n\n\n\n\n\nHow\n\nATTRIBUTES\n\n\n\nWe believe fully efficient operations create the bandwidth for their people to achieve and perform at their full potential.\n\n\n\n\n\n\n\n\n\n\n\n\n\nWhy\n\nBENEFIT\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.0 / Nov 2024\n\n\n\nA2.3 - Brand messaging personality.\n\n\n\n\n\n\n\n\n\n\n\nBrand Character.\n\nHow would people describe us if we were a person instead of a company?\n\n\n\n\n\n\n\n\n\n\n\n“They’re a total Problem Solver.”\n\nYes, it’s true. We’re driven to find innovative solutions not just for our clients,\n\nbut for ourselves as well. It’s how we got our start!\n\n\n\n\n\n\n\n\n\n“They’re definitely a People Person.”\n\nJust because you’re great at what you do doesn’t mean you can’t be\n\nfriendly and empathetic. We believe in the golden rule.\n\n\n\n\n\n“They’re such a Data Head.”\n\nComputer nerds. Tech geeks. Guilty. We love getting the most we possibly\n\ncan out of our technology to make work easier.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nA2.3 - Brand messaging personality\n\n\n\nBrand tone of voice.\n\n\n\n\n\nHow do we want to sound to people who read\n\n“THEY’RE A TOTAL PROBLEM SOLVER.”\n\n\n\nour written text, marketing, and articles?\n\nClear.\n\nStart with the main point of your message.\n\nSimplification helps solve problems.\n\nConcise.\n\nDon’t waste time, people who are focused on solutions make their point fast.\n\n\n\n\n\n\n\n“THEY’RE DEFINITELY A PEOPLE PERSON.”\n\n\n\nConversational.\n\nUse contractions, sentence case, and end everything with punctuation!\n\n\n\n\n\n“THEY’RE SUCH A DATA HEAD.”\n\nSmart.\n\nDon’t dumb down terms your users know—converse like a co-worker.\n\nThoughtful.\n\nConsider real needs, and offer genuine\n\nhelp, empathy, and advice.\n\n\n\n\n\n\n\n\n\nInsightful.\n\nWhen you have data to back up your point,\n\nuse it. It’ll help reinforce your point.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nA2.3 - Brand messaging personality\n\n\n\nBrand archetypes.\n\n\n\n\n\nBrand archetypes are universal character profiles that represent specific personality traits, helping brands connect emotionally with their audience by embodying relatable, timeless identities. Sometimes, you end up with a brand being an Archetypal Mix, with 70% of one and 30% of another. Endpoint is one of those brands.\n\nOUR ARCHETYPES:\n\nThe Sage.\n\nA seeker of knowledge and understanding, The Sage is driven by information and expertise, and wants to share it with others who can use it.\n\n\n\nThe Hero.\n\nOn a mission to prove their worth, The Hero works hard at improvement and mastery to save the day.\n\n\n\n\n\nOUR BRAND MESSAGING MIX:\n\nLead with The Sage (70%) in messaging.\n\nEmphasize data-driven insights, expert solutions, and seamless integration within ERP platforms. This establishes trust and positions you as the wise advisor.\n\n\n\nSubtly weave The Hero (30%) into storytelling.\n\nShowcase customer success stories where Scanco’s solutions empowered users to overcome challenges and achieve more, and grow.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\n\n\n\n\n\n\n\n\n\n\nSECTION B:\n\nVisual Identity.\n\n\n\n\n\n\n\n\n\n 015\n\n\n\n\n\n\n\nB1:\n\nBrand Marks.\n\n\n\n“Logos are the graphic extension of the internal realities of a company.”\n\n\n\n\n\n- SAUL BASS\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 016\n\n\n\nB1.1 - Brand Marks\n\n\n\n\n\n\n\n\n\nPrimary Brand Mark.\n\nThere are various ways to communicate that Endpoint Automation Solutions (Endpoint) can interface and integrate across a multitude of diverse endpoints, positioning itself as the heart of an operation.\n\nThis direction pulls back to the 100,000 ft view, and says “We improve the potential of your operation and improve efficiency from A to Z.” To that end, by using a simple ”left-to-right” visual solution, viewers can immediately make the mental association of end to end.\n\nAn entirely custom typeface, the geometry of the Endpoint wordmark is stable, unique, and runs the gamut from conveying a full spectrum with the point to point aspect, but also leverage subtle half-serifs to indicate individual points along the journey.\n\nAutomation Solutions has been set in a Sentence case formatting to help maintain a balance of approachability and genuine heart.\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB1.1 - Brand Marks\n\n\n\n\n\n\n\n\n\nBrand Mark color variants.\n\nIn addition to the main color variant that is Red and Black for light backgrounds, there are 4 other variants for various applications.\n\n\n\nReverse - This variant with a Red wordmark and White modifier text is reserved exclusively for Black backgrounds to ensure that the Red really pops off the page.\n\n\n\nNoRed - This variant has no Red elements at all, so it too is reserved for only one color of back-ground--Red.\n\n\n\nBlack - When you are designing for a black and white output, or need to overlay a brand mark on a light colored photo, use this. It should always be a last resort.\n\n\n\nWhite - Use this variant on medium to dark\n\nbackgrounds that aren’t Black or Red.\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB1.1 - Brand Marks\n\n\n\n\n\n\n\n\n\nBrand Mark variants.\n\nThe Endpoint Brand Mark has various permutations in which it can be seen:\n\n\n\nStack - This is the version that will likely be used on external facing materials that aren’t the web-site. If the Brand Mark will be in a centered layout or on its own (like on a mug or shirt), use this.\n\n\n\nBanner - Since left aligned text is our preference for layout design, this version is likely to be used for better synergy in more text-heavy designs. It’s also perfect for really wide layouts that don’t have a lot of vertical space.\n\n\n\nWordmark - Limit this to layouts where the viewer has already seen 1 or 2 recently. If you have a PDF download on your site, that PDF could use this version, because they were already on the site. Also for less “corporate” swag and internal docs.\n\n\n\nBug / Circle - Only use these on less “corporate” swag items, and in conjunction with a full Brand Mark or name (ie. Profile picture on Social Media).\n\n\n\n\n\n“Stack.”\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n“Banner.”\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n“Wordmark.”\t“Bug.”\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n“Circle.”\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMost preferred.\tSecond most preferred.\tLeast preferred.\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB1.1 - Brand Marks\n\n\n\n\n\n\n\n\n\nSub-Brand Marks.\n\nEach of our sub-branded lines of solutions have\n\na unique mark and color palette. This is to clearly indicate when a viewer is observing a layout that is specifically dedicated to information or promotion of that particular offering.\n\n\n\nThese marks can be used all together on generically branded layouts to demonstrate our full end-\n\nto-end capability, or used on their own uniquely treated materials.\n\n\n\nFor example, if we had a battlecard specifically related to Endpoint Payments, our Red would only be used for links, while the rest of the color palette would replace instances of Red tones with the Endpoint Payments blue palette.\n\n\n\nWhenever a single one of these marks is used in a layout, it should have the Stack or Banner brand mark somewhere nearby for full context (such as a small version near the bottom of the first page.)\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB1.2 - Brand Mark treatment\n\n\n\nClear space and minimum sizing.\n\nWhen placing any of our Brand Marks in a design layout, please ensure that there is a minimum amount of space between the edges of the brand mark and any other design element, including the edges of the page.\n\n\n\nThe minimum amount of space is determined by the height of the N in Endpoint. This will ensure that our brand mark is given its own area in which to shine.\n\n\n\n\n\nThe minimum sizing requirements for our Brand Marks are dependent on whether or not it has “Automation Solutions” in it. Text within a brand mark needs to be legible, so the combination marks have a larger minimum sizing requirement than the wordmark and bug variations.\n\nMinimum Size: 1.5” wide or 110px wide\tMinimum Size: 0.75” wide or 55px wide\n\n\n\n\n\n\n\n\n\nMinimum Size: 2.5” wide or 200px wide\tMinimum Size: 0.2” wide or 15px wide\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB1.2 - Brand Mark treatment\n\n\n\n\n\n\n\n\n\n\n\n“Please, don’t.”\n\nYou might be surprised the ways in which we’ve seen people misuse corporate logos and brand-marks. This list doesn’t just apply to our primary brandmarks, but to all of our sub-brand and suite logos as well.\n\n\n\nSo, even if you think what you’re about to do looks cool, please, please, please...\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...don’t stretch, squash, or rotate it!\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...don’t add a drop shadow or glow to it.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...don’t modify its coloring.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...don’t alter the positioning or size of individual elements within the Brand Mark.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...don’t apply a gradient to it.\n\n...don’t forget about the minimum sizing and clear space requirements!\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\n\n\n\n\nB2:\n\nTypography.\n\n\n\n\n\n“Your choice of typeface is as important as what you do with it.”\n\n\n\n\n\n- BONNIE SIEGLER\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 023\n\n\n\nB2.1 - Typography - headings\n\n\n\n\n\n\n\n\n\nHeadings.\n\n\n\nTypeface Overview:\n\nBy blending iconic British and French designs with modern trends and tools, it aims to traverse a complex typographical and emotional landscape. Great for print and screen, this complexity is perfect to demonstrate a comprehensive service offering that can connect to a myriad of datapoints and marry it all together into one cohesive system for the betterment of the organization.\n\n\n\n\n\nRecommended Use:\n\nTypeset all headings in sentence case, ensuring the sentence ends with punctuation.\n\nThe largest “feature heading” (only 1 per page) can be set in ExtraLight (100) font-weight, but all other headings should be set in Medium (500) font-weight. 0 letter-spacing, and 1.1 em line-height (where the leading or line-height is 1.1x the font-size.\n\n\n\n\n\nFeature Headings\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nBricolage Grotesque ExtraLight\n\nAa\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\n\n\nSecondary Headings\n\nAa\n\n\n\n\n\n\n\n\n\n\n\n\n\nBricolage Grotesque Medium\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB2.2 - Typography - paragraphs & subheadings\n\n\n\n\n\n\n\n\n\nBody copy & Subheadings.\n\nTypeface Overview:\n\nA beautiful geometric sans, this typeface is so mathematically simple that it services as the per-fect complement to Bricolage Grotesque’s detail. It’s minimalism helps it convey the other side of the business, the friendly and helpful side, without beating you over the head with it.\n\n\n\n\n\nRecommended Use:\n\nTypeset all subheadings (distinguished from “Secondary Headings” as a heading that is used directly above or below the headings in Bricolage Grotesque) in ALL CAPS and colored in Red. The tracking/letterspacing for these subheadings should be 30pts.\n\nParagraph text, or body copy, should be set in Medium font-weight, sentence case with 0\n\nletterspacing, and 1.5em leading or line-height.\n\n\n\n\n\n\n\nParagraph Text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nOutfit Medium\n\nAa\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\nSubheadings\n\nAa\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nOUTFIT BLACK\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB2.2 - Typography - paragraphs & subheadings\n\n\n\n\n\n\n\n\n\nSnippets & Numbers.\n\nTypeface Overview:\n\nA monospace font designed for printed code list-ings and the like, this “programmer font” designed primarily for use on the screen features attention to detail for high resolution rendering as well.\n\n\n\n\n\nRecommended Use:\n\nOccasionally, companies need to create documentation that features a lot of numbers that need to be carefully parsed (say, annual reports) or, as is the case with many tech and software companies, snippets of code to share, there is no better alternative than a monospace font.\n\nFor these rare circumstances, use Inconsolata Regular, and set it at sentence case with 0 letterspacing, and 1.5em leading/line-height.\n\n\n\n\n\nSnippets and Numbers\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInconsolata Regular\n\nAa\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB2.3 - Typography - system font replacements\n\n\n\n\n\nFallback fonts.\n\nWe always want to use our brand-coordinated\n\ntypefaces whenever possible, but sometime it just isn’t for technical reasons! In those rare\n\nsituations, the following typefaces are acceptable replacements.\n\n\n\nHeadings.\n\nThe font family replacement for Bricolage Grotesque on emails and systems that cannot load non-system fonts is Arial. There is no system font that feels similar to Bricolage Grotesque, so the best we can achieve is compatibility on both Mac and PC.\n\n\n\n\n\nParagraph Text.\n\nThe font family replacement Outfit is Century Gothic on PC and Avenir on Mac. These are their most geometric font families, and should be a fairly seamless fallback on those platforms.\n\nHeading Text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nArial Regular\n\nAa\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\n\n\nParagraphs\n\nAa\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCentury Gothic\n\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n\nabcdefghijklmnopqrstuvwxyz 0123456789!@#$%^&*()?\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\n\n\n\n\nB3:\n\nColor.\n\n\n\n\n\n\n\n“Colors express the main psychic functions of man.”\n\n\n\n\n\n- CARL JUNG\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 028\n\n\n\nB3.1 - Main colors\n\n\n\n\n\nPrimary palette.\n\nThe primary palette should be used 90% of the time. Black, White, and Red are the key tones to use, with various Shades and Tints of these as backup.\n\n\n\nPantone Black 5 has more warmth than Process Black, so it’s a great option for headings, while the paragraph text is better set in Process Black.\n\n\n\nOur sub-brands have unique color palettes to set them apart from one another. For our unique Enterprise sub-brand we tie it back to our core by using the three Pantone Black 5 C tints as its\n\nunique color palette. However, these tints are still allowed for generic brand materials. Enterprise-specific layouts should just avoid using Process Black and Pantone 199 C.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 199 C\n\n\n\nCMYK 5 / 100 / 85 / 0\n\nRGB 228 / 34 / 38 HEX #E42226\n\n\n\n\n\n\n\n\n\n\n\n\n\nPROCESS BLACK\n\n\n\nCMYK 0 / 0 / 0 / 100\n\nRGB 0 / 0 / 0\n\nHEX #000000\n\n\n\n\n\n\n\n\n\n\n\n\n\nPAPER WHITE\n\n\n\nCMYK 0 / 0 / 0 / 0\n\nRGB 255 / 255 / 255 HEX #FFFFFF\n\nThese three swatches also double as\n\nthe Enterprise sub-brand palette.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE BLACK 5 C\n\n\n\nCMYK 58 / 70 / 53 / 67\n\nRGB 56 / 38 / 45 HEX #38262D\n\n\n\n\n\n\n\n\n\n\n\n\n\nBLACK 5 C (50% TINT)\n\n\n\nCMYK 49 / 50 / 43 / 9\n\nRGB 132 / 118 / 122 HEX #84767A\n\n\n\n\n\n\n\n\n\n\n\n\n\nBLACK 5 C (2% TINT)\n\n\n\nCMYK 2 / 2 / 1 / 0\n\nRGB 248 / 247 / 249 HEX #F8F7F9\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB3.2 - Secondary colors\n\n\n\n\n\n\n\n\n\nSecondary palette.\n\nThe Secondary Palette is full of additional Hues that are representative of the various subdivisions of Endpoint. In addition to use on context-sensitive layouts dedicated to these specific sub-brands, these secondary hues may also be used on graphics that need a little extra.\n\n\n\nFor example, a pie chart or infographic that needs to represent a wider variety of datapoints could leverage these additional colors.\n\n\n\nMOBILE SALES\n\n\n\n\n\n\n\n\n\nPANTONE 169 C\n\n(30% Tint)\n\nCMYK 0 / 12 / 7 / 0\n\nRGB 253 / 227 / 223 HEX #FDE3DF\n\n\n\n\n\nPROCUREMENT\n\n\n\n\n\n\n\n\n\nPANTONE 134 C\n\n(30% Tint)\n\nCMYK 0 / 5 / 19 / 0\n\nRGB 255 / 240 / 209 HEX #FFF0D1\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 173 C\n\n\n\nCMYK 0 / 80 / 94 / 1\n\nRGB 212 / 80 / 42 HEX #D4502A\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 137 C\n\n\n\nCMYK 0 / 38 / 95 / 0\n\nRGB 249 / 159 / 43 HEX #F99F2B\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 175 C\n\n\n\nCMYK 18 / 79 / 71 / 56\n\nRGB 101 / 50 / 40\n\nHEX #653228\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 140 C\n\n\n\nCMYK 13 / 42 / 100 / 56\n\nRGB 107 / 78 / 31 HEX #6B4E1F\n\n\n\n\n\n\n\nWAREHOUSE\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\nPANTONE 1895 C\n\n(30% Tint)\n\nCMYK 0 / 12 / 1 / 0\n\nRGB 252 / 229 / 235 HEX #FCE5EB\n\nPANTONE 1915 C\n\n\n\nCMYK 0 / 77 / 21 / 0\n\nRGB 240 / 87 / 133 HEX #F05785\n\nPANTONE 1955 C\n\n\n\nCMYK 8 / 100 / 47 / 39\n\nRGB 137 / 19 / 61 HEX #89133D\n\n\n\nB3.2 - Secondary colors\n\n\n\n\n\n\n\n\n\nSecondary palette. continued\n\nThe Secondary Palette is full of additional Hues that are representative of the various subdivisions of Endpoint. In addition to use on context-sensitive layouts dedicated to these specific sub-brands, these secondary hues may also be used on graphics that need a little extra.\n\n\n\nFor example, a pie chart or infographic that needs to represent a wider variety of datapoints could leverage these additional colors.\n\n\n\nMANUFACTURING\n\n\n\n\n\n\n\n\n\nPANTONE 2635 C\n\n(30% Tint)\n\nCMYK 7 / 9 / 0 / 0\n\nRGB 231 / 226 / 241 HEX #E7E2F1\n\n\n\n\n\nPAYMENTS\n\n\n\n\n\n\n\n\n\nPANTONE 7457 C\n\n(30% Tint)\n\nCMYK 9 / 0 / 2 / 0\n\nRGB 229 / 243 / 245 HEX #E5F3F5\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 2665 C\n\n\n\nCMYK 67 / 68 / 0 / 0\n\nRGB 105 / 94 / 169 HEX #695EA9\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 7461 C\n\n\n\nCMYK 98 / 24 / 1 / 3\n\nRGB 0 / 131 / 189 HEX #0083BD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 2695 C\n\n\n\nCMYK 90 / 100 / 10 / 47\n\nRGB 40 / 21 / 71\n\nHEX #281547\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPANTONE 7463 C\n\n\n\nCMYK 100 / 62 / 12 / 62\n\nRGB 4 / 43 / 70 HEX #042B46\n\n\n\n\n\n\n\nTBD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\nPANTONE 2563 C\n\n(30% Tint)\n\nCMYK 7 / 13 / 0 / 0\n\nRGB 232 / 220 / 237 HEX #E8DCED\n\nPANTONE 2583 C\n\n\n\nCMYK 48 / 70 / 0 / 0\n\nRGB 146 / 99 / 170 HEX #9263AA\n\nPANTONE 2623 C\n\n\n\nCMYK 74 / 100 / 5 / 28\n\nRGB 96 / 37 / 108 HEX #60256C\n\n\n\n\n\n\n\nB4:\n\nImagery.\n\n\n\n\n\n“Products are made in a factory but brands are created in the mind.”\n\n\n\n\n\n- WALTER LANDOR\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 032\n\n\n\nB4.1 - Imagery\n\n\n\nPhotography.\n\nWhen we use photography in our layouts, most of the time it should include people. Photos should be in the bright to warm spectrum, where whites appear without too many cool tones present.\n\n\n\nImages should focus on the subjects and allow them to be the primary element of the photo that draws the eye. When selecting stock photography, try to represent our broad range of end users with as much human diversity as possible!\n\n\n\nWith the exception of staff shots (Endpoint staff\n\nare always encouraged to smile in photos!), stock images of people should feel authentic above all else. One of the best ways to accomplish this with stock photography is by avoiding overuse of large smiles. Yes, colleagues can enjoy each other’s company, but when EVERY image seems like a funny situation, they lose authenticity in aggregate.\n\n\n\nExpressions of neutral focus, respectful collaboration, and mild amusement will go a long way here.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.1 - Imagery\n\n\n\nThings to avoid.\n\nWhen selecting, shooting, or editing photography\t1\t2\n\nfor our layouts, please avoid images with:\n\n\n\nLow saturation or black and white imagery.\n\n\n\nCool color grading.\n\n\n\nOutlandish photo filters.\n\n3\t4\n\nLight-based issues (ex. flash photography odd-\n\nities, extreme lense flares, harsh lighting that is\n\noverly distracting).\n\n\n\nPeople who are “overly stock-y” (ex. posing, smiling way too hard, laughing while pointing at a powerpoint slide, etc.).\n\n\n\nAnachronisms or environmental oddities (ex.\t5\t6\n\nphones or computers that are several decades old, smoking or drinking in a workplace, clothing from decades ago, etc.)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.2 - Graphic elements\n\n\n\nIconography.\n\n\n\n\n\n\n\n\n\n\n\nWe use the FontAwesome series of icons for in-stances in our collateral and online presences where we want a little extra graphical help but don’t want to go overboard.\n\n\n\nThis series of icons is a perfect match for our Brand Mark, as it features both elements of sharpness\n\nas well as elements with subtle rounded corners as well. Their simplicity works at very small sizes, and is a great match for our brand.\n\n\n\nWhen using icons in your layouts, go to the archive  of icons, search for the perfect match, click it, and download the SVG file for recoloring within your vector software.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.2 - Graphic elements\n\n\n\n\n\n\n\n\n\n\n\n“End points”.\n\nRepresenting a blend of classic “datapoints”, simplified circuitry, and a terminus point, the “End Point” is\n\na simple graphic element that can be used (only a maximum of once per layout to keep it from feeling overused. This page should be the only place more than one is every used on a single page.) to help bring a little break from text-heavy layouts, and provide a “high tech” feel to them.\n\n\n\nAs you can see to the right, there isn’t only one file for the End Point. These can be created by the designer in the software. The rules are simple:\n\n\n\n\n\nThe lines should be 1 px/pt wide, and the dots should be 5 px/pts wide. These can be scaled up as needed for larger formats, but the ratio of 5x wider than the line/ stroke is the hard and fast rule.\n\n\n\nThe line may have exactly zero or two 90-degree\n\n“bends” in it, one clockwise, one counter-clockwise.\n\n\n\nThose two bends should happen within a minimum distance of 2 “dot-widths” and a maximum of 5 “dot-widths”. The second, and final, bend should occur at 5 “dot-widths” or farther away from the dot to keep the dot itself away from “all the action”!\n\n\n\nMin. distance from dot.\n\n\n\n\n\n\n\nMin. distance for both “bends”.\n\n\n\n\n\n\n\nNo bends version\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMax. distance for both “bends”.\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.3 - Texture\n\n\n\nBackground pattern.\n\nOur background pattern is a subtle way to add texture to a layout without being overt or even overbearing. The goal is not to draw attention, but simply provide a little visual interest.\n\n\n\nOverlaid on a white background, the Black or Red patterns should never be greater than 3% opacity (as seen on each white page of this document).\n\n\n\nOverlaid on a Red or Black background, the White pattern should be no greater than 3% opacity.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.4 - Images of branded materials\n\n\n\nVisual identity in context.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.4 - Images of branded materials\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\nB4.4 - Images of branded materials\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n— Endpoint | Brand Guidelines — v1.3 / Feb 2025\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCONTACT\n\n\n\ninfo@endpointas.com 1-330-645-9959\n\nDOWNLOAD\n\n\n\nBrand Marks for screen and web. Brand Marks for print and signage.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 041\n\n",
+      "approvedTerms": [
+        "seamless",
+        "efficient",
+        "simple",
+        "automation solutions",
+        "innovative",
+        "flexible",
+        "commitment",
+        "responsiveness",
+        "stability",
+        "expertise",
+        "problem solver",
+        "people person",
+        "data head"
+      ],
+      "bannedTerms": [],
+      "tagline": "Start by knowing what you want and who you are, build credibility around it and deliver it online in a compelling way."
+    },
+    "documentStyle": "modern"
+  },
+  "brandColor": "#e42226"
+}

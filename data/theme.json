@@ -1,0 +1,22 @@
+{
+  "id": "default",
+  "name": "Default Indigo",
+  "colors": {
+    "accent": "#6366F1",
+    "accentHover": "#575ad4",
+    "accentLight": "#f3f3fe",
+    "accentBorder": "#e8e8fd",
+    "sidebarBg": "#FFFFFF",
+    "sidebarBorder": "#F0F0F0",
+    "contentBg": "#FAFAFA",
+    "cardBg": "#FFFFFF",
+    "cardBorder": "#EEEEEE",
+    "textPrimary": "#111111",
+    "textSecondary": "#888888",
+    "textMuted": "#CCCCCC",
+    "navActiveBg": "#f3f3fe",
+    "navActiveText": "#111111",
+    "navDefaultText": "#AAAAAA",
+    "textInverse": "#FFFFFF"
+  }
+}

@@ -1,0 +1,336 @@
+[
+  {
+    "name": "CloudSync Platform",
+    "shortDescription": "SaaS project management with real-time collaboration and AI-powered scheduling",
+    "fullDescription": "CloudSync Platform is a next-generation project management solution designed for distributed teams. It combines real-time document collaboration, AI-driven task prioritization, Gantt and Kanban views, resource allocation, and integrated time tracking into a unified workspace. Built for teams of 10 to 10,000, CloudSync eliminates tool sprawl and keeps every stakeholder aligned from kickoff to delivery.",
+    "features": [
+      {
+        "id": "1d14fa86-8e3e-4fcb-b1fb-10f905b8bfd1",
+        "name": "AI Task Prioritization",
+        "description": "Machine learning ranks tasks by impact, urgency, and team capacity to surface what matters most."
+      },
+      {
+        "id": "29ab840a-23e5-4829-84c5-eea1792197dc",
+        "name": "Real-Time Collaboration",
+        "description": "Co-edit documents, whiteboards, and project plans simultaneously with zero lag."
+      },
+      {
+        "id": "b50c804d-315b-4a76-bee7-d5de1a91829d",
+        "name": "Resource Forecasting",
+        "description": "Predict team utilization 8 weeks ahead and rebalance workloads before burnout hits."
+      },
+      {
+        "id": "259d95c7-1d24-4a8a-bcf0-98baa8d4114a",
+        "name": "Custom Workflows",
+        "description": "Drag-and-drop workflow builder with conditional logic, approvals, and SLA timers."
+      },
+      {
+        "id": "5a1cc63e-8237-495f-904d-9d1fb0eaa11c",
+        "name": "Unified Dashboard",
+        "description": "Portfolio-level visibility across all projects with customizable KPI widgets."
+      }
+    ],
+    "benefits": [
+      "35% faster project delivery through AI-optimized scheduling",
+      "60% reduction in status meeting time with real-time dashboards",
+      "Single platform replaces 4-5 point solutions, saving $50K+/year",
+      "99.99% uptime SLA with SOC 2 Type II certification"
+    ],
+    "idealUseCase": "Mid-market and enterprise teams managing 10+ concurrent projects who need real-time visibility and AI-driven prioritization without the complexity of legacy PPM tools.",
+    "targetPersonas": [
+      "VP of Engineering",
+      "PMO Director",
+      "Product Manager",
+      "CTO"
+    ],
+    "targetIndustries": [
+      "SaaS",
+      "Software Development",
+      "IT Consulting",
+      "Marketing Agencies",
+      "Management Consulting"
+    ],
+    "differentiators": [
+      "Only PM tool with native AI task prioritization — no third-party add-ons",
+      "Real-time collaboration engine built on CRDTs, not polling",
+      "Portfolio-level resource forecasting included at no extra cost"
+    ],
+    "proofPoints": [
+      "Apex Software reduced project overruns by 42% in Q1 after switching to CloudSync",
+      "BrightPath Consulting consolidated 5 tools into CloudSync, saving $180K annually",
+      "Named a G2 Leader in Project Management for 6 consecutive quarters"
+    ],
+    "objections": [
+      {
+        "id": "f48af338-a95d-453c-a972-b5e3d3290c54",
+        "objection": "We already use Jira/Asana and switching costs are high",
+        "response": "CloudSync offers a free migration assistant that imports projects, histories, and automations from Jira, Asana, and Monday in under 48 hours. Customers report full team adoption within 2 weeks thanks to our familiar UX patterns."
+      },
+      {
+        "id": "2cb74b3f-4755-4f7b-8025-f999b26d4d01",
+        "objection": "AI features sound like marketing hype",
+        "response": "Our AI engine is trained on 2M+ real project timelines. In blind A/B tests, AI-prioritized teams shipped 28% faster. We offer a free 30-day proof-of-value so you can measure the impact on your own projects."
+      },
+      {
+        "id": "964ba305-f0f0-4e13-bc2f-74f05e905b59",
+        "objection": "Enterprise security requirements are strict",
+        "response": "CloudSync is SOC 2 Type II certified, supports SAML SSO, and offers data residency in US, EU, and APAC. We pass security reviews at Fortune 500 companies routinely."
+      }
+    ],
+    "pricingNotes": "Starter: $12/user/mo (up to 50 users). Business: $24/user/mo (unlimited users, AI features). Enterprise: Custom pricing. Annual billing saves 20%.",
+    "relatedProducts": [],
+    "status": "active",
+    "promptTemplates": [
+      {
+        "id": "c42a7197-32f2-4948-b5b3-08271b618688",
+        "label": "CloudSync ROI Calculator",
+        "promptText": "Create a detailed ROI analysis for a prospect evaluating CloudSync Platform. Include productivity gains, tool consolidation savings, and reduced project overruns.",
+        "contentType": "roi-business-case"
+      },
+      {
+        "id": "e739d455-f55c-4988-970d-c894bd8f01c0",
+        "label": "PM Tool Comparison",
+        "promptText": "Generate a comparison document showing CloudSync Platform advantages over Jira, Asana, and Monday.com for enterprise project management.",
+        "contentType": "comparison-guide"
+      }
+    ],
+    "contentGeneratedCount": 64,
+    "extractionSources": [],
+    "id": "4a1bf4cc-776f-4438-8c15-b9e02bcf4fe8",
+    "lastUpdated": "2026-03-31T14:13:18.528Z",
+    "createdAt": "2026-03-31T14:13:18.513Z"
+  },
+  {
+    "name": "SecureVault Pro",
+    "shortDescription": "Enterprise cybersecurity platform with zero-trust architecture and AI threat detection",
+    "fullDescription": "SecureVault Pro is a comprehensive cybersecurity platform that protects organizations from advanced threats through zero-trust network access, AI-powered threat detection, endpoint protection, and automated incident response. Designed for security teams managing hybrid cloud environments, it provides unified visibility across on-premise, cloud, and remote endpoints with a single pane of glass.",
+    "features": [
+      {
+        "id": "04674c03-8bbc-4c27-b324-aa0f625705ff",
+        "name": "Zero-Trust Network Access",
+        "description": "Identity-based micro-segmentation that verifies every user and device before granting access."
+      },
+      {
+        "id": "402cf874-918f-4829-918a-de1f365fe57c",
+        "name": "AI Threat Detection",
+        "description": "Behavioral analytics engine processes 10B+ events/day to detect anomalies in real time."
+      },
+      {
+        "id": "1a6d1faa-3d28-45ba-91af-6e4388137a02",
+        "name": "Automated Incident Response",
+        "description": "Playbook-driven response that contains threats in under 60 seconds without human intervention."
+      },
+      {
+        "id": "960ff11c-65bd-43fd-8389-13632a9d0460",
+        "name": "Endpoint Protection",
+        "description": "Next-gen antivirus with fileless attack detection and ransomware rollback capabilities."
+      },
+      {
+        "id": "7897e309-0be1-43a6-b15e-6c2ac1078487",
+        "name": "Compliance Dashboard",
+        "description": "Continuous compliance monitoring for SOC 2, HIPAA, PCI-DSS, and GDPR with audit-ready reports."
+      }
+    ],
+    "benefits": [
+      "95% reduction in mean time to detect (MTTD) threats",
+      "80% fewer false positives compared to legacy SIEM solutions",
+      "Automated response reduces containment time from hours to seconds",
+      "Unified platform eliminates the need for 6+ separate security tools"
+    ],
+    "idealUseCase": "Mid-market and enterprise organizations with 500+ employees managing hybrid cloud environments who need to modernize their security stack and achieve zero-trust compliance.",
+    "targetPersonas": [
+      "CISO",
+      "VP of Security",
+      "Security Operations Manager",
+      "IT Director",
+      "Compliance Officer"
+    ],
+    "targetIndustries": [
+      "Cybersecurity",
+      "Banking",
+      "Insurance",
+      "Healthcare IT",
+      "SaaS",
+      "Federal Government"
+    ],
+    "differentiators": [
+      "Only platform combining ZTNA, EDR, and SIEM in a single agent — no integration headaches",
+      "AI engine trained on 500M+ real attack patterns, not just signatures",
+      "60-second automated containment SLA backed by financial guarantee"
+    ],
+    "proofPoints": [
+      "First National Bank blocked a sophisticated ransomware attack within 12 seconds of detection",
+      "MedCore Health achieved HIPAA compliance in 30 days using SecureVault Pro compliance automation",
+      "Recognized as a Gartner Magic Quadrant Leader in Endpoint Protection 2025"
+    ],
+    "objections": [
+      {
+        "id": "250e7bdd-7d0e-4b6a-9ef3-567ba619dd0a",
+        "objection": "We have too many security tools already — adding another is a burden",
+        "response": "SecureVault Pro replaces your SIEM, EDR, ZTNA, and compliance tools in one platform. Customers typically decommission 4-6 tools after deployment, reducing total security spend by 35%."
+      },
+      {
+        "id": "b3d7d560-4142-4a1a-89fd-96f07fdd8711",
+        "objection": "Our team is too small to manage another platform",
+        "response": "Our automated playbooks handle 90% of incidents without human intervention. Customers with 2-person security teams manage 10,000+ endpoints effectively with SecureVault Pro."
+      },
+      {
+        "id": "66c5f5b6-88da-41dc-80cf-a4f38588cbc9",
+        "objection": "AI security tools generate too many false positives",
+        "response": "Our behavioral analytics correlate signals across identity, network, and endpoint data. This multi-signal approach delivers 80% fewer false positives than single-vector solutions. We offer a 30-day POC so you can measure your actual alert-to-noise ratio."
+      }
+    ],
+    "pricingNotes": "Per-endpoint pricing: $8/endpoint/mo (Core), $15/endpoint/mo (Pro with AI), $22/endpoint/mo (Enterprise with ZTNA). Minimum 100 endpoints. 3-year contracts receive 25% discount.",
+    "relatedProducts": [],
+    "status": "active",
+    "promptTemplates": [
+      {
+        "id": "a9820ae6-7d5d-4e7f-aca7-300b48a3a0e5",
+        "label": "Security ROI Business Case",
+        "promptText": "Build a compelling business case for replacing legacy security tools with SecureVault Pro. Include breach cost avoidance, tool consolidation savings, and productivity gains for the security team.",
+        "contentType": "roi-business-case"
+      }
+    ],
+    "contentGeneratedCount": 41,
+    "extractionSources": [],
+    "id": "deb5e6c9-2da4-476d-8c82-e3fb2cf17ef0",
+    "lastUpdated": "2026-03-31T14:13:18.544Z",
+    "createdAt": "2026-03-31T14:13:18.531Z"
+  },
+  {
+    "name": "DataFlow Analytics",
+    "shortDescription": "Business intelligence platform with natural language queries and embedded analytics",
+    "fullDescription": "DataFlow Analytics democratizes data by letting business users ask questions in plain English and get instant visualizations. It connects to 200+ data sources, offers a drag-and-drop dashboard builder, and provides embedded analytics that can be white-labeled into any SaaS product. Purpose-built for organizations that want self-service BI without requiring every user to learn SQL.",
+    "features": [
+      {
+        "id": "7f48e006-341c-4d16-98d4-47cd3a797742",
+        "name": "Natural Language Queries",
+        "description": "Ask data questions in plain English and get instant charts, tables, and insights."
+      },
+      {
+        "id": "33321caf-d08c-459f-9c75-78ea8451ac51",
+        "name": "200+ Data Connectors",
+        "description": "Pre-built connectors for databases, SaaS apps, spreadsheets, and APIs with automatic schema detection."
+      },
+      {
+        "id": "ceb36650-82c0-460b-ba85-13be365c358a",
+        "name": "Embedded Analytics",
+        "description": "White-label dashboards and reports directly into your product with full SSO and theming support."
+      },
+      {
+        "id": "0d875c7e-cebe-4d76-a542-92068d195f53",
+        "name": "Predictive Insights",
+        "description": "Built-in forecasting models that project trends and flag anomalies without data science expertise."
+      },
+      {
+        "id": "488cb4c6-bc65-471d-b558-7562f1975fb1",
+        "name": "Collaborative Notebooks",
+        "description": "Shared analysis workspaces where teams can annotate, comment, and version-control their queries."
+      }
+    ],
+    "benefits": [
+      "10x faster time-to-insight vs. traditional BI tools",
+      "75% of business users become self-serve within 30 days",
+      "Embedded analytics adds analytics revenue to your SaaS product",
+      "No SQL required — natural language lowers the barrier for non-technical users"
+    ],
+    "idealUseCase": "Data-driven organizations with 100+ employees that want to empower business users with self-service analytics or SaaS companies looking to embed analytics into their products.",
+    "targetPersonas": [
+      "VP of Data",
+      "Head of Product",
+      "Business Intelligence Manager",
+      "CFO",
+      "COO"
+    ],
+    "targetIndustries": [
+      "SaaS",
+      "FinTech",
+      "E-Commerce",
+      "Data Analytics",
+      "Insurance",
+      "Wholesale Distribution"
+    ],
+    "differentiators": [
+      "Natural language query engine understands business context, not just SQL translation",
+      "Only embedded analytics platform with built-in white-labeling and SSO at no extra cost",
+      "Time-to-first-dashboard is 15 minutes vs. days with Tableau or Looker"
+    ],
+    "proofPoints": [
+      "RetailMax enabled 500 store managers to build their own reports, reducing BI team backlog by 70%",
+      "FinEdge embedded DataFlow into their SaaS product and increased ARPU by 40%",
+      "Named a Forrester Wave Leader in Augmented Analytics 2025"
+    ],
+    "objections": [
+      {
+        "id": "a8f04110-a278-4f96-8c5f-2701daecf3fa",
+        "objection": "We already invested heavily in Tableau/Power BI",
+        "response": "DataFlow complements existing BI tools — it handles the 80% of ad-hoc questions that do not need a data analyst. Customers keep Tableau for complex modeling while DataFlow serves self-service needs, reducing BI ticket volume by 60%."
+      },
+      {
+        "id": "cdc6ee86-5b81-4518-97e2-9867bc9d11eb",
+        "objection": "Natural language queries cannot be as accurate as SQL",
+        "response": "Our NLQ engine achieves 94% accuracy on standard business queries. For complex joins, it shows the generated SQL for review. Most users find they need SQL less than 5% of the time after 30 days."
+      },
+      {
+        "id": "1a9f63d8-c2c8-4d47-a9c6-36e7830c780d",
+        "objection": "Embedded analytics pricing is usually prohibitive",
+        "response": "Our embedded tier is priced per-end-user at $0.50/user/mo with unlimited dashboards. Competitors charge $5-15/user/mo for comparable features. Run the math on your user base and the ROI becomes clear."
+      }
+    ],
+    "pricingNotes": "Self-Service: $30/user/mo (up to 500 users). Embedded: $0.50/end-user/mo + $2,000/mo platform fee. Enterprise: Custom. Free tier available for up to 5 users.",
+    "relatedProducts": [],
+    "status": "coming-soon",
+    "promptTemplates": [
+      {
+        "id": "6df476e3-cf55-40fb-883b-59814635dfc0",
+        "label": "BI Tool Comparison",
+        "promptText": "Create a comparison document positioning DataFlow Analytics against Tableau, Power BI, and Looker for self-service analytics use cases.",
+        "contentType": "comparison-guide"
+      },
+      {
+        "id": "de23c706-1920-4554-99ae-73a22ae8eda8",
+        "label": "Embedded Analytics Pitch",
+        "promptText": "Generate a one-pager for SaaS companies explaining how embedding DataFlow Analytics can increase ARPU and reduce churn.",
+        "contentType": "solution-one-pager"
+      }
+    ],
+    "contentGeneratedCount": 12,
+    "extractionSources": [],
+    "id": "c94a39b8-f9b4-47e1-9d87-cacf289cbc1e",
+    "lastUpdated": "2026-03-31T14:13:18.561Z",
+    "createdAt": "2026-03-31T14:13:18.547Z"
+  },
+  {
+    "id": "ff0d0254-a479-46cd-a509-b94d29760aad",
+    "name": "Skyprint ",
+    "shortDescription": "Mobile Printing Direct From Endpoint Warehouse",
+    "fullDescription": "Barcoding is easy with mobile printing services, providing warehouse label\ncreation functionality within the Scanco Warehouse cloud. Create labels at your\nfingertips with Scanco SkyPrint. Eliminate the hassle of manually entering\nbarcodes during operational stages with auto populated receiving, shipping, and\ninventory codes enhanced with belt printing technology that makes it fast and fun\nto create.",
+    "features": [
+      {
+        "id": "ec096ff6-ee8d-4bc8-8ab1-32a0861eae8d",
+        "name": "Label Designer",
+        "description": "build Label designs customized for each user on the fly"
+      },
+      {
+        "id": "d23930c5-80b3-4bf7-b2f5-86a1d7aea269",
+        "name": "Quick Print",
+        "description": "Print barcodes with the click of a button,\nwithout manual entry"
+      }
+    ],
+    "benefits": [],
+    "idealUseCase": "Priniting labels from out on the floor",
+    "targetPersonas": [],
+    "targetIndustries": [],
+    "differentiators": [],
+    "proofPoints": [],
+    "objections": [],
+    "pricingNotes": "2200/year no device uesr cost",
+    "relatedProducts": [],
+    "status": "active",
+    "promptTemplates": [],
+    "contentGeneratedCount": 1,
+    "lastUpdated": "2026-03-31T14:19:05.195Z",
+    "createdAt": "2026-03-31T14:16:15.010Z",
+    "extractionSources": []
+  }
+]
