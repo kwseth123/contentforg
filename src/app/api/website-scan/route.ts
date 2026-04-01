@@ -1,298 +1,211 @@
-import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import Anthropic from '@anthropic-ai/sdk';
+import { NextRequest, NextResponse } from 'next/server';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-const KNOWN_PATTERNS = [
-  '/about', '/about-us', '/products', '/solutions', '/services',
-  '/customers', '/case-studies', '/pricing', '/team', '/company',
-  '/features', '/platform', '/why-us', '/industries',
-];
-
-const FUZZY_KEYWORDS = [
-  'about', 'product', 'solution', 'service', 'customer', 'case-stud',
-  'pricing', 'team', 'company', 'feature', 'platform', 'why', 'industr',
-];
-
-const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+interface ScanResult {
+  success: boolean;
+  companyName: string;
+  tagline: string;
+  logoBase64: string;
+  partial: boolean;
+}
 
 function normalizeUrl(input: string): string {
-  let url = input.trim();
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+  let url = input.trim().replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(url)) {
     url = 'https://' + url;
   }
-  // Remove trailing slash
-  url = url.replace(/\/+$/, '');
   return url;
 }
 
-function getBaseDomain(url: string): string {
+function resolveUrl(relative: string, base: string): string {
   try {
-    const parsed = new URL(url);
-    return `${parsed.protocol}//${parsed.hostname}`;
+    return new URL(relative, base).href;
   } catch {
-    return url;
+    return '';
   }
 }
 
-function stripHtml(html: string): string {
-  // Remove script and style tags and their contents
-  let text = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
-  // Remove nav and footer
-  text = text.replace(/<nav[\s\S]*?<\/nav>/gi, '');
-  text = text.replace(/<footer[\s\S]*?<\/footer>/gi, '');
-  // Remove header tags (site header, not h1-h6)
-  text = text.replace(/<header[\s\S]*?<\/header>/gi, '');
-  // Remove all HTML tags
-  text = text.replace(/<[^>]+>/g, ' ');
-  // Decode common HTML entities
-  text = text.replace(/&amp;/g, '&');
-  text = text.replace(/&lt;/g, '<');
-  text = text.replace(/&gt;/g, '>');
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
-  text = text.replace(/&nbsp;/g, ' ');
-  // Collapse whitespace
-  text = text.replace(/\s+/g, ' ').trim();
-  return text.substring(0, 5000);
+function attr(html: string, tag: string, attrName: string, attrValue: string, extract: string): string {
+  // Match a tag with a specific attribute value and extract another attribute
+  // e.g. attr(html, 'meta', 'property', 'og:title', 'content')
+  const pattern = new RegExp(
+    `<${tag}\\s[^>]*?${attrName}=["']${attrValue}["'][^>]*?>`,
+    'i'
+  );
+  const match = html.match(pattern);
+  if (!match) return '';
+  const extractPattern = new RegExp(`${extract}=["']([^"']*)["']`, 'i');
+  const valMatch = match[0].match(extractPattern);
+  return valMatch ? valMatch[1].trim() : '';
 }
 
-function extractInternalLinks(html: string, baseDomain: string): string[] {
-  const links: Set<string> = new Set();
-  const hrefRegex = /href=["']([^"']+)["']/gi;
-  let match;
-  while ((match = hrefRegex.exec(html)) !== null) {
-    let href = match[1];
-    // Skip anchors, mailto, tel, javascript
-    if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) continue;
-    // Resolve relative URLs
-    if (href.startsWith('/')) {
-      href = baseDomain + href;
-    }
-    // Only keep internal links
-    if (href.startsWith(baseDomain)) {
-      const path = href.replace(baseDomain, '').split('?')[0].split('#')[0].replace(/\/+$/, '');
-      if (path && path !== '') {
-        links.add(path);
-      }
-    }
+function extractCompanyName(html: string): string {
+  // 1. og:title
+  const ogTitle = attr(html, 'meta', 'property', 'og:title', 'content');
+  if (ogTitle) return ogTitle;
+
+  // 2. <title>
+  const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+  if (titleMatch && titleMatch[1].trim()) return titleMatch[1].trim();
+
+  // 3. meta application-name
+  const appName = attr(html, 'meta', 'name', 'application-name', 'content');
+  if (appName) return appName;
+
+  return '';
+}
+
+function extractTagline(html: string): string {
+  // 1. og:description
+  const ogDesc = attr(html, 'meta', 'property', 'og:description', 'content');
+  if (ogDesc) return ogDesc;
+
+  // 2. meta description
+  const metaDesc = attr(html, 'meta', 'name', 'description', 'content');
+  if (metaDesc) return metaDesc;
+
+  return '';
+}
+
+function extractLogoUrl(html: string, baseUrl: string): string {
+  // 1. og:image
+  const ogImage = attr(html, 'meta', 'property', 'og:image', 'content');
+  if (ogImage) return resolveUrl(ogImage, baseUrl);
+
+  // 2. link[rel="icon"]
+  const iconPattern = /<link\s[^>]*?rel=["'](?:icon|shortcut icon|apple-touch-icon)["'][^>]*?>/i;
+  const iconMatch = html.match(iconPattern);
+  if (iconMatch) {
+    const hrefMatch = iconMatch[0].match(/href=["']([^"']*)["']/i);
+    if (hrefMatch && hrefMatch[1]) return resolveUrl(hrefMatch[1], baseUrl);
   }
-  return Array.from(links);
+
+  // 3. First <img> inside <header>
+  const headerMatch = html.match(/<header[\s\S]*?<\/header>/i);
+  if (headerMatch) {
+    const imgMatch = headerMatch[0].match(/<img\s[^>]*?src=["']([^"']*)["'][^>]*?>/i);
+    if (imgMatch && imgMatch[1]) return resolveUrl(imgMatch[1], baseUrl);
+  }
+
+  return '';
 }
 
-function matchesFuzzyPattern(path: string): boolean {
-  const lower = path.toLowerCase();
-  return FUZZY_KEYWORDS.some(kw => lower.includes(kw));
+function guessMimeType(url: string): string {
+  const lower = url.toLowerCase();
+  if (lower.includes('.svg')) return 'image/svg+xml';
+  if (lower.includes('.ico')) return 'image/x-icon';
+  if (lower.includes('.jpg') || lower.includes('.jpeg')) return 'image/jpeg';
+  if (lower.includes('.webp')) return 'image/webp';
+  if (lower.includes('.gif')) return 'image/gif';
+  return 'image/png';
 }
 
-async function fetchPage(url: string): Promise<string | null> {
+async function fetchLogoAsBase64(logoUrl: string): Promise<string> {
+  if (!logoUrl) return '';
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(url, {
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(logoUrl, {
       headers: { 'User-Agent': USER_AGENT },
       signal: controller.signal,
       redirect: 'follow',
     });
     clearTimeout(timeout);
-    if (!res.ok) return null;
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) return null;
-    return await res.text();
-  } catch {
-    return null;
-  }
-}
+    if (!res.ok) return '';
 
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    const contentType = res.headers.get('content-type') || guessMimeType(logoUrl);
+    const buffer = await res.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const mime = contentType.split(';')[0].trim();
+    return `data:${mime};base64,${base64}`;
+  } catch {
+    return '';
+  }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-    }
-
     const body = await req.json();
-    const { url: rawUrl, mode } = body as { url: string; mode: 'full' | 'rescan' };
+    const rawUrl: string = body?.url;
 
-    if (!rawUrl) {
-      return new Response(JSON.stringify({ error: 'URL is required' }), { status: 400 });
+    if (!rawUrl || typeof rawUrl !== 'string') {
+      return NextResponse.json({
+        success: false,
+        companyName: '',
+        tagline: '',
+        logoBase64: '',
+        partial: false,
+      } satisfies ScanResult);
     }
 
-    const baseUrl = normalizeUrl(rawUrl);
-    const baseDomain = getBaseDomain(baseUrl);
+    const url = normalizeUrl(rawUrl);
 
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        const sendSSE = (data: Record<string, unknown>) => {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-        };
+    // Fetch the homepage with an 8-second hard timeout
+    const controller = new AbortController();
+    let partial = false;
+    let html = '';
 
-        try {
-          // Step 1: Fetch homepage
-          sendSSE({ type: 'progress', page: 'Scanning homepage...', current: 1, total: 8 });
-          const homepageHtml = await fetchPage(baseUrl);
-
-          if (!homepageHtml) {
-            sendSSE({ type: 'error', message: `Could not fetch ${baseUrl}. Make sure the website is accessible.` });
-            controller.close();
-            return;
-          }
-
-          // Step 2: Find pages to crawl
-          const foundLinks = extractInternalLinks(homepageHtml, baseDomain);
-          const matchingLinks = foundLinks.filter(matchesFuzzyPattern);
-
-          // Build page list: known patterns + matching discovered links
-          const pagePaths = new Set<string>();
-          for (const pattern of KNOWN_PATTERNS) {
-            pagePaths.add(pattern);
-          }
-          for (const link of matchingLinks) {
-            pagePaths.add(link);
-          }
-
-          // Cap at 14 additional pages (homepage + 14 = 15 total)
-          const pageList = Array.from(pagePaths).slice(0, 14);
-          const totalPages = 1 + pageList.length + 1; // homepage + pages + AI analysis
-
-          // Step 3: Crawl pages
-          const pageTexts: { url: string; text: string }[] = [];
-          const homepageText = stripHtml(homepageHtml);
-          if (homepageText.length > 50) {
-            pageTexts.push({ url: baseUrl, text: homepageText });
-          }
-
-          for (let i = 0; i < pageList.length; i++) {
-            const pagePath = pageList[i];
-            const pageUrl = baseDomain + pagePath;
-            sendSSE({
-              type: 'progress',
-              page: `Scanning ${pagePath}...`,
-              current: i + 2,
-              total: totalPages,
-            });
-
-            await delay(1000);
-            const html = await fetchPage(pageUrl);
-            if (html) {
-              const text = stripHtml(html);
-              if (text.length > 50) {
-                pageTexts.push({ url: pageUrl, text });
-              }
-            }
-          }
-
-          if (pageTexts.length === 0) {
-            sendSSE({ type: 'error', message: 'Could not extract text from any pages.' });
-            controller.close();
-            return;
-          }
-
-          // Step 4: AI Extraction
-          sendSSE({
-            type: 'progress',
-            page: 'Analyzing content with AI...',
-            current: totalPages,
-            total: totalPages,
-          });
-
-          const combinedText = pageTexts
-            .map(p => `--- Page: ${p.url} ---\n${p.text}`)
-            .join('\n\n')
-            .substring(0, 50000);
-
-          const basePrompt = `You are extracting company information from website content. Analyze the following website text and extract structured data.
-
-Return a JSON object with these exact fields:
-{
-  "companyName": "string",
-  "tagline": "string",
-  "aboutUs": "string (2-4 sentences)",
-  "products": [{ "name": "string", "description": "string (1-2 sentences)", "keyFeatures": ["string"], "pricing": "string or empty" }],
-  "differentiators": "string (what makes them unique)",
-  "industries": ["string (target industries mentioned)"],
-  "personas": ["string (job titles/roles mentioned)"],
-  "companySize": "string (if mentioned)",
-  "caseStudies": [{ "title": "string", "content": "string (summary)" }],
-  "competitors": [{ "name": "string", "howWeBeatThem": "" }],
-  "brandVoice": { "tone": "string (describe the voice)", "wordsToUse": ["string"], "wordsToAvoid": [] },
-  "missingFields": ["string (what couldn't be found)"]
-}
-
-Only include items you actually found in the content. For missing items, use empty arrays/strings and list them in missingFields.`;
-
-          const rescanAddition = mode === 'rescan'
-            ? '\n\nIMPORTANT: This is a re-scan. Merge new findings with existing data. Flag new items with [NEW] prefix.'
-            : '';
-
-          const aiResponse = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 4096,
-            messages: [{
-              role: 'user',
-              content: `${basePrompt}${rescanAddition}\n\nWebsite content:\n${combinedText}`,
-            }],
-          });
-
-          // Extract text from response
-          let responseText = '';
-          for (const block of aiResponse.content) {
-            if (block.type === 'text') {
-              responseText += block.text;
-            }
-          }
-
-          // Parse JSON from response (handle markdown code blocks)
-          let extractedData;
-          try {
-            const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
-            const jsonStr = jsonMatch ? jsonMatch[1].trim() : responseText.trim();
-            extractedData = JSON.parse(jsonStr);
-          } catch {
-            // Try to find JSON object directly
-            const startIdx = responseText.indexOf('{');
-            const endIdx = responseText.lastIndexOf('}');
-            if (startIdx !== -1 && endIdx !== -1) {
-              extractedData = JSON.parse(responseText.substring(startIdx, endIdx + 1));
-            } else {
-              sendSSE({ type: 'error', message: 'Failed to parse AI response. Please try again.' });
-              controller.close();
-              return;
-            }
-          }
-
-          sendSSE({ type: 'result', data: extractedData });
-          controller.close();
-        } catch (err) {
-          const message = err instanceof Error ? err.message : 'An unexpected error occurred';
-          sendSSE({ type: 'error', message });
-          controller.close();
-        }
-      },
+    const fetchPromise = fetch(url, {
+      headers: { 'User-Agent': USER_AGENT },
+      signal: controller.signal,
+      redirect: 'follow',
+    }).then(async (res) => {
+      if (!res.ok) return '';
+      return await res.text();
     });
 
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
+    const timeoutPromise = new Promise<string>((resolve) => {
+      setTimeout(() => {
+        controller.abort();
+        resolve('');
+      }, 8000);
     });
-  } catch (e) {
-    console.error('[website-scan] Unexpected error:', e);
-    return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred' }),
-      { status: 500 }
-    );
+
+    html = await Promise.race([fetchPromise, timeoutPromise]);
+
+    // Extract whatever we can
+    const companyName = html ? extractCompanyName(html) : '';
+    const tagline = html ? extractTagline(html) : '';
+    const logoUrl = html ? extractLogoUrl(html, url) : '';
+
+    // If the fetch timed out but we got some data, mark as partial
+    if (!html && (companyName || tagline || logoUrl)) {
+      partial = true;
+    }
+    if (controller.signal.aborted && (companyName || tagline)) {
+      partial = true;
+    }
+
+    if (!html && !companyName && !tagline) {
+      return NextResponse.json({
+        success: false,
+        companyName: '',
+        tagline: '',
+        logoBase64: '',
+        partial: false,
+      } satisfies ScanResult);
+    }
+
+    // Fetch logo and convert to base64 (non-blocking — failure is fine)
+    const logoBase64 = await fetchLogoAsBase64(logoUrl);
+
+    return NextResponse.json({
+      success: true,
+      companyName,
+      tagline,
+      logoBase64,
+      partial,
+    } satisfies ScanResult);
+  } catch {
+    // Never return an error status code
+    return NextResponse.json({
+      success: false,
+      companyName: '',
+      tagline: '',
+      logoBase64: '',
+      partial: false,
+    } satisfies ScanResult);
   }
 }

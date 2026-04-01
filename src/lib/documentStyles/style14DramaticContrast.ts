@@ -1,0 +1,175 @@
+import type { DocumentStyle, StyleInput } from './types';
+import { resolveBrand, brandCSSVars, brandFonts, brandLogoHtml, formatMarkdown, wrapDocument } from './shared';
+
+// ── Render ──────────────────────────────────────────────────
+
+function render(input: StyleInput): string {
+  const brand = resolveBrand(input);
+  const { sections, contentType, prospect, companyName, date } = input;
+  const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const sectionsHtml = sections.map((s, i) => `
+    <div class="section">
+      <div class="section-number">${String(i + 1).padStart(2, '0')}</div>
+      <h2 class="section-title">${s.title}</h2>
+      <div class="section-content">${formatMarkdown(s.content)}</div>
+      <hr class="section-rule"/>
+    </div>
+  `).join('');
+
+  const css = `
+    ${brandCSSVars(brand)}
+    body {
+      font-family: var(--brand-font-secondary);
+      color: #1a1a1a; background: #FFFFFF;
+      line-height: 1.7; font-size: var(--brand-font-body-size);
+      -webkit-font-smoothing: antialiased;
+    }
+    .page {
+      max-width: 520px; margin: 0 auto;
+      padding: 80px 32px 60px;
+    }
+    .header { margin-bottom: 64px; text-align: center; }
+    .logo-row { margin-bottom: 40px; }
+    .meta-label {
+      font-size: 8px; font-weight: 600; letter-spacing: 0.25em;
+      text-transform: uppercase; color: #999; margin-bottom: 20px;
+    }
+    .headline {
+      font-family: var(--brand-font-primary);
+      font-size: 36px; font-weight: 800;
+      color: #111; line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .subtitle {
+      font-size: 8px; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #AAA;
+    }
+    .header-rule {
+      width: 100%; height: 3px; border: none;
+      background: var(--brand-accent); margin: 28px 0 0;
+    }
+    .section { margin-bottom: 48px; }
+    .section-number {
+      font-family: var(--brand-font-primary);
+      font-size: 8px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #CCC; margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--brand-font-primary);
+      font-size: 36px; font-weight: 800;
+      color: #111; line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .section-rule {
+      border: none; height: 3px;
+      background: var(--brand-accent);
+      margin: 40px 0 0;
+    }
+    .section-content { color: #444; }
+    .section-content p { margin-bottom: 16px; }
+    .section-content h1, .section-content h2 {
+      font-family: var(--brand-font-primary);
+      font-size: 28px; font-weight: 700;
+      color: #111; margin: 28px 0 12px;
+      line-height: 1.15;
+    }
+    .section-content h3 {
+      font-family: var(--brand-font-primary);
+      font-size: 20px; font-weight: 600;
+      color: #222; margin: 22px 0 10px;
+    }
+    .section-content h4 {
+      font-size: 8px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #999; margin: 18px 0 8px;
+    }
+    .section-content strong { font-weight: 600; color: #111; }
+    .section-content em { font-style: italic; color: #555; }
+    .section-content ul, .section-content ol { padding-left: 20px; margin: 12px 0; }
+    .section-content li { margin-bottom: 8px; }
+    .section-content li::marker { color: var(--brand-accent); }
+    .section-content hr { border: none; height: 1px; background: #eee; margin: 24px 0; }
+    .section-content table {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0; font-size: 13px;
+    }
+    .section-content th {
+      text-align: left; padding: 10px 12px;
+      border-bottom: 2px solid var(--brand-accent);
+      font-weight: 600; font-size: 8px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: #999;
+    }
+    .section-content td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+    .footer {
+      margin-top: 64px; padding-top: 20px;
+      border-top: 3px solid var(--brand-accent);
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 8px; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #BBB;
+    }
+  `;
+
+  const body = `
+    <div class="page">
+      <div class="header">
+        <div class="logo-row">${brandLogoHtml(input, 'height:28px;')}</div>
+        <div class="meta-label">${contentType.replace(/-/g, ' ')}${prospect.industry ? ` / ${prospect.industry}` : ''}</div>
+        <h1 class="headline">${contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</h1>
+        <div class="subtitle">Prepared for ${prospect.companyName}${prospect.companySize ? ` &middot; ${prospect.companySize}` : ''}</div>
+        <hr class="header-rule"/>
+      </div>
+      ${sectionsHtml}
+      <div class="footer">
+        <div class="footer-text">${companyName} &nbsp;&bull;&nbsp; ${dateStr} &nbsp;&bull;&nbsp; Generated by ContentForg</div>
+      </div>
+    </div>
+  `;
+
+  return wrapDocument({
+    title: `${contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — ${prospect.companyName}`,
+    css,
+    body,
+    fonts: brandFonts(brand),
+  });
+}
+
+// ── Thumbnail ───────────────────────────────────────────────
+
+function thumbnail(accentColor: string): string {
+  return `<div style="width:100%;height:100%;background:#fff;border-radius:6px;overflow:hidden;font-family:sans-serif;display:flex;justify-content:center;">
+    <div style="width:60%;padding:12px 0;">
+      <div style="text-align:center;margin-bottom:8px;">
+        <div style="font-size:4px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#ccc;margin-bottom:4px;">REPORT</div>
+        <div style="font-size:14px;font-weight:800;color:#111;line-height:1;margin-bottom:4px;">Big Title</div>
+        <div style="font-size:4px;letter-spacing:0.15em;color:#aaa;text-transform:uppercase;">Prepared for client</div>
+        <div style="height:2px;background:${accentColor};margin-top:6px;"></div>
+      </div>
+      <div style="font-size:4px;color:#ccc;letter-spacing:0.15em;margin-bottom:3px;">01</div>
+      <div style="font-size:12px;font-weight:800;color:#111;margin-bottom:6px;">Section</div>
+      <div style="width:100%;height:3px;background:#eee;margin-bottom:3px;"></div>
+      <div style="width:85%;height:3px;background:#eee;margin-bottom:3px;"></div>
+      <div style="width:92%;height:3px;background:#eee;margin-bottom:6px;"></div>
+      <div style="height:2px;background:${accentColor};"></div>
+    </div>
+  </div>`;
+}
+
+// ── Export ───────────────────────────────────────────────────
+
+const style14DramaticContrast: DocumentStyle = {
+  id: 'style-14',
+  name: 'Dramatic Contrast',
+  category: 'bold',
+  description: 'Extreme type hierarchy — enormous headers, tiny labels, wide margins',
+  keywords: ['dramatic', 'contrast', 'luxury', 'fashion', 'editorial'],
+  render,
+  thumbnail,
+};
+
+export default style14DramaticContrast;

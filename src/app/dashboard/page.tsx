@@ -21,6 +21,8 @@ import {
 } from '@/lib/types';
 import { detectContentType } from '@/lib/brandDefaults';
 import { useKBCompletion } from '@/hooks/useKBCompletion';
+import { DemoCompanyCard } from '@/lib/demoData';
+import { INDUSTRY_PACKS } from '@/lib/industryPacks';
 import {
   HiOutlineSparkles,
   HiOutlineDocumentText,
@@ -98,6 +100,18 @@ export default function DashboardPage() {
   // ── Auto-detect state ──
   const [detectedType, setDetectedType] = useState<ContentType | null>(null);
 
+  // ── Demo mode state ──
+  const [demoMode, setDemoMode] = useState(false);
+  const [demoCompanyName, setDemoCompanyName] = useState('');
+  const [showDemoPanel, setShowDemoPanel] = useState(false);
+  const [demoCompanies, setDemoCompanies] = useState<DemoCompanyCard[]>([]);
+  const [loadingDemoId, setLoadingDemoId] = useState<string | null>(null);
+  const [clearingDemo, setClearingDemo] = useState(false);
+
+  // ── Post-onboarding welcome state ──
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomePrompts, setWelcomePrompts] = useState<{ label: string; prompt: string }[]>([]);
+
   // ── Category picker state ──
   const [openCategory, setOpenCategory] = useState<ContentCategory | null>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
@@ -126,6 +140,59 @@ export default function DashboardPage() {
       fetch('/api/leaderboard').then(r => r.ok ? r.json() : []).then(setLeaderboard).catch(() => {});
     }
   }, [status, loadDashboard]);
+
+  // ── Check demo mode on mount ──
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    fetch('/api/demo-data')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d) {
+          setDemoCompanies(d.companies || []);
+          setDemoMode(!!d.demoMode);
+          if (d.demoMode && d.demoCompanyId) {
+            const card = (d.companies || []).find((c: DemoCompanyCard) => c.id === d.demoCompanyId);
+            setDemoCompanyName(card?.name || d.demoCompanyId);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [status]);
+
+  // ── Post-onboarding welcome check ──
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    const onboardingComplete = localStorage.getItem('cf-onboarding-complete');
+    const welcomeDismissed = localStorage.getItem('cf-welcome-dismissed');
+    if (onboardingComplete && !welcomeDismissed) {
+      setShowWelcome(true);
+      // Fetch KB to find industry and load matching prompt templates
+      fetch('/api/knowledge-base')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((kb) => {
+          if (!kb) return;
+          const kbIndustry = (kb.industry || '').toLowerCase();
+          // Try to match an industry pack
+          const pack = INDUSTRY_PACKS.find(
+            (p) =>
+              p.id === kbIndustry ||
+              p.name.toLowerCase() === kbIndustry ||
+              (kb.icp?.industries || []).some((ind: string) =>
+                p.name.toLowerCase().includes(ind.toLowerCase()) ||
+                ind.toLowerCase().includes(p.name.toLowerCase())
+              )
+          );
+          if (pack) {
+            setWelcomePrompts(pack.promptTemplates.slice(0, 3));
+          } else {
+            // Fallback to "other" pack
+            const otherPack = INDUSTRY_PACKS.find((p) => p.id === 'other');
+            if (otherPack) setWelcomePrompts(otherPack.promptTemplates.slice(0, 3));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [status]);
 
   // ── Auto-detect content type from prompt text ──
   useEffect(() => {
@@ -335,6 +402,47 @@ export default function DashboardPage() {
     router.push(`/generate?${params.toString()}`);
   };
 
+  // ── Demo mode handlers ──
+  const handleLoadDemo = async (companyId: string) => {
+    setLoadingDemoId(companyId);
+    try {
+      const res = await fetch('/api/demo-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId }),
+      });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || 'Failed to load demo data');
+      }
+    } catch {
+      toast.error('Failed to load demo data');
+    }
+    setLoadingDemoId(null);
+  };
+
+  const handleClearDemo = async () => {
+    setClearingDemo(true);
+    try {
+      const res = await fetch('/api/demo-data', { method: 'DELETE' });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        toast.error('Failed to clear demo data');
+      }
+    } catch {
+      toast.error('Failed to clear demo data');
+    }
+    setClearingDemo(false);
+  };
+
+  const dismissWelcome = () => {
+    localStorage.setItem('cf-welcome-dismissed', 'true');
+    setShowWelcome(false);
+  };
+
   const useAsTemplate = (item: HistoryItem) => {
     const params = new URLSearchParams({
       contentType: item.contentType,
@@ -389,6 +497,23 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* ── Demo Mode Banner ── */}
+        {demoMode && (
+          <div className="mx-0 px-8 py-2.5 flex items-center justify-between" style={{ backgroundColor: '#FEF3C7', borderBottom: '1px solid #FDE68A' }}>
+            <span className="text-sm font-medium" style={{ color: '#92400E' }}>
+              ⚡ Demo Mode — Exploring as <strong>{demoCompanyName}</strong>
+            </span>
+            <button
+              onClick={handleClearDemo}
+              disabled={clearingDemo}
+              className="text-xs font-medium px-3 py-1 rounded-md transition-colors disabled:opacity-50"
+              style={{ color: '#92400E', border: '1px solid #D97706', backgroundColor: 'transparent' }}
+            >
+              {clearingDemo ? 'Clearing...' : 'Clear Demo Data'}
+            </button>
+          </div>
+        )}
+
         {kbCompletion.percentage < 50 && !bannerDismissed && (
           <div className="mx-8 mt-4 rounded-xl p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)' }}>
             <div>
@@ -411,6 +536,105 @@ export default function DashboardPage() {
         )}
 
         <div className="p-8 space-y-6 max-w-6xl">
+          {/* ── Post-Onboarding Welcome Banner ── */}
+          {showWelcome && (
+            <div className="card rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                      Your knowledge base is set up. Here&apos;s what you can generate today.
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                      Quick-start prompts based on your industry — click any card to start generating.
+                    </p>
+                  </div>
+                  <button onClick={dismissWelcome} className="p-1 rounded" style={{ color: 'var(--text-muted)' }}>
+                    <HiOutlineXMark className="text-lg" />
+                  </button>
+                </div>
+                {welcomePrompts.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {welcomePrompts.map((p, i) => (
+                      <button
+                        key={i}
+                        onClick={() => router.push(`/generate?context=${encodeURIComponent(p.prompt)}`)}
+                        className="text-left p-4 rounded-lg transition-all hover:shadow-md"
+                        style={{ backgroundColor: 'var(--content-bg)', border: '1px solid var(--card-border)' }}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <HiOutlineSparkles style={{ color: 'var(--accent)' }} className="text-sm shrink-0" />
+                          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{p.label}</span>
+                        </div>
+                        <p className="text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{p.prompt}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Try Demo Data Button + Panel ── */}
+          {!demoMode && (
+            <div>
+              {!showDemoPanel && (
+                <button
+                  onClick={() => setShowDemoPanel(true)}
+                  className="text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                  style={{ backgroundColor: 'var(--content-bg)', color: 'var(--accent)', border: '1px solid var(--accent-border)' }}
+                >
+                  <HiOutlineSparkles /> Try with Demo Data
+                </button>
+              )}
+              {showDemoPanel && (
+                <div className="card rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                  <div className="flex items-center justify-between px-6 pt-5 pb-3">
+                    <div>
+                      <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Choose a Demo Company</h2>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                        Load a fully configured knowledge base to explore ContentForge
+                      </p>
+                    </div>
+                    <button onClick={() => setShowDemoPanel(false)} className="p-1" style={{ color: 'var(--text-muted)' }}>
+                      <HiOutlineXMark />
+                    </button>
+                  </div>
+                  <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {demoCompanies.map((company) => (
+                      <button
+                        key={company.id}
+                        onClick={() => handleLoadDemo(company.id)}
+                        disabled={!!loadingDemoId}
+                        className="text-left p-4 rounded-lg transition-all hover:shadow-md disabled:opacity-60"
+                        style={{
+                          backgroundColor: 'var(--content-bg)',
+                          border: '1px solid var(--card-border)',
+                          borderLeft: `4px solid ${company.accentColor}`,
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{company.name}</span>
+                          {loadingDemoId === company.id && (
+                            <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--card-border)', borderTopColor: company.accentColor }} />
+                          )}
+                        </div>
+                        <span
+                          className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2"
+                          style={{ backgroundColor: `${company.accentColor}18`, color: company.accentColor }}
+                        >
+                          {company.industry}
+                        </span>
+                        <p className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>{company.tagline}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{company.employeeCount} employees</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ── Prompt Engine ── */}
           <div className="card rounded-xl" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
             <div className="p-6">

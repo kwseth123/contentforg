@@ -16,6 +16,7 @@ import {
   HiOutlineCube,
   HiOutlinePaintBrush,
 } from 'react-icons/hi2';
+import Logo from '@/components/Logo';
 
 // ── Nav Group Definitions ──
 const WORKSPACE_NAV = [
@@ -50,7 +51,7 @@ export default function Sidebar() {
   function NavGroup({ label, items }: { label: string; items: typeof WORKSPACE_NAV }) {
     return (
       <div className="mb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-wider px-4 mb-1.5" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider px-4 mb-1.5" style={{ color: '#888888' }}>
           {label}
         </p>
         <div className="space-y-0.5 px-2">
@@ -98,16 +99,8 @@ export default function Sidebar() {
           {logoBase64 ? (
             <img src={logoBase64} alt="Company logo" className="h-8 max-w-[140px] object-contain mb-1" />
           ) : (
-            <div className="flex items-center gap-2.5 mb-1">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
-                style={{ backgroundColor: 'var(--accent)', color: 'var(--text-inverse)' }}
-              >
-                CF
-              </div>
-              <span className="text-[15px] font-bold" style={{ color: 'var(--text-primary)' }}>
-                ContentForg
-              </span>
+            <div className="mb-1">
+              <Logo size={32} showText={true} />
             </div>
           )}
           <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>

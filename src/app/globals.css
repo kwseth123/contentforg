@@ -12,16 +12,16 @@
   --accent-light: #F5F4FF;
   --accent-border: #E0DFFF;
   --sidebar-bg: #FFFFFF;
-  --sidebar-border: #F0F0F0;
+  --sidebar-border: #DDDDDD;
   --content-bg: #FAFAFA;
   --card-bg: #FFFFFF;
-  --card-border: #EEEEEE;
+  --card-border: #DDDDDD;
   --text-primary: #111111;
-  --text-secondary: #888888;
-  --text-muted: #CCCCCC;
+  --text-secondary: #555555;
+  --text-muted: #999999;
   --nav-active-bg: #F5F4FF;
   --nav-active-text: #111111;
-  --nav-default-text: #AAAAAA;
+  --nav-default-text: #666666;
   --text-inverse: #FFFFFF;
 
   /* Legacy bridge */
@@ -147,10 +147,26 @@ input[type="range"]::-webkit-slider-thumb {
    Prose
    ═══════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════
+   Input Contrast Enhancements
+   ═══════════════════════════════════════════════ */
+
+input[type="text"], input[type="email"], input[type="url"], input[type="password"],
+input[type="number"], input[type="search"], textarea, select {
+  border-color: #CCCCCC;
+}
+input::placeholder, textarea::placeholder {
+  color: #777777;
+}
+
 .prose h1, .prose h2, .prose h3 { font-weight: 600; color: var(--text-primary); }
 .prose ul { list-style-type: disc; padding-left: 1.5em; }
 .prose ol { list-style-type: decimal; padding-left: 1.5em; }
 .prose strong { font-weight: 600; }
+.prose table { table-layout: fixed; width: 100%; word-wrap: break-word; overflow-wrap: break-word; }
+.prose td, .prose th { overflow-wrap: break-word; word-wrap: break-word; }
+.prose pre { overflow-x: auto; max-width: 100%; }
+.prose img { max-width: 100%; height: auto; }
 
 /* ═══════════════════════════════════════════════
    Scrollbar

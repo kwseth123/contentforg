@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getKnowledgeBase } from '@/lib/knowledgeBase';
 import { generatePDFHtml } from '@/lib/pdfTemplates';
+import { getStyle } from '@/lib/documentStyles/registry';
+import type { StyleInput, BrandVars } from '@/lib/documentStyles/types';
 import fs from 'fs';
 import path from 'path';
 
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { sections, contentType, prospect, prospectLogoBase64, prospectColor, styleOverride, persona, visualSections } = await req.json();
+  const { sections, contentType, prospect, prospectLogoBase64, prospectColor, styleOverride, styleId, persona, visualSections } = await req.json();
   const kb = getKnowledgeBase();
 
   // Apply document style override if provided
@@ -88,25 +90,72 @@ export async function POST(req: NextRequest) {
 
   // Convert company logos to base64 for reliable print rendering
   const { resolveBrandGuidelines } = await import('@/lib/brandDefaults');
-  const brand = resolveBrandGuidelines(kb);
+  const brandGuidelines = resolveBrandGuidelines(kb);
 
   let primaryLogoBase64 = '';
   let secondaryLogoBase64 = '';
 
-  console.log('[PDF Logo Debug] brand.logos.primaryPath:', brand.logos.primaryPath || '(empty)');
-  console.log('[PDF Logo Debug] brand.logos.secondaryPath:', brand.logos.secondaryPath || '(empty)');
-  console.log('[PDF Logo Debug] kb.logoPath:', kb.logoPath || '(empty)');
-
-  if (brand.logos.primaryPath) {
-    primaryLogoBase64 = await convertLogoToBase64(brand.logos.primaryPath);
+  if (brandGuidelines.logos.primaryPath) {
+    primaryLogoBase64 = await convertLogoToBase64(brandGuidelines.logos.primaryPath);
   }
-  if (brand.logos.secondaryPath) {
-    secondaryLogoBase64 = await convertLogoToBase64(brand.logos.secondaryPath);
+  if (brandGuidelines.logos.secondaryPath) {
+    secondaryLogoBase64 = await convertLogoToBase64(brandGuidelines.logos.secondaryPath);
   }
 
-  console.log('[PDF Logo Debug] primaryLogoBase64 result:', primaryLogoBase64 ? `OK (${primaryLogoBase64.length} chars)` : 'EMPTY');
-  console.log('[PDF Logo Debug] secondaryLogoBase64 result:', secondaryLogoBase64 ? `OK (${secondaryLogoBase64.length} chars)` : 'EMPTY');
+  // ── Route through Document Style renderer when styleId is provided ──
+  if (styleId) {
+    const docStyle = getStyle(styleId);
+    if (docStyle) {
+      // Build BrandVars from KB brand guidelines
+      const ptToPx = (pt: number) => Math.round(pt * 1.333);
+      const brandVars: BrandVars = {
+        primary: brandGuidelines.colors?.primary || kb.brandColor || '#1e293b',
+        secondary: brandGuidelines.colors?.secondary || kb.brandColor || '#4a4ae0',
+        accent: brandGuidelines.colors?.accent || kb.brandColor || '#f59e0b',
+        background: brandGuidelines.colors?.background || '#ffffff',
+        text: brandGuidelines.colors?.text || '#334155',
+        fontPrimary: brandGuidelines.fonts?.primary || 'Inter',
+        fontSecondary: brandGuidelines.fonts?.secondary || 'Inter',
+        h1Size: ptToPx(brandGuidelines.fonts?.sizes?.h1 || 28),
+        h2Size: ptToPx(brandGuidelines.fonts?.sizes?.h2 || 18),
+        h3Size: ptToPx(brandGuidelines.fonts?.sizes?.h3 || 14),
+        bodySize: ptToPx(brandGuidelines.fonts?.sizes?.body || 11),
+        documentStyle: (brandGuidelines.documentStyle as BrandVars['documentStyle']) || 'modern',
+        logoPlacement: (brandGuidelines.logos?.placement as BrandVars['logoPlacement']) || 'top-left',
+      };
 
+      const styleInput: StyleInput = {
+        sections: sections.map((s: { id?: string; title: string; content: string }, i: number) => ({
+          id: s.id || `section-${i}`,
+          title: s.title,
+          content: s.content,
+        })),
+        contentType,
+        prospect: {
+          companyName: prospect.companyName || 'Prospect',
+          industry: prospect.industry,
+          companySize: prospect.companySize,
+        },
+        companyName: kb.companyName || 'Company',
+        companyDescription: kb.tagline || kb.aboutUs || '',
+        logoBase64: primaryLogoBase64 || undefined,
+        prospectLogoBase64: prospectLogoBase64 || undefined,
+        accentColor: kb.brandColor || brandGuidelines.colors?.primary || '#6366F1',
+        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        brand: brandVars,
+      };
+
+      const html = docStyle.render(styleInput);
+      return new Response(html, {
+        headers: {
+          'Content-Type': 'text/html',
+          'Content-Disposition': `inline; filename="${contentType}-${prospect.companyName}.html"`,
+        },
+      });
+    }
+  }
+
+  // ── Fallback: legacy pdfTemplates renderer ──
   const html = generatePDFHtml(sections, contentType, prospect, kb, baseUrl, {
     logoBase64: primaryLogoBase64,
     secondaryLogoBase64,

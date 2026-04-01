@@ -1,0 +1,199 @@
+import type { DocumentStyle, StyleInput } from './types';
+import { resolveBrand, brandCSSVars, brandFonts, brandLogoHtml, formatMarkdown, wrapDocument } from './shared';
+
+// ── Render ──────────────────────────────────────────────────
+
+function render(input: StyleInput): string {
+  const brand = resolveBrand(input);
+  const dateStr = input.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const title = input.contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  const sectionsHtml = input.sections.map((s, i) => {
+    const num = `${i + 1}.0`;
+    return `<div class="section">
+      <h2 class="section-heading"><span class="section-num">${num}</span>${s.title}</h2>
+      <div class="section-body">${formatMarkdown(s.content)}</div>
+    </div>`;
+  }).join('\n');
+
+  const css = `
+    ${brandCSSVars(brand)}
+    body {
+      font-family: var(--brand-font-secondary);
+      font-size: var(--brand-font-body-size);
+      color: var(--brand-text);
+      background: var(--brand-background);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 64px;
+    }
+    /* ── Header ── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid var(--brand-primary);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-right {
+      text-align: right;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.8;
+    }
+    .header-right strong { color: var(--brand-text); }
+    .doc-title {
+      font-family: var(--brand-font-primary), Georgia, 'Times New Roman', serif;
+      font-size: var(--brand-font-h1-size);
+      font-weight: 700;
+      color: var(--brand-primary);
+      margin: 32px 0 8px;
+      line-height: 1.2;
+    }
+    .doc-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 40px;
+    }
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 40px;
+      page-break-inside: avoid;
+    }
+    .section-heading {
+      font-family: var(--brand-font-primary), Georgia, 'Times New Roman', serif;
+      font-size: var(--brand-font-h2-size);
+      font-weight: 700;
+      color: var(--brand-primary);
+      border-bottom: 1px solid #d0d0d0;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .section-num {
+      display: inline-block;
+      margin-right: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      font-family: var(--brand-font-secondary);
+    }
+    .section-body p { margin-bottom: 14px; }
+    .section-body h1, .section-body h2, .section-body h3, .section-body h4 {
+      font-family: var(--brand-font-primary), Georgia, 'Times New Roman', serif;
+      color: var(--brand-primary);
+      margin: 24px 0 10px;
+    }
+    .section-body h2 { font-size: var(--brand-font-h2-size); }
+    .section-body h3 { font-size: var(--brand-font-h3-size); }
+    .section-body h4 { font-size: 14px; font-weight: 600; }
+    .section-body strong { font-weight: 600; }
+    .section-body ul, .section-body ol { padding-left: 24px; margin: 12px 0; }
+    .section-body li { margin-bottom: 6px; }
+    .section-body hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+    /* ── Tables ── */
+    .section-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .section-body th {
+      background: var(--brand-primary);
+      color: #fff;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+    .section-body td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .section-body tr:nth-child(even) td {
+      background: #f7f7f8;
+    }
+    /* ── Footer ── */
+    .footer {
+      margin-top: 60px;
+      padding-top: 16px;
+      border-top: 2px solid var(--brand-primary);
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #999;
+    }
+  `;
+
+  const body = `
+    <div class="page">
+      <div class="header">
+        <div class="header-left">${brandLogoHtml(input, 'height:36px;')}</div>
+        <div class="header-right">
+          <strong>Prepared for:</strong> ${input.prospect.companyName}<br/>
+          ${input.prospect.industry ? `<strong>Industry:</strong> ${input.prospect.industry}<br/>` : ''}
+          <strong>Date:</strong> ${dateStr}
+        </div>
+      </div>
+      <h1 class="doc-title">${title}</h1>
+      <div class="doc-subtitle">Prepared for ${input.prospect.companyName}${input.prospect.companySize ? ` | ${input.prospect.companySize}` : ''}</div>
+      ${sectionsHtml}
+      <div class="footer">
+        <span>${input.companyName} | ${dateStr} | Generated by ContentForg</span>
+        <span>Page 1</span>
+      </div>
+    </div>
+  `;
+
+  return wrapDocument({ title: `${title} — ${input.prospect.companyName}`, css, body, fonts: brandFonts(brand) });
+}
+
+// ── Thumbnail ───────────────────────────────────────────────
+
+function thumbnail(accentColor: string): string {
+  return `<div style="width:100%;height:100%;background:#fff;font-family:Georgia,serif;padding:24px 20px;box-sizing:border-box;position:relative;">
+    <div style="display:flex;justify-content:space-between;border-bottom:3px solid ${accentColor};padding-bottom:10px;margin-bottom:16px;">
+      <div style="width:50px;height:10px;background:${accentColor};border-radius:2px;"></div>
+      <div style="text-align:right;">
+        <div style="width:40px;height:4px;background:#ccc;border-radius:1px;margin-bottom:3px;margin-left:auto;"></div>
+        <div style="width:30px;height:4px;background:#ccc;border-radius:1px;margin-left:auto;"></div>
+      </div>
+    </div>
+    <div style="font-size:14px;font-weight:700;color:${accentColor};margin-bottom:4px;">Document Title</div>
+    <div style="width:60%;height:4px;background:#ddd;border-radius:1px;margin-bottom:20px;"></div>
+    <div style="font-size:8px;color:#888;margin-bottom:6px;">1.0 &nbsp; Section Title</div>
+    <div style="border-bottom:1px solid #ddd;margin-bottom:8px;"></div>
+    <div style="width:100%;height:4px;background:#eee;border-radius:1px;margin-bottom:4px;"></div>
+    <div style="width:90%;height:4px;background:#eee;border-radius:1px;margin-bottom:4px;"></div>
+    <div style="width:95%;height:4px;background:#eee;border-radius:1px;margin-bottom:14px;"></div>
+    <div style="font-size:8px;color:#888;margin-bottom:6px;">2.0 &nbsp; Section Title</div>
+    <div style="border-bottom:1px solid #ddd;margin-bottom:8px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:4px;">
+      <div style="height:6px;background:${accentColor};opacity:0.15;"></div>
+      <div style="height:6px;background:${accentColor};opacity:0.15;"></div>
+      <div style="height:6px;background:#f5f5f5;"></div>
+      <div style="height:6px;background:#f5f5f5;"></div>
+    </div>
+    <div style="position:absolute;bottom:8px;left:0;right:0;border-top:2px solid ${accentColor};margin:0 20px;padding-top:4px;font-size:6px;color:#aaa;">Company | Date | ContentForg</div>
+  </div>`;
+}
+
+// ── Export ───────────────────────────────────────────────────
+
+const style17ClassicBusiness: DocumentStyle = {
+  id: 'style-17',
+  name: 'Classic Business',
+  category: 'corporate',
+  description: 'Conservative and professional — serif headers, navy accent, Big 4 feel',
+  keywords: ['classic', 'business', 'formal', 'serif', 'traditional', 'consulting'],
+  render,
+  thumbnail,
+};
+
+export default style17ClassicBusiness;

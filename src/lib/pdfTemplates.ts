@@ -1,6 +1,7 @@
 import { ContentType, KnowledgeBase, ProspectInfo, GeneratedSection, BrandGuidelines, BrandColors, CONTENT_TYPE_LABELS, VisualSection } from './types';
 import { resolveBrandGuidelines, buildGoogleFontsUrl, getLogoForBackground, ptToPx } from './brandDefaults';
 import { visualComponentsCSS, renderVisualSectionHtml } from './visualComponents';
+import { LOGO_SVG_MINIMAL, BRAND_NAME } from './brand';
 
 // ════════════════════════════════════════════════════════
 // PDF LOGO OPTIONS — base64 overrides for print rendering
@@ -90,23 +91,108 @@ function extractStats(sections: GeneratedSection[]): StatCard[] {
 // ════════════════════════════════════════════════════════
 
 function formatContent(text: string): string {
+  // Escape HTML entities first
   let html = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  // Bold
+  // ── Headings: ### → h3, ## → h2, # → h1 (must process longest prefix first) ──
+  html = html.replace(/^####\s+(.+)$/gm, '<h4 class="pdf-h4">$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3 class="pdf-h3">$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2 class="pdf-h2">$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h1 class="pdf-h1">$1</h1>');
+
+  // ── Horizontal rules: --- or *** or ___ ──
+  html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr class="pdf-hr"/>');
+
+  // ── Bold + Italic: ***text*** ──
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  // ── Bold: **text** ──
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Bullet points
-  html = html.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-  html = html.replace(/((?:<li>.*<\/li>\n?)+)/gm, (match) => `<ul>${match}</ul>`);
-  // Numbered lists
-  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-  // Line breaks
-  html = html.replace(/\n\n/g, '</p><p>');
+  // ── Italic: *text* (but not inside already-converted tags) ──
+  html = html.replace(/(?<!\w)\*(?!\*)(.+?)(?<!\*)\*(?!\w)/g, '<em>$1</em>');
+
+  // ── Unordered bullet points: lines starting with - or * or • ──
+  html = html.replace(/^[•]\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^[-]\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^\*\s+(.+)$/gm, '<li>$1</li>');
+  // Wrap consecutive <li> blocks in <ul>
+  html = html.replace(/((?:<li>.*?<\/li>\s*)+)/gm, '<ul class="pdf-ul">$1</ul>');
+
+  // ── Numbered lists: 1. text ──
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li class="pdf-ol-item">$1</li>');
+  html = html.replace(/((?:<li class="pdf-ol-item">.*?<\/li>\s*)+)/gm, '<ol class="pdf-ol">$1</ol>');
+
+  // ── Markdown tables: | col1 | col2 | ──
+  html = html.replace(/((?:^\|.+\|[ \t]*$\n?)+)/gm, (tableBlock) => {
+    const rows = tableBlock.trim().split('\n').filter(r => r.trim());
+    if (rows.length < 2) return tableBlock; // need at least header + separator
+
+    // Check if second row is a separator (|---|---|)
+    const isSeparator = (row: string) => /^\|[\s\-:| ]+\|$/.test(row.trim());
+    const hasSeparator = rows.length >= 2 && isSeparator(rows[1]);
+
+    const parseRow = (row: string): string[] => {
+      return row.trim()
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map(cell => cell.trim());
+    };
+
+    let tableHtml = '<table class="pdf-table">';
+
+    if (hasSeparator) {
+      // First row is header
+      const headerCells = parseRow(rows[0]);
+      tableHtml += '<thead><tr>' + headerCells.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+      // Remaining rows (skip separator)
+      const bodyRows = rows.slice(2);
+      if (bodyRows.length > 0) {
+        tableHtml += '<tbody>';
+        for (const row of bodyRows) {
+          const cells = parseRow(row);
+          tableHtml += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+        }
+        tableHtml += '</tbody>';
+      }
+    } else {
+      // No separator — all body rows
+      tableHtml += '<tbody>';
+      for (const row of rows) {
+        const cells = parseRow(row);
+        tableHtml += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+      }
+      tableHtml += '</tbody>';
+    }
+
+    tableHtml += '</table>';
+    return tableHtml;
+  });
+
+  // ── Paragraphs: double newlines become paragraph breaks ──
+  html = html.replace(/\n\n+/g, '</p><p>');
+  // ── Single newlines become line breaks ──
   html = html.replace(/\n/g, '<br/>');
 
-  return `<p>${html}</p>`;
+  // Wrap in paragraph, but avoid wrapping block-level elements
+  html = `<p>${html}</p>`;
+
+  // Clean up empty paragraphs and paragraphs wrapping block elements
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  html = html.replace(/<p>\s*(<h[1-4])/g, '$1');
+  html = html.replace(/(<\/h[1-4]>)\s*<\/p>/g, '$1');
+  html = html.replace(/<p>\s*(<hr[^>]*\/?>)/g, '$1');
+  html = html.replace(/(<hr[^>]*\/?>)\s*<\/p>/g, '$1');
+  html = html.replace(/<p>\s*(<ul)/g, '$1');
+  html = html.replace(/(<\/ul>)\s*<\/p>/g, '$1');
+  html = html.replace(/<p>\s*(<ol)/g, '$1');
+  html = html.replace(/(<\/ol>)\s*<\/p>/g, '$1');
+  html = html.replace(/<p>\s*(<table)/g, '$1');
+  html = html.replace(/(<\/table>)\s*<\/p>/g, '$1');
+
+  return html;
 }
 
 // ════════════════════════════════════════════════════════
@@ -210,6 +296,104 @@ function generateCSS(brand: BrandGuidelines): string {
       font-weight: 700;
     }
     .section-body strong { color: ${darkenColor(c.text, 0.3)}; }
+
+    /* ── Inline markdown heading/list/hr styles ── */
+    .pdf-h1 {
+      font-family: '${f.primary}', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: ${h1Px}px;
+      font-weight: 700;
+      color: ${c.primary};
+      margin: 20px 0 10px;
+      line-height: 1.3;
+    }
+    .pdf-h2 {
+      font-family: '${f.primary}', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: ${h2Px}px;
+      font-weight: 700;
+      color: ${c.text};
+      margin: 18px 0 8px;
+      line-height: 1.3;
+    }
+    .pdf-h3 {
+      font-family: '${f.primary}', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: ${h3Px}px;
+      font-weight: 600;
+      color: ${c.text};
+      margin: 14px 0 6px;
+      line-height: 1.3;
+    }
+    .pdf-h4 {
+      font-family: '${f.primary}', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: ${Math.round(bodyPx * 1.1)}px;
+      font-weight: 600;
+      color: ${c.text};
+      margin: 12px 0 4px;
+      line-height: 1.4;
+    }
+    .pdf-hr {
+      border: none;
+      border-top: 1px solid ${c.primary}30;
+      margin: 16px 0;
+    }
+    .pdf-ul {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0;
+    }
+    .pdf-ul li {
+      padding: 4px 0 4px 20px;
+      position: relative;
+    }
+    .pdf-ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: ${c.accent};
+      font-weight: 700;
+    }
+    .pdf-ol {
+      list-style: decimal;
+      padding-left: 24px;
+      margin: 8px 0;
+    }
+    .pdf-ol li {
+      padding: 3px 0;
+    }
+    .section-body em { font-style: italic; }
+
+    /* ── Markdown table styles ── */
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: ${bodyPx}px;
+      table-layout: fixed;
+    }
+    .pdf-table th {
+      background: ${c.primary};
+      color: #ffffff;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: ${Math.round(bodyPx * 0.95)}px;
+      letter-spacing: 0.02em;
+    }
+    .pdf-table th:first-child { border-radius: 6px 0 0 0; }
+    .pdf-table th:last-child { border-radius: 0 6px 0 0; }
+    .pdf-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid ${c.primary}18;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .pdf-table tbody tr:nth-child(even) {
+      background: ${c.primary}08;
+    }
+    .pdf-table tbody tr:hover {
+      background: ${c.primary}12;
+    }
+    .pdf-table tbody tr:last-child td:first-child { border-radius: 0 0 0 6px; }
+    .pdf-table tbody tr:last-child td:last-child { border-radius: 0 0 6px 0; }
 
     .check { color: #16a34a; font-weight: 700; }
     .cross { color: #dc2626; font-weight: 700; }
@@ -1874,7 +2058,7 @@ function heroHeader(
   // Build the company logo HTML (left side)
   const companyLogoHtml = logoSrc
     ? `<div class="doc-header-logo"><img src="${logoSrc}" alt="${kb.companyName}" style="max-height:32px;max-width:160px;object-fit:contain"/></div>`
-    : `<div class="doc-header-logo-text"><div class="doc-header-logo-icon"></div>${kb.companyName || 'ContentForg'}</div>`;
+    : `<div class="doc-header-logo-text"><img src="data:image/svg+xml;base64,${Buffer.from(LOGO_SVG_MINIMAL).toString('base64')}" alt="${BRAND_NAME}" style="width:32px;height:32px"/>${kb.companyName || BRAND_NAME}</div>`;
 
   // Build the prospect logo / name HTML (right side)
   const prospectHtml = prospectLogo
@@ -1897,7 +2081,7 @@ function heroHeader(
       </div>
       ${typeLabel ? `<div class="doc-header-type">${typeLabel}</div>` : ''}
       <div class="doc-header-title">${title}</div>
-      <div class="doc-header-subtitle">Prepared for ${prospect.companyName} by ${kb.companyName || 'ContentForg'}</div>
+      <div class="doc-header-subtitle">Prepared for ${prospect.companyName} by ${kb.companyName || BRAND_NAME}</div>
       ${dualColorBar}
     </div>`;
 }

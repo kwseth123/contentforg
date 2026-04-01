@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { HiOutlineSparkles } from 'react-icons/hi2';
+import Logo from '@/components/Logo';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -37,11 +37,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#111111' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <HiOutlineSparkles className="text-3xl" style={{ color: 'var(--accent)' }} />
-            <h1 className="text-3xl font-bold text-white tracking-tight">ContentForg</h1>
+          <div className="flex justify-center mb-4">
+            <Logo size={48} variant="dark" showText={true} />
           </div>
-          <p className="text-gray-400">B2B Sales Content Engine</p>
+          <p className="text-gray-400 text-center">B2B Sales Content Engine</p>
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-2xl p-8 shadow-2xl border border-white/5" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>

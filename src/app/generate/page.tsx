@@ -26,7 +26,6 @@ import {
   ProspectBranding,
   PersonaType,
   PERSONA_CONFIGS,
-  ProspectIntel,
   VisualSection,
 } from '@/lib/types';
 import { detectContentType, DOCUMENT_STYLE_OPTIONS, STYLE_WRITING_INSTRUCTIONS } from '@/lib/brandDefaults';
@@ -56,6 +55,8 @@ import VoiceButton from '@/components/VoiceButton';
 import { calculateReadingTime } from '@/lib/readingTime';
 import { useProspectMemory } from '@/hooks/useProspectMemory';
 import { generateShareableHtml } from '@/lib/shareableHtml';
+import StylePickerModal from '@/components/StylePickerModal';
+import { DOCUMENT_STYLES, getDefaultStyleForContentType, getStyle } from '@/lib/documentStyles/registry';
 
 // ── Competitor Research Types ──
 interface CompetitorResearchData {
@@ -271,6 +272,11 @@ function GeneratePage() {
   const [selectedStyle, setSelectedStyle] = useState<DocumentStyle | null>(null);
   const [brandDefaultStyle, setBrandDefaultStyle] = useState<DocumentStyle>('modern');
 
+  // Style picker modal
+  const [showStylePicker, setShowStylePicker] = useState(false);
+  const [selectedStyleId, setSelectedStyleId] = useState<string>('');
+  const selectedStyleIdRef = useRef<string>('');
+
   // ── Voice Dictation State ──
   const [voiceDictated, setVoiceDictated] = useState(false);
 
@@ -281,13 +287,6 @@ function GeneratePage() {
   const [activePersonaTab, setActivePersonaTab] = useState<PersonaType | null>(null);
   const [generatingAllPersonas, setGeneratingAllPersonas] = useState(false);
   const [personaProgress, setPersonaProgress] = useState('');
-
-  // ── Prospect Intelligence State ──
-  const [prospectIntel, setProspectIntel] = useState<ProspectIntel | null>(null);
-  const [prospectIntelLoading, setProspectIntelLoading] = useState(false);
-  const [prospectIntelExpanded, setProspectIntelExpanded] = useState(true);
-  const prospectIntelDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastIntelCompanyRef = useRef<string>('');
 
   // ── Competitor Research State ──
   const [competitorResearch, setCompetitorResearch] = useState<CompetitorResearchData | null>(null);
@@ -485,58 +484,6 @@ function GeneratePage() {
       setDetectedType(null);
     }
   }, [additionalContext, contentType]);
-
-  // ── Prospect Intelligence: fetch function ──
-  const fetchProspectIntel = useCallback(async (companyName: string, url?: string) => {
-    const cacheKey = `prospect-intel-${companyName.toLowerCase().trim()}`;
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed: ProspectIntel = JSON.parse(cached);
-        const ageMinutes = (Date.now() - new Date(parsed.fetchedAt).getTime()) / 60000;
-        if (ageMinutes < 30) {
-          setProspectIntel(parsed);
-          return;
-        }
-      }
-    } catch { /* skip cache errors */ }
-
-    setProspectIntelLoading(true);
-    try {
-      const res = await fetch('/api/prospect-intel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyName, url }),
-      });
-      if (res.ok) {
-        const data: ProspectIntel = await res.json();
-        setProspectIntel(data);
-        try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch { /* skip */ }
-      }
-    } catch { /* skip */ }
-    setProspectIntelLoading(false);
-  }, []);
-
-  // ── Prospect Intelligence: debounced auto-trigger ──
-  useEffect(() => {
-    const name = prospect.companyName.trim();
-    if (name.length < 3) {
-      setProspectIntel(null);
-      lastIntelCompanyRef.current = '';
-      return;
-    }
-    if (name === lastIntelCompanyRef.current) return;
-
-    if (prospectIntelDebounceRef.current) clearTimeout(prospectIntelDebounceRef.current);
-    prospectIntelDebounceRef.current = setTimeout(() => {
-      lastIntelCompanyRef.current = name;
-      fetchProspectIntel(name, prospect.website || undefined);
-    }, 2000);
-
-    return () => {
-      if (prospectIntelDebounceRef.current) clearTimeout(prospectIntelDebounceRef.current);
-    };
-  }, [prospect.companyName, prospect.website, fetchProspectIntel]);
 
   // Industry mismatch check
   const industryMismatchWarning = (() => {
@@ -861,20 +808,6 @@ and exact talk tracks for when prospects bring them up.`;
       finalAdditionalContext = personaBlock + '\n\n---\n\n' + finalAdditionalContext;
     }
 
-    // Inject prospect intelligence when available
-    if (prospectIntel) {
-      const intelBlock = `## PROSPECT INTELLIGENCE (live data)
-Company: ${prospectIntel.companySnapshot.description}
-Industry: ${prospectIntel.companySnapshot.industry}, Size: ${prospectIntel.companySnapshot.estimatedSize}
-Tech Stack: ${prospectIntel.techStack.join(', ')}
-Hiring Signals: ${prospectIntel.hiringSignals.summary}
-Suggested Angle: ${prospectIntel.suggestedAngle}
-Pain Points: ${prospectIntel.painPointHypotheses.join(', ')}
-
-Use this real prospect data to make the content highly specific and relevant.`;
-      finalAdditionalContext = intelBlock + '\n\n---\n\n' + finalAdditionalContext;
-    }
-
     // Inject style-specific writing instructions
     const effectiveStyle = selectedStyle || brandDefaultStyle;
     const styleInstruction = STYLE_WRITING_INSTRUCTIONS[effectiveStyle];
@@ -976,7 +909,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType, prospect, additionalContext: finalAdditionalContext, toneLevel, sessionDocuments, visualMode: true, variationSeed: seed }),
+        body: JSON.stringify({ contentType, prospect, additionalContext: finalAdditionalContext, toneLevel, sessionDocuments, visualMode: true, variationSeed: seed, styleId: selectedStyleIdRef.current || getDefaultStyleForContentType(contentType) }),
       });
 
       if (!res.ok) {
@@ -1085,7 +1018,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType, prospect, additionalContext: finalAdditionalContext, toneLevel, sessionDocuments, visualMode: true }),
+        body: JSON.stringify({ contentType, prospect, additionalContext: finalAdditionalContext, toneLevel, sessionDocuments, visualMode: true, styleId: selectedStyleIdRef.current || getDefaultStyleForContentType(contentType) }),
       });
 
       if (!res.ok) {
@@ -1230,6 +1163,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
         prospectLogoBase64: prospectBranding?.logoBase64 || '',
         prospectColor: prospectBranding?.primaryColor || '',
         styleOverride: selectedStyle || undefined,
+        styleId: selectedStyleIdRef.current || undefined,
         visualSections: visualSections || undefined,
       }),
     });
@@ -1285,6 +1219,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
           prospectLogoBase64: prospectBranding?.logoBase64 || '',
           prospectColor: prospectBranding?.primaryColor || '',
           styleOverride: selectedStyle || undefined,
+          styleId: selectedStyleIdRef.current || undefined,
           visualSections: visualSections || undefined,
         }),
       });
@@ -1717,6 +1652,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
           prospectLogoBase64: prospectBranding?.logoBase64 || '',
           prospectColor: prospectBranding?.primaryColor || '',
           styleOverride: selectedStyle || undefined,
+          styleId: selectedStyleIdRef.current || undefined,
           persona: personaId,
         }),
       });
@@ -1755,9 +1691,9 @@ Use this real prospect data to make the content highly specific and relevant.`;
   const categoryKeys = Object.keys(CONTENT_CATEGORIES) as ContentCategory[];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" style={{ overflow: 'hidden', maxWidth: '100vw' }}>
       <Sidebar />
-      <main className="flex-1 flex flex-col" style={{ backgroundColor: 'var(--content-bg)' }}>
+      <main className="flex-1 flex flex-col" style={{ backgroundColor: 'var(--content-bg)', overflow: 'hidden', minWidth: 0 }}>
         {/* ── Sticky Generate Bar ── */}
         <div
           className={`sticky top-0 z-30 h-14 border-b transition-shadow ${stickyScrolled ? 'shadow-md' : ''}`}
@@ -1774,6 +1710,16 @@ Use this real prospect data to make the content highly specific and relevant.`;
               <span className="text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--accent)' }}>
                 {CONTENT_TYPE_LABELS[contentType]}
               </span>
+              {selectedStyleId && getStyle(selectedStyleId) && (
+                <button
+                  onClick={() => setShowStylePicker(true)}
+                  className="text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}
+                  title="Click to change document style"
+                >
+                  Style: {getStyle(selectedStyleId)?.name}
+                </button>
+              )}
               {selectedPersonas.length > 0 && (
                 <div className="flex items-center gap-0.5">
                   {selectedPersonas.map(pId => {
@@ -1796,7 +1742,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
                   {generatingAllPersonas ? (<><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>) : ('All Versions')}
                 </button>
               )}
-              <button onClick={generate} disabled={generating || generatingAllPersonas}
+              <button onClick={() => setShowStylePicker(true)} disabled={generating || generatingAllPersonas}
                 className="btn-accent disabled:opacity-50 font-semibold py-2 px-6 rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm">
                 {generating ? (
                   <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
@@ -1814,9 +1760,9 @@ Use this real prospect data to make the content highly specific and relevant.`;
         </div>
 
         {/* ── Split Panel Layout ── */}
-        <div className="flex flex-col lg:flex-row" style={{ height: 'calc(100vh - 56px)' }}>
+        <div className="flex flex-col lg:flex-row" style={{ height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
           {/* Left Panel: Form Inputs */}
-          <div className="w-full lg:w-[45%] lg:border-r border-gray-200 bg-white overflow-y-auto flex-shrink-0"
+          <div className="lg:w-[420px] lg:min-w-[420px] lg:max-w-[420px] lg:border-r border-gray-200 bg-white overflow-y-auto overflow-x-hidden flex-shrink-0"
             onScroll={(e) => {
               const el = e.currentTarget;
               setStickyScrolled(el.scrollTop > 0);
@@ -1879,6 +1825,28 @@ Use this real prospect data to make the content highly specific and relevant.`;
                     {CONTENT_TYPE_LABELS[ct]}
                   </button>
                 ))}
+              </div>
+
+              {/* Toggles: Unique Style + Include Images — inline with content type */}
+              <div className="flex items-center gap-4 mt-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <div className="relative">
+                    <input type="checkbox" checked={variationOn} onChange={(e) => setVariationOn(e.target.checked)} className="sr-only" />
+                    <div className={`w-8 h-[18px] rounded-full transition-colors ${variationOn ? '' : 'bg-gray-300'}`} style={variationOn ? { backgroundColor: 'var(--accent)' } : {}}>
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full shadow transform transition-transform mt-[2px] ${variationOn ? 'ml-[16px]' : 'ml-[2px]'}`} />
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>Unique Style</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <div className="relative">
+                    <input type="checkbox" checked={imagesOn} onChange={(e) => setImagesOn(e.target.checked)} className="sr-only" />
+                    <div className={`w-8 h-[18px] rounded-full transition-colors ${imagesOn ? '' : 'bg-gray-300'}`} style={imagesOn ? { backgroundColor: 'var(--accent)' } : {}}>
+                      <div className={`w-3.5 h-3.5 bg-white rounded-full shadow transform transition-transform mt-[2px] ${imagesOn ? 'ml-[16px]' : 'ml-[2px]'}`} />
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>Include Images</span>
+                </label>
               </div>
             </div>
 
@@ -2238,35 +2206,6 @@ Use this real prospect data to make the content highly specific and relevant.`;
               </div>
             </div>
 
-            {/* Variation Toggle */}
-            <div className="flex items-center gap-3 py-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={variationOn}
-                    onChange={(e) => setVariationOn(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div className={`w-9 h-5 rounded-full transition-colors ${variationOn ? '' : 'bg-gray-300'}`} style={variationOn ? { backgroundColor: 'var(--accent)' } : {}}>
-                    <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform mt-0.5 ${variationOn ? 'translate-x-4.5 ml-[18px]' : 'ml-0.5'}`} />
-                  </div>
-                </div>
-                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Unique Style</span>
-              </label>
-              {variationOn && (
-                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Each generation will have a unique voice and structure</span>
-              )}
-              <label className="flex items-center gap-2 cursor-pointer">
-                <div className="relative">
-                  <input type="checkbox" checked={imagesOn} onChange={(e) => setImagesOn(e.target.checked)} className="sr-only" />
-                  <div className={`w-9 h-5 rounded-full transition-colors ${imagesOn ? '' : 'bg-gray-300'}`} style={imagesOn ? { backgroundColor: 'var(--accent)' } : {}}>
-                    <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform mt-0.5 ${imagesOn ? 'ml-[18px]' : 'ml-0.5'}`} />
-                  </div>
-                </div>
-                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Include Images</span>
-              </label>
-            </div>
 
             {/* Persona Selector */}
             {prospect.companyName.trim() && (
@@ -2313,7 +2252,7 @@ Use this real prospect data to make the content highly specific and relevant.`;
           </div>
 
           {/* Right Panel: Output */}
-          <div ref={rightPanelRef} className="flex-1 overflow-y-auto bg-slate-50 lg:bg-slate-50" style={{ padding: '24px' }}>
+          <div ref={rightPanelRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 lg:bg-slate-50" style={{ padding: '24px', minWidth: 0, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             <div ref={resultRef} />
             {/* Inline Product Picker (ambiguous detection) */}
           {showProductPicker && (
@@ -2349,52 +2288,6 @@ Use this real prospect data to make the content highly specific and relevant.`;
                     Cancel
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Prospect Intelligence Panel */}
-          {(prospectIntel || prospectIntelLoading) && (
-            <div className="pt-2 pb-0">
-              <div className="border border-sky-200 rounded-xl overflow-hidden" style={{ backgroundColor: '#f0f9ff' }}>
-                <div onClick={() => setProspectIntelExpanded(!prospectIntelExpanded)} className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-sky-100/50 transition-colors cursor-pointer" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setProspectIntelExpanded(!prospectIntelExpanded); } }}>
-                  <div className="flex items-center gap-2">
-                    <HiOutlineMagnifyingGlass className="text-sky-600" />
-                    <span className="text-sm font-semibold text-gray-800">Prospect Intelligence</span>
-                    <span className="text-[10px] bg-sky-100 text-sky-700 font-medium px-2 py-0.5 rounded-full">Powered by live data</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {prospectIntel && (<button onClick={(e) => { e.stopPropagation(); const ck = `prospect-intel-${prospect.companyName.toLowerCase().trim()}`; try { sessionStorage.removeItem(ck); } catch { /* skip */ } lastIntelCompanyRef.current = ''; setProspectIntel(null); fetchProspectIntel(prospect.companyName.trim(), prospect.website || undefined); }} className="text-[10px] text-sky-600 hover:text-sky-800 font-medium px-2 py-0.5 rounded border border-sky-200 hover:bg-sky-50 transition-colors">Refresh</button>)}
-                    {prospectIntelExpanded ? <HiOutlineChevronUp className="text-gray-400" /> : <HiOutlineChevronDown className="text-gray-400" />}
-                  </div>
-                </div>
-                {prospectIntelExpanded && (
-                  <div className="px-5 pb-5">
-                    {prospectIntelLoading && !prospectIntel ? (
-                      <div className="space-y-3 animate-pulse">
-                        <div className="flex items-center gap-2 text-sm text-sky-600"><div className="w-3 h-3 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />Gathering intelligence on {prospect.companyName}...</div>
-                        <div className="h-4 bg-sky-100 rounded w-3/4" /><div className="h-4 bg-sky-100 rounded w-1/2" /><div className="h-4 bg-sky-100 rounded w-2/3" />
-                      </div>
-                    ) : prospectIntel ? (
-                      <div className="space-y-4">
-                        <div className="bg-white rounded-lg border border-sky-100 p-3">
-                          <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Company Snapshot</p>
-                          <p className="text-sm text-gray-700 mb-2">{prospectIntel.companySnapshot.description}</p>
-                          <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-                            {prospectIntel.companySnapshot.industry && prospectIntel.companySnapshot.industry !== 'Unknown' && (<span><span className="font-medium text-gray-700">Industry:</span> {prospectIntel.companySnapshot.industry}</span>)}
-                            {prospectIntel.companySnapshot.estimatedSize && prospectIntel.companySnapshot.estimatedSize !== 'Unknown' && (<span><span className="font-medium text-gray-700">Size:</span> {prospectIntel.companySnapshot.estimatedSize}</span>)}
-                            {prospectIntel.companySnapshot.location && prospectIntel.companySnapshot.location !== 'Unknown' && (<span><span className="font-medium text-gray-700">Location:</span> {prospectIntel.companySnapshot.location}</span>)}
-                          </div>
-                        </div>
-                        {prospectIntel.techStack.length > 0 && (<div><p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Tech Stack</p><div className="flex flex-wrap gap-1.5">{prospectIntel.techStack.map((tech, i) => { const tl = tech.toLowerCase(); const cc = tl.includes('crm') || tl.includes('salesforce') || tl.includes('hubspot') ? 'bg-blue-50 text-blue-700 border-blue-200' : tl.includes('analytics') || tl.includes('google') || tl.includes('segment') || tl.includes('mixpanel') ? 'bg-green-50 text-green-700 border-green-200' : tl.includes('chat') || tl.includes('drift') || tl.includes('intercom') ? 'bg-purple-50 text-purple-700 border-purple-200' : tl.includes('support') || tl.includes('zendesk') ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-gray-50 text-gray-700 border-gray-200'; return (<span key={i} className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${cc}`}>{tech}</span>); })}</div></div>)}
-                        {prospectIntel.hiringSignals.summary && prospectIntel.hiringSignals.summary !== 'No hiring data available' && (<div><p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Hiring Signals</p><p className="text-xs text-gray-700 mb-1">{prospectIntel.hiringSignals.summary}</p>{prospectIntel.hiringSignals.signals.length > 0 && (<ul className="text-xs text-gray-500 space-y-0.5 ml-3 list-disc">{prospectIntel.hiringSignals.signals.slice(0, 5).map((sig, i) => (<li key={i}>{sig}</li>))}</ul>)}</div>)}
-                        {prospectIntel.recentNews.length > 0 && (<div><p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Recent News</p><div className="space-y-1.5">{prospectIntel.recentNews.slice(0, 3).map((news, i) => (<div key={i} className="flex items-start gap-2"><span className="text-xs text-gray-700 font-medium flex-1">{news.title}</span>{news.date && <span className="text-[10px] text-gray-400 whitespace-nowrap">{news.date}</span>}</div>))}</div></div>)}
-                        {prospectIntel.suggestedAngle && (<div className="bg-amber-50 border border-amber-200 rounded-lg p-3"><p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider mb-1">Suggested Angle</p><p className="text-xs text-amber-800">{prospectIntel.suggestedAngle}</p></div>)}
-                        {prospectIntel.painPointHypotheses.length > 0 && (<div><p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Pain Point Hypotheses</p><ul className="text-xs text-gray-600 space-y-0.5 ml-3 list-disc">{prospectIntel.painPointHypotheses.map((pp, i) => (<li key={i}>{pp}</li>))}</ul></div>)}
-                      </div>
-                    ) : null}
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -3113,6 +3006,19 @@ Use this real prospect data to make the content highly specific and relevant.`;
           </div>
         </div>
       )}
+      {/* ── Style Picker Modal ── */}
+      <StylePickerModal
+        isOpen={showStylePicker}
+        onClose={() => setShowStylePicker(false)}
+        onSelect={(id) => {
+          setSelectedStyleId(id);
+          selectedStyleIdRef.current = id;
+          setShowStylePicker(false);
+          setTimeout(() => generate(), 0);
+        }}
+        contentType={contentType}
+        accentColor={undefined}
+      />
     </div>
   );
 }

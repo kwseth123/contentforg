@@ -1,0 +1,179 @@
+import type { DocumentStyle, StyleInput } from './types';
+import { resolveBrand, brandCSSVars, brandFonts, brandLogoHtml, formatMarkdown, wrapDocument, lighten, contrastText } from './shared';
+
+// ── Render ──────────────────────────────────────────────────
+
+function render(input: StyleInput): string {
+  const brand = resolveBrand(input);
+  const { sections, contentType, prospect, companyName, date } = input;
+  const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const filmstripColors = [
+    brand.primary,
+    brand.secondary,
+    brand.accent,
+    lighten(brand.primary, 0.35),
+  ];
+
+  const sectionsHtml = sections.map(s => `
+    <div class="section">
+      <div class="section-bar"></div>
+      <h2 class="section-title">${s.title}</h2>
+      <div class="section-content">${formatMarkdown(s.content)}</div>
+    </div>
+  `).join('');
+
+  const css = `
+    ${brandCSSVars(brand)}
+    body {
+      font-family: var(--brand-font-secondary);
+      color: var(--brand-text); background: #FAFAFA;
+      line-height: 1.7; font-size: var(--brand-font-body-size);
+      -webkit-font-smoothing: antialiased;
+    }
+    .filmstrip {
+      display: flex; height: 80px; width: 100%;
+    }
+    .filmstrip-cell {
+      flex: 1; height: 100%;
+    }
+    .header {
+      max-width: 880px; margin: 0 auto;
+      padding: 40px 56px 32px;
+    }
+    .logo-row { margin-bottom: 24px; }
+    .meta-label {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #999; margin-bottom: 10px;
+    }
+    .headline {
+      font-family: var(--brand-font-primary);
+      font-size: var(--brand-font-h1-size);
+      font-weight: 700; color: #111;
+      line-height: 1.15; margin-bottom: 8px;
+    }
+    .subtitle { font-size: 15px; color: #777; }
+    .content-area {
+      max-width: 880px; margin: 0 auto;
+      padding: 0 56px 48px;
+    }
+    .section { margin-bottom: 40px; }
+    .section-bar {
+      width: 100%; height: 4px;
+      background: var(--brand-primary);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: var(--brand-font-primary);
+      font-size: var(--brand-font-h2-size);
+      font-weight: 600; color: #111;
+      margin-bottom: 14px;
+    }
+    .section-content p { margin-bottom: 14px; }
+    .section-content h1, .section-content h2 {
+      font-family: var(--brand-font-primary);
+      color: var(--brand-primary); margin: 24px 0 10px;
+      font-size: var(--brand-font-h2-size);
+    }
+    .section-content h3 {
+      font-family: var(--brand-font-primary);
+      color: #333; margin: 18px 0 8px;
+      font-size: var(--brand-font-h3-size);
+    }
+    .section-content h4 { color: #555; margin: 14px 0 6px; font-size: 14px; font-weight: 600; }
+    .section-content strong { font-weight: 600; color: #111; }
+    .section-content em { font-style: italic; }
+    .section-content ul, .section-content ol { padding-left: 24px; margin: 10px 0; }
+    .section-content li { margin-bottom: 6px; }
+    .section-content li::marker { color: var(--brand-primary); }
+    .section-content hr { border: none; height: 4px; background: var(--brand-primary); margin: 24px 0; }
+    .section-content table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+    .section-content th {
+      text-align: left; padding: 10px 12px;
+      border-bottom: 2px solid var(--brand-primary);
+      font-weight: 600; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--brand-primary);
+    }
+    .section-content td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+    .footer-strip {
+      display: flex; height: 4px; width: 100%;
+    }
+    .footer {
+      max-width: 880px; margin: 0 auto;
+      padding: 20px 56px;
+      font-size: 11px; color: #999;
+      text-align: center; letter-spacing: 0.03em;
+    }
+  `;
+
+  const body = `
+    <div class="filmstrip">
+      ${filmstripColors.map(c => `<div class="filmstrip-cell" style="background:${c};"></div>`).join('')}
+    </div>
+    <div class="header">
+      <div class="logo-row">${brandLogoHtml(input, 'height:36px;')}</div>
+      <div class="meta-label">${contentType.replace(/-/g, ' ')}${prospect.industry ? ` &mdash; ${prospect.industry}` : ''}</div>
+      <h1 class="headline">${contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} for ${prospect.companyName}</h1>
+      <div class="subtitle">Prepared for ${prospect.companyName}${prospect.companySize ? ` &middot; ${prospect.companySize}` : ''}</div>
+    </div>
+    <div class="content-area">
+      ${sectionsHtml}
+    </div>
+    <div class="footer-strip">
+      ${filmstripColors.map(c => `<div class="filmstrip-cell" style="background:${c};"></div>`).join('')}
+    </div>
+    <div class="footer">${companyName} &nbsp;|&nbsp; ${dateStr} &nbsp;|&nbsp; Generated by ContentForg</div>
+  `;
+
+  return wrapDocument({
+    title: `${contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — ${prospect.companyName}`,
+    css,
+    body,
+    fonts: brandFonts(brand),
+  });
+}
+
+// ── Thumbnail ───────────────────────────────────────────────
+
+function thumbnail(accentColor: string): string {
+  const lighter = lighten(accentColor, 0.35);
+  return `<div style="width:100%;height:100%;background:#FAFAFA;border-radius:6px;overflow:hidden;font-family:sans-serif;">
+    <div style="display:flex;height:16px;">
+      <div style="flex:1;background:${accentColor};"></div>
+      <div style="flex:1;background:${accentColor};opacity:0.7;"></div>
+      <div style="flex:1;background:${lighter};"></div>
+      <div style="flex:1;background:${lighter};opacity:0.6;"></div>
+    </div>
+    <div style="padding:8px 10px;">
+      <div style="width:30%;height:5px;background:#ddd;border-radius:2px;margin-bottom:4px;"></div>
+      <div style="font-size:10px;font-weight:700;color:#111;margin-bottom:6px;">Cinematic Title</div>
+      <div style="width:100%;height:3px;background:${accentColor};margin-bottom:8px;"></div>
+      <div style="width:90%;height:3px;background:#ddd;border-radius:1px;margin-bottom:3px;"></div>
+      <div style="width:80%;height:3px;background:#ddd;border-radius:1px;margin-bottom:8px;"></div>
+      <div style="width:100%;height:3px;background:${accentColor};margin-bottom:8px;"></div>
+      <div style="width:85%;height:3px;background:#ddd;border-radius:1px;margin-bottom:3px;"></div>
+      <div style="width:92%;height:3px;background:#ddd;border-radius:1px;"></div>
+    </div>
+    <div style="display:flex;height:3px;position:absolute;bottom:0;left:0;right:0;">
+      <div style="flex:1;background:${accentColor};"></div>
+      <div style="flex:1;background:${accentColor};opacity:0.7;"></div>
+      <div style="flex:1;background:${lighter};"></div>
+      <div style="flex:1;background:${lighter};opacity:0.6;"></div>
+    </div>
+  </div>`;
+}
+
+// ── Export ───────────────────────────────────────────────────
+
+const style15Cinematic: DocumentStyle = {
+  id: 'style-15',
+  name: 'Cinematic',
+  category: 'bold',
+  description: 'Wide format with filmstrip header and full-width color transitions',
+  keywords: ['cinematic', 'filmstrip', 'wide', 'production', 'creative'],
+  render,
+  thumbnail,
+};
+
+export default style15Cinematic;
