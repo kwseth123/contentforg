@@ -1,8 +1,9 @@
 // ════════════════════════════════════════════════════════
 // Style 30 — Visual Hierarchy
-// Tufte-inspired information design — visual weight equals
-// importance, wide margins for annotations, elegant
-// typographic hierarchy for B2B sales content
+// Progressive disclosure design — content flows from most
+// important to supporting details. Each section gets
+// progressively smaller with decreasing visual weight.
+// Creates a natural "funnel" reading flow.
 // ════════════════════════════════════════════════════════
 
 import type { DocumentStyle, StyleInput } from './types';
@@ -16,34 +17,96 @@ import {
   lighten,
   darken,
   contrastText,
+  hexToRgb,
+  buildOnePagerDocument,
+  professionalSymbolCSS,
+  stripEmojis,
 } from './shared';
 
-// ── Helpers ────────────────────────────────────────────────
+// ── Tier configuration ────────────────────────────────────
 
-/** Extract leading numbers/stats from content for margin watermarks */
-function extractMarginStat(content: string): string | null {
+interface TierConfig {
+  headingSize: string;
+  bodySize: string;
+  accentOpacity: number;
+  bgShade: string;
+  statBoxSize: 'large' | 'medium' | 'compact' | 'dense';
+  tierClass: string;
+}
+
+function getTierConfig(idx: number, total: number): TierConfig {
+  if (idx === 0) {
+    return {
+      headingSize: '36px',
+      bodySize: '16px',
+      accentOpacity: 1.0,
+      bgShade: '#ffffff',
+      statBoxSize: 'large',
+      tierClass: 'vh-tier-hero',
+    };
+  }
+  if (idx === 1) {
+    return {
+      headingSize: '28px',
+      bodySize: '14px',
+      accentOpacity: 0.75,
+      bgShade: '#fafbfc',
+      statBoxSize: 'medium',
+      tierClass: 'vh-tier-primary',
+    };
+  }
+  if (idx === 2) {
+    return {
+      headingSize: '22px',
+      bodySize: '13px',
+      accentOpacity: 0.50,
+      bgShade: '#f7f8f9',
+      statBoxSize: 'compact',
+      tierClass: 'vh-tier-secondary',
+    };
+  }
+  return {
+    headingSize: '18px',
+    bodySize: '12px',
+    accentOpacity: 0.25,
+    bgShade: '#f3f4f6',
+    statBoxSize: 'dense',
+    tierClass: 'vh-tier-detail',
+  };
+}
+
+function extractStatValue(content: string): { value: string; label: string } | null {
   const patterns = [
-    /(\d{1,3}(?:\.\d+)?%)/,           // percentages
-    /(\$[\d,.]+[MBKmk]?)/,            // dollar amounts
-    /(\d+[xX])/,                       // multipliers like 3x
-    /(\d{1,3}(?:,\d{3})+)/,           // large numbers
+    /(\d{1,3}(?:\.\d+)?%)\s*(.{0,40})/,
+    /(\$[\d,.]+[MBKmk]?)\s*(.{0,40})/,
+    /(\d+[xX])\s*(.{0,40})/,
   ];
   for (const p of patterns) {
     const m = content.match(p);
-    if (m) return m[1];
+    if (m) return { value: m[1], label: m[2]?.trim().replace(/\*+/g, '') || '' };
   }
   return null;
 }
 
-/** Format a section number for margin display */
-function sectionNum(idx: number): string {
-  return String(idx + 1).padStart(2, '0');
+function extractBulletPoints(content: string): string[] {
+  const points: string[] = [];
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (/^[-*•]\s+/.test(trimmed)) {
+      points.push(trimmed.replace(/^[-*•]\s+/, '').replace(/\*+/g, ''));
+    }
+  }
+  return points.slice(0, 6);
 }
 
 // ── Render ─────────────────────────────────────────────────
 
 function render(input: StyleInput): string {
   const brand = resolveBrand(input);
+  const accent = brand.accent || brand.primary;
+
+  if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
+
   const { sections, contentType, prospect, companyName, date } = input;
   const dateStr =
     date ||
@@ -58,266 +121,416 @@ function render(input: StyleInput): string {
     .replace(/\b\w/g, c => c.toUpperCase());
 
   const total = sections.length;
+  const rgb = hexToRgb(accent);
 
-  // Build section HTML with margin annotations
+  // Build sections with progressive sizing
   const sectionsHtml = sections
     .map((s, i) => {
-      const isHero = i === 0;
-      const stat = extractMarginStat(s.content);
-      const tierClass = isHero ? 'vh-hero' : i < total * 0.5 ? 'vh-major' : 'vh-minor';
+      const tier = getTierConfig(i, total);
+      const cleanContent = stripEmojis(s.content);
+      const stat = extractStatValue(cleanContent);
+      const bullets = extractBulletPoints(cleanContent);
+      const accentAtOpacity = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${tier.accentOpacity})`;
 
-      const marginContent = stat
-        ? `<span class="vh-margin-stat">${stat}</span>`
+      // Stat box rendering varies by tier
+      let statBoxHtml = '';
+      if (stat) {
+        if (tier.statBoxSize === 'large') {
+          statBoxHtml = `
+            <div class="vh-stat-box vh-stat-large" style="border-left-color:${accentAtOpacity};">
+              <div class="vh-stat-value" style="color:${accentAtOpacity};">${stat.value}</div>
+              <div class="vh-stat-label">${stat.label}</div>
+            </div>`;
+        } else if (tier.statBoxSize === 'medium') {
+          statBoxHtml = `
+            <div class="vh-stat-box vh-stat-medium" style="border-left-color:${accentAtOpacity};">
+              <div class="vh-stat-value" style="color:${accentAtOpacity};">${stat.value}</div>
+              <div class="vh-stat-label">${stat.label}</div>
+            </div>`;
+        } else if (tier.statBoxSize === 'compact') {
+          statBoxHtml = `
+            <span class="vh-stat-inline" style="color:${accentAtOpacity};">${stat.value}</span>
+            <span class="vh-stat-inline-label">${stat.label}</span>`;
+        } else {
+          statBoxHtml = `<span class="vh-stat-dense" style="color:${accentAtOpacity};">${stat.value}</span>`;
+        }
+      }
+
+      // Section divider — visual break between sections
+      const dividerHtml = i > 0
+        ? `<div class="vh-divider" style="border-top-color:${accentAtOpacity};opacity:${tier.accentOpacity};"></div>`
         : '';
 
+      // Bullet list for hero/primary tiers
+      let highlightHtml = '';
+      if (bullets.length > 0 && (tier.statBoxSize === 'large' || tier.statBoxSize === 'medium')) {
+        highlightHtml = `
+          <div class="vh-highlights vh-highlights-${tier.statBoxSize}">
+            ${bullets.map(b => `<div class="vh-highlight-item"><span class="vh-highlight-dot" style="background:${accentAtOpacity};"></span>${b}</div>`).join('')}
+          </div>`;
+      }
+
       return `
-      <section class="vh-section ${tierClass}">
-        <div class="vh-margin">
-          <span class="vh-section-num">${sectionNum(i)}</span>
-          ${marginContent}
+      ${dividerHtml}
+      <section class="vh-section ${tier.tierClass}" style="background:${tier.bgShade};">
+        <div class="vh-section-inner">
+          <div class="vh-section-header">
+            <div class="vh-tier-indicator" style="background:${accentAtOpacity};"></div>
+            <h2 class="vh-section-title" style="font-size:${tier.headingSize};color:${accentAtOpacity};">${stripEmojis(s.title)}</h2>
+          </div>
+          ${tier.statBoxSize === 'large' && stat ? `
+          <div class="vh-hero-stats">
+            ${statBoxHtml}
+          </div>` : (tier.statBoxSize === 'medium' && stat ? `<div class="vh-medium-stats">${statBoxHtml}</div>` : '')}
+          <div class="vh-section-body" style="font-size:${tier.bodySize};">
+            ${tier.statBoxSize === 'compact' || tier.statBoxSize === 'dense' ? (stat ? `<p class="vh-inline-stat">${statBoxHtml}</p>` : '') : ''}
+            ${formatMarkdown(cleanContent)}
+          </div>
+          ${highlightHtml}
         </div>
-        <div class="vh-content">
-          <h2 class="vh-title">${s.title}</h2>
-          <div class="vh-body">${formatMarkdown(s.content)}</div>
-        </div>
-      </section>${i < total - 1 ? '\n      <hr class="vh-rule" />' : ''}`;
+      </section>`;
     })
     .join('');
 
   const css = `
     ${brandCSSVars(brand)}
+    ${professionalSymbolCSS(accent)}
+
+    @page {
+      size: letter;
+      margin: 0.5in 0.7in;
+    }
 
     body {
       font-family: var(--brand-font-secondary);
       color: var(--brand-text);
-      background: var(--brand-background);
+      background: #ffffff;
       line-height: 1.6;
       font-size: var(--brand-font-body-size);
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Page layout with wide left margin ── */
     .vh-page {
       max-width: 900px;
       margin: 0 auto;
-      padding: 60px 48px 40px 48px;
+      padding: 0;
     }
 
-    /* ── Header ── */
+    /* ── Bold, prominent header ── */
     .vh-header {
+      background: ${brand.primary};
+      color: ${contrastText(brand.primary)};
+      padding: 36px 44px;
+      border-radius: 0 0 16px 16px;
+      margin-bottom: 0;
+    }
+    .vh-header-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 48px;
+      align-items: center;
+      margin-bottom: 24px;
     }
-    .vh-header-left { flex: 1; }
-    .vh-header-logo { margin-bottom: 32px; }
+    .vh-header-logo img { height: 36px; filter: brightness(0) invert(1); }
+    .vh-header-logo span { color: ${contrastText(brand.primary)}; font-size: 18px; }
     .vh-header-meta {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: ${lighten(brand.text, 0.5)};
-    }
-
-    /* ── Hero title area — maximum visual weight ── */
-    .vh-headline {
-      font-family: var(--brand-font-primary);
-      font-size: calc(var(--brand-font-h1-size) * 1.4);
-      font-weight: 800;
-      color: var(--brand-primary);
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-      margin-bottom: 10px;
-      max-width: 600px;
-    }
-    .vh-subline {
-      font-family: var(--brand-font-secondary);
-      font-size: calc(var(--brand-font-h2-size) * 0.9);
-      font-weight: 400;
-      color: ${lighten(brand.text, 0.3)};
-      margin-bottom: 6px;
-    }
-
-    /* ── Section layout — two-column with margin ── */
-    .vh-section {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 0 24px;
-      margin-bottom: 0;
-      padding: 28px 0;
-    }
-
-    /* ── Left margin column ── */
-    .vh-margin {
       text-align: right;
-      padding-top: 4px;
-      position: relative;
-    }
-    .vh-section-num {
-      display: block;
-      font-family: var(--brand-font-primary);
       font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: ${lighten(brand.text, 0.6)};
+      opacity: 0.85;
+    }
+    .vh-header-prospect {
+      font-weight: 700;
+      font-size: 14px;
+      opacity: 1;
+      margin-bottom: 2px;
+    }
+    .vh-header-title {
+      font-family: var(--brand-font-primary);
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
       margin-bottom: 8px;
     }
-    .vh-margin-stat {
-      display: block;
-      font-family: var(--brand-font-primary);
-      font-size: 28px;
-      font-weight: 800;
-      color: ${lighten(brand.primary, 0.7)};
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      margin-top: 8px;
+    .vh-header-subtitle {
+      font-size: 16px;
+      opacity: 0.85;
+      font-weight: 400;
+      max-width: 520px;
     }
 
-    /* ── Content column ── */
-    .vh-content { min-width: 0; }
-
-    /* ── Section title hierarchy ── */
-    .vh-title {
-      font-family: var(--brand-font-primary);
-      margin-bottom: 12px;
+    /* ── Section structure ── */
+    .vh-section {
+      padding: 0;
+      transition: background 0.2s;
+    }
+    .vh-section-inner {
+      padding: 36px 44px;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
-    /* Hero section — extra-large treatment */
-    .vh-hero .vh-title {
-      font-size: calc(var(--brand-font-h1-size) * 1.15);
+    /* Hero tier: largest treatment */
+    .vh-tier-hero .vh-section-inner { padding: 48px 44px; }
+    .vh-tier-hero .vh-section-body { line-height: 1.75; color: ${brand.text}; }
+    .vh-tier-hero .vh-section-body p { margin-bottom: 14px; }
+
+    /* Primary tier */
+    .vh-tier-primary .vh-section-inner { padding: 36px 44px; }
+    .vh-tier-primary .vh-section-body { line-height: 1.65; color: ${brand.text}; }
+    .vh-tier-primary .vh-section-body p { margin-bottom: 10px; }
+
+    /* Secondary tier */
+    .vh-tier-secondary .vh-section-inner { padding: 28px 44px; }
+    .vh-tier-secondary .vh-section-body { line-height: 1.6; color: ${lighten(brand.text, 0.1)}; }
+    .vh-tier-secondary .vh-section-body p { margin-bottom: 8px; }
+
+    /* Detail tier: dense, small */
+    .vh-tier-detail .vh-section-inner { padding: 22px 44px; }
+    .vh-tier-detail .vh-section-body { line-height: 1.55; color: ${lighten(brand.text, 0.2)}; }
+    .vh-tier-detail .vh-section-body p { margin-bottom: 6px; }
+
+    /* ── Section headers ── */
+    .vh-section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .vh-tier-hero .vh-section-header { margin-bottom: 24px; }
+    .vh-tier-detail .vh-section-header { margin-bottom: 12px; }
+    .vh-tier-indicator {
+      width: 4px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      align-self: stretch;
+      min-height: 28px;
+    }
+    .vh-tier-hero .vh-tier-indicator { width: 6px; min-height: 40px; }
+    .vh-tier-detail .vh-tier-indicator { width: 3px; min-height: 20px; }
+    .vh-section-title {
+      font-family: var(--brand-font-primary);
       font-weight: 700;
-      color: var(--brand-primary);
       line-height: 1.15;
       letter-spacing: -0.015em;
+      margin: 0;
     }
-    .vh-hero .vh-body {
-      font-size: calc(var(--brand-font-body-size) * 1.12);
-      color: var(--brand-text);
-      line-height: 1.7;
-    }
-    .vh-hero .vh-margin-stat {
-      font-size: 36px;
-      color: ${lighten(brand.primary, 0.55)};
-    }
+    .vh-tier-hero .vh-section-title { font-weight: 800; letter-spacing: -0.025em; }
+    .vh-tier-detail .vh-section-title { font-weight: 600; letter-spacing: 0; }
 
-    /* Major sections */
-    .vh-major .vh-title {
-      font-size: var(--brand-font-h2-size);
-      font-weight: 600;
-      color: ${darken(brand.text, 0.1)};
-    }
-    .vh-major .vh-body {
-      font-size: var(--brand-font-body-size);
-      color: var(--brand-text);
-      line-height: 1.65;
-    }
-
-    /* Minor sections — reduced visual weight */
-    .vh-minor .vh-title {
-      font-size: var(--brand-font-h3-size);
-      font-weight: 600;
-      color: ${lighten(brand.text, 0.2)};
-    }
-    .vh-minor .vh-body {
-      font-size: calc(var(--brand-font-body-size) * 0.93);
-      color: ${lighten(brand.text, 0.15)};
-      line-height: 1.6;
-    }
-    .vh-minor .vh-section-num {
-      color: ${lighten(brand.text, 0.72)};
-    }
-    .vh-minor .vh-margin-stat {
-      font-size: 22px;
-      color: ${lighten(brand.primary, 0.78)};
-    }
-
-    /* ── Horizontal rules between sections ── */
-    .vh-rule {
+    /* ── Section dividers ── */
+    .vh-divider {
       border: none;
-      border-top: 1px solid ${lighten(brand.text, 0.82)};
-      margin: 0 0 0 144px;
+      border-top: 2px solid transparent;
+      margin: 0;
+    }
+    .vh-tier-hero + .vh-divider { border-top-width: 3px; }
+
+    /* ── Stat boxes (size tiers) ── */
+    .vh-stat-box {
+      border-left: 4px solid;
+      border-radius: 0 10px 10px 0;
+      background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.04);
+    }
+    .vh-stat-large {
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .vh-stat-large .vh-stat-value {
+      font-family: var(--brand-font-primary);
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .vh-stat-large .vh-stat-label {
+      font-size: 15px;
+      color: ${lighten(brand.text, 0.3)};
+      margin-top: 6px;
+      font-weight: 500;
+    }
+    .vh-stat-medium {
+      padding: 20px 24px;
+      margin-bottom: 18px;
+    }
+    .vh-stat-medium .vh-stat-value {
+      font-family: var(--brand-font-primary);
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .vh-stat-medium .vh-stat-label {
+      font-size: 13px;
+      color: ${lighten(brand.text, 0.3)};
+      margin-top: 4px;
+    }
+    .vh-stat-inline {
+      font-family: var(--brand-font-primary);
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .vh-stat-inline-label {
+      font-size: 13px;
+      color: ${lighten(brand.text, 0.3)};
+      margin-left: 6px;
+    }
+    .vh-inline-stat { margin-bottom: 10px; }
+    .vh-stat-dense {
+      font-family: var(--brand-font-primary);
+      font-size: 16px;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+    .vh-hero-stats { }
+    .vh-medium-stats { }
+
+    /* ── Highlight bullet lists ── */
+    .vh-highlights {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1);
+    }
+    .vh-highlights-large {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 24px;
+    }
+    .vh-highlights-medium {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 20px;
+    }
+    .vh-highlight-item {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 14px;
+      color: #374151;
+      font-weight: 500;
+    }
+    .vh-highlights-large .vh-highlight-item { font-size: 15px; }
+    .vh-highlights-medium .vh-highlight-item { font-size: 13px; }
+    .vh-highlight-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
     }
 
-    /* ── Body content styles ── */
-    .vh-body h1 { font-size: inherit; font-weight: 700; margin: 18px 0 8px; color: var(--brand-primary); }
-    .vh-body h2 { font-size: inherit; font-weight: 600; margin: 16px 0 6px; color: inherit; }
-    .vh-body h3, .vh-body h4 { font-size: inherit; font-weight: 600; margin: 14px 0 4px; color: inherit; }
-    .vh-body p { margin-bottom: 10px; }
-    .vh-body ul, .vh-body ol { padding-left: 22px; margin: 8px 0 12px; }
-    .vh-body li { margin-bottom: 4px; }
-    .vh-body strong { font-weight: 600; color: ${darken(brand.text, 0.15)}; }
-    .vh-body em { font-style: italic; }
-    .vh-body table {
+    /* ── Body content styling ── */
+    .vh-section-body h1, .vh-section-body h2, .vh-section-body h3, .vh-section-body h4 {
+      font-family: var(--brand-font-primary);
+      font-weight: 700;
+      margin: 16px 0 8px;
+    }
+    .vh-tier-hero .vh-section-body h2 { font-size: 22px; color: ${darken(brand.text, 0.05)}; }
+    .vh-tier-hero .vh-section-body h3 { font-size: 18px; color: ${darken(brand.text, 0.05)}; }
+    .vh-tier-primary .vh-section-body h2 { font-size: 18px; }
+    .vh-tier-primary .vh-section-body h3 { font-size: 15px; }
+    .vh-tier-secondary .vh-section-body h2 { font-size: 16px; }
+    .vh-tier-secondary .vh-section-body h3 { font-size: 14px; }
+    .vh-tier-detail .vh-section-body h2 { font-size: 14px; }
+    .vh-tier-detail .vh-section-body h3 { font-size: 13px; }
+
+    .vh-section-body ul, .vh-section-body ol { padding-left: 22px; margin: 10px 0; }
+    .vh-section-body li { margin-bottom: 5px; }
+    .vh-section-body strong { font-weight: 600; color: ${darken(brand.text, 0.1)}; }
+
+    /* Tables scale with tier */
+    .vh-section-body table {
       width: 100%;
       border-collapse: collapse;
       margin: 14px 0;
-      font-size: inherit;
     }
-    .vh-body th {
+    .vh-tier-hero .vh-section-body table { font-size: 14px; }
+    .vh-tier-primary .vh-section-body table { font-size: 13px; }
+    .vh-tier-secondary .vh-section-body table { font-size: 12px; }
+    .vh-tier-detail .vh-section-body table { font-size: 11px; }
+
+    .vh-section-body th {
       font-weight: 600;
       text-align: left;
-      padding: 8px 12px;
-      border-bottom: 2px solid ${lighten(brand.text, 0.7)};
-      font-size: 0.9em;
+      padding: 10px 12px;
+      border-bottom: 2px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: ${lighten(brand.text, 0.2)};
+      font-size: 0.85em;
     }
-    .vh-body td {
-      padding: 7px 12px;
-      border-bottom: 1px solid ${lighten(brand.text, 0.88)};
+    .vh-tier-hero .vh-section-body th {
+      background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.06);
+      border-bottom-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3);
     }
-    .vh-body hr {
+    .vh-section-body td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .vh-section-body hr {
       border: none;
-      border-top: 1px solid ${lighten(brand.text, 0.85)};
+      border-top: 1px solid #e5e7eb;
       margin: 16px 0;
     }
 
-    /* ── Footer — Tufte-style minimal ── */
+    /* ── Smallest, most subtle footer ── */
     .vh-footer {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 0 24px;
-      margin-top: 48px;
-      padding-top: 14px;
-      border-top: 1px solid ${lighten(brand.text, 0.82)};
-    }
-    .vh-footer-margin { }
-    .vh-footer-content {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      font-size: 10px;
-      color: ${lighten(brand.text, 0.55)};
+      align-items: center;
+      padding: 12px 44px;
+      margin-top: 0;
+      background: ${lighten(brand.text, 0.92)};
+      font-size: 9px;
+      color: ${lighten(brand.text, 0.45)};
       letter-spacing: 0.03em;
+    }
+    .vh-footer-company {
+      font-weight: 600;
+      font-size: 10px;
+      color: ${lighten(brand.text, 0.35)};
+    }
+    .vh-footer-center {
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 8px;
+    }
+    .vh-footer-right {
+      text-align: right;
     }
 
     @media print {
-      .vh-page { padding: 40px 32px 24px 32px; }
+      .vh-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .vh-section { break-inside: avoid; }
+      .vh-tier-hero { break-after: avoid; }
     }
   `;
 
   const body = `
     <div class="vh-page">
-      <header class="vh-header">
-        <div class="vh-header-left">
-          <div class="vh-header-logo">${brandLogoHtml(input)}</div>
-          <h1 class="vh-headline">${title}</h1>
-          <p class="vh-subline">Prepared for ${prospect.companyName}</p>
-          <p class="vh-header-meta">${dateStr}${prospect.industry ? ' &middot; ' + prospect.industry : ''}</p>
+      <div class="vh-header">
+        <div class="vh-header-top">
+          <div class="vh-header-logo">${brandLogoHtml(input, 'height:34px;')}</div>
+          <div class="vh-header-meta">
+            <div class="vh-header-prospect">${prospect.companyName}</div>
+            <div>${dateStr}${prospect.industry ? ' &middot; ' + prospect.industry : ''}</div>
+          </div>
         </div>
-      </header>
+        <h1 class="vh-header-title">${title}</h1>
+        <p class="vh-header-subtitle">Prepared for ${prospect.companyName}${input.companyDescription ? ' by ' + companyName : ''}</p>
+      </div>
 
       ${sectionsHtml}
 
-      <footer class="vh-footer">
-        <div class="vh-footer-margin"></div>
-        <div class="vh-footer-content">
-          <span>${companyName}${prospect.companyName ? ' &middot; ' + prospect.companyName : ''}</span>
-          <span>${dateStr}</span>
+      <div class="vh-footer">
+        <div class="vh-footer-left">
+          <div class="vh-footer-company">${companyName}</div>
+          <div>${input.companyDescription || ''}</div>
         </div>
-      </footer>
+        <div class="vh-footer-center">Confidential</div>
+        <div class="vh-footer-right">
+          <div>${dateStr}</div>
+          <div>Page 1</div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -385,8 +598,8 @@ const style30VisualHierarchy: DocumentStyle = {
   id: 'style-30',
   name: 'Visual Hierarchy',
   category: 'creative',
-  description: 'Tufte-inspired information design — visual weight matches importance, margin annotations',
-  keywords: ['hierarchy', 'tufte', 'information', 'design', 'importance', 'weight', 'margin', 'annotation'],
+  description: 'Progressive disclosure design — visual weight decreases from headline to detail',
+  keywords: ['hierarchy', 'progressive', 'disclosure', 'funnel', 'importance', 'weight'],
   render,
   thumbnail,
 };

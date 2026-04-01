@@ -14,6 +14,15 @@ interface FeatureExtractRequest {
   source: 'url' | 'text' | 'transcript' | 'manual';
   content: string;
   competitorName?: string;
+  mode?: 'competitor' | 'discovery' | 'full-analysis';
+  yourContent?: string;
+}
+
+interface DiscoveryResult {
+  whatWeHave: string[];
+  whatTheyNeed: string[];
+  ourGaps: string[];
+  competitiveIntel: string[];
 }
 
 interface ExtractedFeature {
@@ -133,6 +142,35 @@ function resolveLogoUrl(baseUrl: string, ogImage: string, favicon: string): stri
 
 const EXTRACTION_PROMPT = `You are analyzing content about a product or competitor. Extract every feature, capability, or specification mentioned. For each feature return: featureName, category, supported (yes/no/partial), caveat (any limitations or conditions), confidence (high/medium/low based on how explicitly it was mentioned). Return as JSON array. Group features into logical categories: Integration, Workflow, Pricing, Implementation, Support, Security, and any other categories that emerge from the content. Be specific — not just 'reporting' but 'real-time inventory reports' or 'end-of-day batch reports.'`;
 
+const DISCOVERY_PROMPT = `You are performing a holistic discovery analysis on the provided content. Analyze the content thoroughly and produce a four-section intelligence report as a JSON object with exactly these four keys:
+
+1. "whatWeHave" — an array of strings listing features, capabilities, and strengths that are detected or mentioned as existing/available
+2. "whatTheyNeed" — an array of strings listing prospect requirements, needs, pain points, or desired capabilities mentioned
+3. "ourGaps" — an array of strings listing areas where there may be shortfalls, missing capabilities, or areas that need improvement
+4. "competitiveIntel" — an array of strings listing any competitive mentions, comparisons, market positioning, or competitor references found
+
+Return ONLY a JSON object with these four keys, each containing an array of descriptive strings. Be specific and actionable in each item.`;
+
+const FULL_ANALYSIS_PROMPT = `You are performing a comprehensive head-to-head analysis. You have content from two sources:
+
+YOUR PRODUCT CONTENT:
+{YOUR_CONTENT}
+
+COMPETITOR CONTENT:
+{COMPETITOR_CONTENT}
+
+Produce TWO things in your response:
+
+1. A "features" array — for each feature/capability mentioned across EITHER source, return: featureName, category, supported (yes/no/partial — from the COMPETITOR's perspective), caveat, confidence. Group into logical categories.
+
+2. A "discoveryResult" object with four arrays:
+   - "whatWeHave": features and capabilities YOUR PRODUCT has
+   - "whatTheyNeed": requirements or needs detected from the content
+   - "ourGaps": areas where YOUR PRODUCT may fall short compared to the competitor
+   - "competitiveIntel": competitive insights, positioning differences, and key differentiators
+
+Return as a JSON object with keys "features" (array) and "discoveryResult" (object with four arrays). Be specific and actionable.`;
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -147,7 +185,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { source, content, competitorName } = body;
+    const { source, content, competitorName, mode, yourContent } = body;
 
     if (!source || !content) {
       return NextResponse.json(
@@ -258,7 +296,145 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Call Claude to extract features
+    // Determine which prompt to use based on mode
+    const effectiveMode = mode || 'competitor';
+
+    if (effectiveMode === 'discovery') {
+      // Discovery Mode — return four-section intelligence report
+      let discoveryResult: DiscoveryResult = {
+        whatWeHave: [],
+        whatTheyNeed: [],
+        ourGaps: [],
+        competitiveIntel: [],
+      };
+
+      try {
+        const message = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4096,
+          messages: [
+            {
+              role: 'user',
+              content: `${DISCOVERY_PROMPT}\n\nContent to analyze:\n\n${textForClaude}`,
+            },
+          ],
+        });
+
+        const responseText = message.content
+          .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+          .map((block) => block.text)
+          .join('');
+
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        const jsonStr = jsonMatch ? jsonMatch[1].trim() : responseText.trim();
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed && typeof parsed === 'object') {
+            discoveryResult = {
+              whatWeHave: Array.isArray(parsed.whatWeHave) ? parsed.whatWeHave : [],
+              whatTheyNeed: Array.isArray(parsed.whatTheyNeed) ? parsed.whatTheyNeed : [],
+              ourGaps: Array.isArray(parsed.ourGaps) ? parsed.ourGaps : [],
+              competitiveIntel: Array.isArray(parsed.competitiveIntel) ? parsed.competitiveIntel : [],
+            };
+          }
+        } catch {
+          // JSON parse failed for discovery
+        }
+      } catch (aiError) {
+        console.error('Claude API error (discovery):', aiError);
+        return NextResponse.json(
+          { error: 'AI discovery analysis failed. Please try again.' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        competitorName: derivedName,
+        logoUrl,
+        features: [],
+        discoveryResult,
+      });
+    }
+
+    if (effectiveMode === 'full-analysis') {
+      // Full Analysis Mode — combined features + discovery
+      const yourText = (yourContent || '').slice(0, 30000);
+      const prompt = FULL_ANALYSIS_PROMPT
+        .replace('{YOUR_CONTENT}', yourText || '(No product content provided)')
+        .replace('{COMPETITOR_CONTENT}', textForClaude || '(No competitor content provided)');
+
+      let features: ExtractedFeature[] = [];
+      let discoveryResult: DiscoveryResult = {
+        whatWeHave: [],
+        whatTheyNeed: [],
+        ourGaps: [],
+        competitiveIntel: [],
+      };
+
+      try {
+        const message = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 8192,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        });
+
+        const responseText = message.content
+          .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+          .map((block) => block.text)
+          .join('');
+
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        const jsonStr = jsonMatch ? jsonMatch[1].trim() : responseText.trim();
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed && typeof parsed === 'object') {
+            if (Array.isArray(parsed.features)) {
+              features = parsed.features;
+            }
+            if (parsed.discoveryResult && typeof parsed.discoveryResult === 'object') {
+              discoveryResult = {
+                whatWeHave: Array.isArray(parsed.discoveryResult.whatWeHave) ? parsed.discoveryResult.whatWeHave : [],
+                whatTheyNeed: Array.isArray(parsed.discoveryResult.whatTheyNeed) ? parsed.discoveryResult.whatTheyNeed : [],
+                ourGaps: Array.isArray(parsed.discoveryResult.ourGaps) ? parsed.discoveryResult.ourGaps : [],
+                competitiveIntel: Array.isArray(parsed.discoveryResult.competitiveIntel) ? parsed.discoveryResult.competitiveIntel : [],
+              };
+            }
+          }
+        } catch {
+          // Try to find features array
+          const arrayMatch = responseText.match(/\[[\s\S]*\]/);
+          if (arrayMatch) {
+            try {
+              features = JSON.parse(arrayMatch[0]);
+            } catch {
+              // Could not parse
+            }
+          }
+        }
+      } catch (aiError) {
+        console.error('Claude API error (full-analysis):', aiError);
+        return NextResponse.json(
+          { error: 'AI full analysis failed. Please try again.' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        competitorName: derivedName,
+        logoUrl,
+        features,
+        discoveryResult,
+      });
+    }
+
+    // Default: Competitor Mode — extract features
     let features: ExtractedFeature[] = [];
     try {
       const message = await anthropic.messages.create({

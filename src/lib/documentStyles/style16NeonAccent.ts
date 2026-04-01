@@ -1,5 +1,5 @@
 import type { DocumentStyle, StyleInput } from './types';
-import { resolveBrand, brandCSSVars, brandFonts, brandLogoHtml, formatMarkdown, wrapDocument, hexToRgb, lighten } from './shared';
+import { resolveBrand, brandCSSVars, formatMarkdown, brandLogoHtml, wrapDocument, lighten, darken, contrastText, hexToRgb, brandFonts, buildOnePagerDocument, professionalSymbolCSS, stripEmojis } from './shared';
 
 // ── Stat extraction ─────────────────────────────────────────
 
@@ -17,15 +17,11 @@ function extractStats(sections: StyleInput['sections']): { value: string; label:
   }
   const dollarMatches = allContent.match(/\$[\d,.]+[KkMmBb]?/g);
   if (dollarMatches) {
-    for (const m of dollarMatches.slice(0, 1)) {
-      stats.push({ value: m, label: 'value' });
-    }
+    for (const m of dollarMatches.slice(0, 1)) stats.push({ value: m, label: 'value' });
   }
   const multMatches = allContent.match(/(\d+(?:\.\d+)?)[xX]\b/g);
   if (multMatches) {
-    for (const m of multMatches.slice(0, 1)) {
-      stats.push({ value: m, label: 'multiplier' });
-    }
+    for (const m of multMatches.slice(0, 1)) stats.push({ value: m, label: 'multiplier' });
   }
   return stats.slice(0, 4);
 }
@@ -34,190 +30,365 @@ function extractStats(sections: StyleInput['sections']): { value: string; label:
 
 function render(input: StyleInput): string {
   const brand = resolveBrand(input);
+
+  // One-pager shortcut
+  if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
+
   const { sections, contentType, prospect, companyName, date } = input;
   const stats = extractStats(sections);
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const { r, g, b } = hexToRgb(brand.accent);
-  const { r: pr, g: pg, b: pb } = hexToRgb(brand.primary);
-  const glowA = `rgba(${r},${g},${b}`;
-  const glowP = `rgba(${pr},${pg},${pb}`;
-  const accentLight = lighten(brand.accent, 30);
+  const accent = brand.accent || brand.primary;
+  const { r, g, b } = hexToRgb(accent);
+  const glow = `rgba(${r},${g},${b}`;
+  const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  // Sections as glassmorphic cards
   const sectionsHtml = sections.map((s, i) => `
-    <div class="section-card">
-      <div class="section-number">${String(i + 1).padStart(2, '0')}</div>
-      <h2 class="section-title">${s.title}</h2>
-      <div class="section-content">${formatMarkdown(s.content)}</div>
+    <div class="na-card">
+      <div class="na-card-index">${String(i + 1).padStart(2, '0')}</div>
+      <h2 class="na-card-title">${stripEmojis(s.title)}</h2>
+      <div class="na-card-body">${formatMarkdown(stripEmojis(s.content))}</div>
     </div>
   `).join('');
 
-  const statsHtml = stats.length > 0 ? `<div class="stats-row">
-    ${stats.map(s => `<div class="stat-pill">
-      <div class="stat-value">${s.value}</div>
-      <div class="stat-label">${s.label}</div>
-    </div>`).join('')}
-  </div>` : '';
+  // Glowing stat pills
+  const statsHtml = stats.length > 0 ? `
+    <div class="na-stats">
+      ${stats.map(s => `
+        <div class="na-stat">
+          <div class="na-stat-value">${s.value}</div>
+          <div class="na-stat-label">${s.label}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
 
   const css = `
     ${brandCSSVars(brand)}
+    ${professionalSymbolCSS(accent)}
+
+    @page {
+      size: letter;
+      margin: 0;
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
     body {
-      font-family: var(--brand-font-secondary);
-      color: #c8c8d0;
-      background: #0a0a0f;
-      line-height: 1.7;
+      font-family: var(--brand-font-primary);
+      color: #c8cad0;
+      background: #111111;
+      line-height: 1.65;
       font-size: var(--brand-font-body-size);
+      margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
     }
-    .page { max-width: 880px; margin: 0 auto; padding: 64px 56px; }
 
-    /* Header */
-    .header {
-      margin-bottom: 48px;
-      padding-bottom: 40px;
-      border-bottom: 2px solid transparent;
-      border-image: linear-gradient(90deg, var(--brand-accent), ${glowA},0.2), transparent) 1;
+    .na-page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0;
     }
-    .logo-row { margin-bottom: 28px; }
-    .content-type-badge {
-      display: inline-block;
-      font-family: 'Courier New', monospace;
-      font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--brand-accent);
-      border: 1px solid ${glowA},0.35);
-      border-radius: 3px; padding: 4px 12px;
-      margin-bottom: 16px;
-      box-shadow: 0 0 8px ${glowA},0.15);
-    }
-    .headline {
-      font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h1-size);
-      font-weight: 700;
-      color: var(--brand-primary);
-      line-height: 1.15;
-      margin-bottom: 10px;
-      text-shadow: 0 0 30px ${glowP},0.4);
-    }
-    .subtitle { font-size: 15px; color: #6a6a78; }
 
-    /* Stats */
-    .stats-row {
-      display: flex; gap: 16px; flex-wrap: wrap;
+    /* ── Header: dark with neon glow ── */
+    .na-header {
+      background: #111111;
+      padding: 56px 64px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .na-header::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: ${accent};
+      box-shadow: 0 0 20px ${glow},0.6), 0 0 60px ${glow},0.3);
+    }
+    .na-header-inner {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .na-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 40px;
     }
-    .stat-pill {
-      flex: 1; min-width: 130px;
-      background: #111118;
-      border: 1px solid ${glowA},0.3);
-      border-radius: 8px;
-      padding: 20px 18px;
-      text-align: center;
-      box-shadow: 0 0 20px ${glowA},0.1), inset 0 0 20px ${glowA},0.03);
+    .na-header-logo img {
+      height: 38px;
+      filter: brightness(1.5) drop-shadow(0 0 8px ${glow},0.4));
     }
-    .stat-value {
-      font-family: var(--brand-font-primary);
-      font-size: 36px; font-weight: 700;
-      color: var(--brand-accent);
-      line-height: 1;
-      text-shadow: 0 0 20px ${glowA},0.6), 0 0 40px ${glowA},0.3);
+    .na-header-logo span {
+      text-shadow: 0 0 12px ${glow},0.5);
+      color: ${accent} !important;
     }
-    .stat-label {
+    .na-header-meta-right {
+      text-align: right;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+    .na-header-meta-right .na-prospect {
+      font-weight: 700;
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 2px;
+    }
+    .na-header-badge {
+      display: inline-block;
       font-family: 'Courier New', monospace;
-      font-size: 10px; letter-spacing: 0.14em;
-      text-transform: uppercase; color: #555560; margin-top: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: ${accent};
+      border: 1px solid ${glow},0.4);
+      padding: 5px 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 12px ${glow},0.15), inset 0 0 12px ${glow},0.05);
+    }
+    .na-header-title {
+      font-family: var(--brand-font-primary);
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.08;
+      color: #ffffff;
+      margin: 0 0 14px;
+      text-shadow: 0 0 40px ${glow},0.3);
+      letter-spacing: -0.01em;
+    }
+    .na-header-subtitle {
+      font-size: 15px;
+      color: rgba(255,255,255,0.4);
+    }
+    .na-header-glow-line {
+      width: 100px;
+      height: 3px;
+      background: ${accent};
+      margin-top: 32px;
+      box-shadow: 0 0 16px ${glow},0.5), 0 0 40px ${glow},0.2);
     }
 
-    /* Section cards */
-    .section-card {
-      background: #111118;
-      border: 1px solid #1c1c28;
-      border-left: 3px solid var(--brand-accent);
-      border-radius: 6px;
-      padding: 36px 40px;
-      margin-bottom: 28px;
-      box-shadow: 0 0 24px ${glowA},0.04);
+    /* ── Stats: neon glow ── */
+    .na-stats {
+      display: flex;
+      gap: 20px;
+      padding: 40px 64px;
+      max-width: 920px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .na-stat {
+      flex: 1;
+      min-width: 140px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid ${glow},0.25);
+      padding: 28px 24px;
+      text-align: center;
       position: relative;
+      box-shadow: 0 0 24px ${glow},0.08), inset 0 0 24px ${glow},0.03);
     }
-    .section-card:hover {
-      border-left-color: ${accentLight};
-      box-shadow: 0 0 30px ${glowA},0.1);
+    .na-stat-value {
+      font-family: var(--brand-font-primary);
+      font-size: 44px;
+      font-weight: 800;
+      color: ${accent};
+      line-height: 1;
+      margin-bottom: 8px;
+      text-shadow: 0 0 24px ${glow},0.7), 0 0 48px ${glow},0.3);
     }
-    .section-number {
-      position: absolute; top: 16px; right: 20px;
+    .na-stat-label {
       font-family: 'Courier New', monospace;
-      font-size: 11px; color: #2a2a38; font-weight: 700;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── Glassmorphic section cards ── */
+    .na-cards-area {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 64px 48px;
+    }
+    .na-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 3px solid ${accent};
+      padding: 40px 44px;
+      margin-bottom: 24px;
+      position: relative;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.3), 0 0 16px ${glow},0.04);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .na-card-index {
+      position: absolute;
+      top: 18px; right: 24px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: ${glow},0.3);
       letter-spacing: 0.05em;
     }
-    .section-title {
+    .na-card-title {
       font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h2-size);
-      font-weight: 600;
-      color: var(--brand-accent);
-      margin-bottom: 16px;
-      text-shadow: 0 0 16px ${glowA},0.3);
+      font-size: 26px;
+      font-weight: 700;
+      color: ${accent};
+      margin: 0 0 18px;
+      text-shadow: 0 0 20px ${glow},0.35);
+      line-height: 1.2;
     }
-    .section-content { color: #b0b0bc; }
-    .section-content p { margin-bottom: 14px; }
-    .section-content h1, .section-content h2 {
+    .na-card-body {
+      color: #b0b3bc;
+    }
+    .na-card-body p { margin-bottom: 14px; }
+    .na-card-body h1,
+    .na-card-body h2 {
       font-family: var(--brand-font-primary);
-      color: var(--brand-primary);
-      margin: 24px 0 10px;
-      font-size: var(--brand-font-h2-size);
-      text-shadow: 0 0 14px ${glowP},0.3);
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 28px 0 12px;
+      text-shadow: 0 0 14px ${glow},0.2);
+      line-height: 1.2;
     }
-    .section-content h3 {
+    .na-card-body h3 {
       font-family: var(--brand-font-primary);
-      color: #d0d0da; margin: 20px 0 8px;
-      font-size: var(--brand-font-h3-size);
+      font-size: 16px;
+      font-weight: 700;
+      color: #d0d2d8;
+      margin: 22px 0 10px;
     }
-    .section-content h4 { color: #9090a0; margin: 16px 0 6px; font-size: 15px; }
-    .section-content strong { font-weight: 600; color: #e8e8f0; }
-    .section-content em { font-style: italic; color: #8888a0; }
-    .section-content ul, .section-content ol { padding-left: 24px; margin: 12px 0; }
-    .section-content li { margin-bottom: 6px; }
-    .section-content li::marker { color: var(--brand-accent); }
-    .section-content hr { border: none; border-top: 1px solid #1c1c28; margin: 24px 0; }
-    .section-content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
-    .section-content th {
-      text-align: left; padding: 10px 12px;
-      border-bottom: 1px solid ${glowA},0.25);
+    .na-card-body h4 {
       font-family: 'Courier New', monospace;
-      font-weight: 600; font-size: 10px; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--brand-accent);
-      background: #0d0d14;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: ${accent};
+      opacity: 0.7;
+      margin: 18px 0 8px;
     }
-    .section-content td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #1a1a24;
-      color: #a0a0b0;
+    .na-card-body strong { font-weight: 700; color: #e8eaf0; }
+    .na-card-body em { font-style: italic; color: #8a8d98; }
+    .na-card-body ul, .na-card-body ol {
+      padding-left: 24px;
+      margin: 12px 0;
+    }
+    .na-card-body li { margin-bottom: 8px; }
+    .na-card-body li::marker { color: ${accent}; }
+    .na-card-body hr {
+      border: none;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 28px 0;
     }
 
-    /* Footer */
-    .footer {
-      margin-top: 48px; padding-top: 24px;
-      border-top: 2px solid transparent;
-      border-image: linear-gradient(90deg, transparent, ${glowA},0.3), transparent) 1;
+    /* Tables with neon header */
+    .na-card-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+    .na-card-body thead th {
+      text-align: left;
+      padding: 12px 16px;
+      background: rgba(${r},${g},${b},0.08);
+      border-bottom: 2px solid ${accent};
       font-family: 'Courier New', monospace;
-      font-size: 10px; color: #3a3a48;
-      text-align: center; letter-spacing: 0.06em;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: ${accent};
+      box-shadow: 0 2px 8px ${glow},0.1);
+    }
+    .na-card-body tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #a0a3b0;
+    }
+
+    /* ── Footer: dark with thin glow line ── */
+    .na-footer {
+      background: #0a0a0a;
+      padding: 28px 64px;
+      position: relative;
+    }
+    .na-footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 64px; right: 64px;
+      height: 1px;
+      background: ${accent};
+      box-shadow: 0 0 12px ${glow},0.4), 0 0 32px ${glow},0.15);
+    }
+    .na-footer-inner {
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+    }
+    .na-footer-company {
+      font-weight: 700;
+      color: rgba(255,255,255,0.4);
+    }
+    .na-footer-accent {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
     }
   `;
 
   const body = `
-    <div class="page">
-      <div class="header">
-        <div class="logo-row">${brandLogoHtml(input, 'height:34px;filter:brightness(1.6);')}</div>
-        <div class="content-type-badge">${contentType.replace(/-/g, ' ')}</div>
-        <h1 class="headline">${contentType.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} for ${prospect.companyName}</h1>
-        <div class="subtitle">Prepared for ${prospect.companyName}${prospect.industry ? ` &mdash; ${prospect.industry}` : ''}${prospect.companySize ? ` &middot; ${prospect.companySize}` : ''}</div>
+    <div class="na-page">
+      <!-- Header -->
+      <div class="na-header">
+        <div class="na-header-inner">
+          <div class="na-header-top">
+            <div class="na-header-logo">${brandLogoHtml(input, `height:38px;filter:brightness(1.5) drop-shadow(0 0 8px ${glow},0.4));`)}</div>
+            <div class="na-header-meta-right">
+              <div class="na-prospect">${prospect.companyName}</div>
+              <div>${dateStr}</div>
+            </div>
+          </div>
+          <div class="na-header-badge">${contentType.replace(/-/g, ' ')}${prospect.industry ? ' / ' + prospect.industry : ''}</div>
+          <h1 class="na-header-title">${title} for ${prospect.companyName}</h1>
+          <div class="na-header-subtitle">Prepared for ${prospect.companyName}${prospect.companySize ? ' &middot; ' + prospect.companySize : ''}</div>
+          <div class="na-header-glow-line"></div>
+        </div>
       </div>
+
+      <!-- Stats -->
       ${statsHtml}
-      ${sectionsHtml}
-      <div class="footer">${companyName} &nbsp;&bull;&nbsp; ${dateStr} &nbsp;&bull;&nbsp; Generated by ContentForge</div>
+
+      <!-- Sections -->
+      <div class="na-cards-area">
+        ${sectionsHtml}
+      </div>
+
+      <!-- Footer -->
+      <div class="na-footer">
+        <div class="na-footer-inner">
+          <div class="na-footer-company">${companyName}</div>
+          <div>${input.companyDescription || ''}</div>
+          <div class="na-footer-accent">${dateStr}</div>
+          <div class="na-footer-accent">Page 1</div>
+        </div>
+      </div>
     </div>
   `;
 
   return wrapDocument({
-    title: `${contentType.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} \u2014 ${prospect.companyName}`,
+    title: `${title} \u2014 ${prospect.companyName}`,
     css,
     body,
     fonts: brandFonts(brand),
@@ -229,28 +400,30 @@ function render(input: StyleInput): string {
 function thumbnail(accentColor: string): string {
   const { r, g, b } = hexToRgb(accentColor);
   const glow = `rgba(${r},${g},${b}`;
-  return `<div style="width:100%;height:100%;background:#0a0a0f;border-radius:6px;overflow:hidden;font-family:sans-serif;padding:12px;">
-    <div style="width:28%;height:5px;background:#1c1c28;border-radius:2px;margin-bottom:8px;"></div>
-    <div style="display:inline-block;font-family:monospace;font-size:6px;color:${accentColor};border:1px solid ${glow},0.35);border-radius:2px;padding:1px 5px;margin-bottom:6px;box-shadow:0 0 4px ${glow},0.2);">TYPE</div>
-    <div style="font-size:13px;font-weight:700;color:${accentColor};margin-bottom:8px;text-shadow:0 0 10px ${glow},0.5);">Title</div>
-    <div style="display:flex;gap:6px;margin-bottom:10px;">
-      <div style="flex:1;background:#111118;border:1px solid ${glow},0.25);border-radius:4px;padding:6px;text-align:center;box-shadow:0 0 10px ${glow},0.08);">
-        <div style="font-size:11px;font-weight:700;color:${accentColor};text-shadow:0 0 6px ${glow},0.5);">47%</div>
-        <div style="font-family:monospace;font-size:5px;color:#555560;">GROWTH</div>
+  return `<div style="width:100%;height:100%;background:#111;border-radius:6px;overflow:hidden;font-family:sans-serif;padding:0;">
+    <div style="height:2px;background:${accentColor};box-shadow:0 0 8px ${glow},0.5);"></div>
+    <div style="padding:10px 10px 6px;">
+      <div style="width:28%;height:5px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:8px;"></div>
+      <div style="display:inline-block;font-family:monospace;font-size:6px;color:${accentColor};border:1px solid ${glow},0.35);border-radius:2px;padding:1px 5px;margin-bottom:6px;box-shadow:0 0 4px ${glow},0.2);">TYPE</div>
+      <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:4px;text-shadow:0 0 10px ${glow},0.3);">Title</div>
+      <div style="width:50%;height:3px;background:rgba(255,255,255,0.08);margin-bottom:8px;"></div>
+      <div style="width:60px;height:2px;background:${accentColor};box-shadow:0 0 8px ${glow},0.4);margin-bottom:8px;"></div>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 10px 8px;">
+      <div style="flex:1;background:rgba(255,255,255,0.03);border:1px solid ${glow},0.2);padding:6px;text-align:center;box-shadow:0 0 8px ${glow},0.06);">
+        <div style="font-size:11px;font-weight:700;color:${accentColor};text-shadow:0 0 8px ${glow},0.6);">47%</div>
+        <div style="font-family:monospace;font-size:5px;color:rgba(255,255,255,0.3);">GROWTH</div>
       </div>
-      <div style="flex:1;background:#111118;border:1px solid ${glow},0.25);border-radius:4px;padding:6px;text-align:center;box-shadow:0 0 10px ${glow},0.08);">
-        <div style="font-size:11px;font-weight:700;color:${accentColor};text-shadow:0 0 6px ${glow},0.5);">$2M</div>
-        <div style="font-family:monospace;font-size:5px;color:#555560;">VALUE</div>
+      <div style="flex:1;background:rgba(255,255,255,0.03);border:1px solid ${glow},0.2);padding:6px;text-align:center;box-shadow:0 0 8px ${glow},0.06);">
+        <div style="font-size:11px;font-weight:700;color:${accentColor};text-shadow:0 0 8px ${glow},0.6);">$2M</div>
+        <div style="font-family:monospace;font-size:5px;color:rgba(255,255,255,0.3);">VALUE</div>
       </div>
     </div>
-    <div style="background:#111118;border-left:2px solid ${accentColor};border-radius:3px;padding:6px 8px;margin-bottom:6px;box-shadow:0 0 8px ${glow},0.05);">
-      <div style="width:70%;height:3px;background:#1c1c28;border-radius:2px;margin-bottom:3px;"></div>
-      <div style="width:90%;height:3px;background:#1c1c28;border-radius:2px;margin-bottom:3px;"></div>
-      <div style="width:50%;height:3px;background:#1c1c28;border-radius:2px;"></div>
-    </div>
-    <div style="background:#111118;border-left:2px solid ${accentColor};border-radius:3px;padding:6px 8px;box-shadow:0 0 8px ${glow},0.05);">
-      <div style="width:60%;height:3px;background:#1c1c28;border-radius:2px;margin-bottom:3px;"></div>
-      <div style="width:80%;height:3px;background:#1c1c28;border-radius:2px;"></div>
+    <div style="padding:0 10px 6px;">
+      <div style="background:rgba(255,255,255,0.03);border-left:2px solid ${accentColor};padding:6px 8px;box-shadow:0 0 8px ${glow},0.04);">
+        <div style="width:70%;height:3px;background:rgba(255,255,255,0.06);margin-bottom:3px;"></div>
+        <div style="width:90%;height:3px;background:rgba(255,255,255,0.06);"></div>
+      </div>
     </div>
   </div>`;
 }

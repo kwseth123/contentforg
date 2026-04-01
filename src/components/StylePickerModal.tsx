@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { HiOutlineXMark, HiOutlineMagnifyingGlass, HiOutlineCheck } from 'react-icons/hi2';
-import { DOCUMENT_STYLES, getDefaultStyleForContentType, getStyle } from '@/lib/documentStyles/registry';
+import { DOCUMENT_STYLES, getDefaultStyleForContentType, getStyle, getRecommendationsForContentType, StyleRecommendation } from '@/lib/documentStyles/registry';
 import { STYLE_CATEGORIES } from '@/lib/documentStyles/types';
 import type { DocumentStyle } from '@/lib/documentStyles/types';
+import { CONTENT_TYPE_LABELS } from '@/lib/types';
 
 interface StylePickerModalProps {
   isOpen: boolean;
@@ -82,6 +83,20 @@ export default function StylePickerModal({
     () => DOCUMENT_STYLES.find((s) => s.id === selectedId),
     [selectedId]
   );
+
+  const recommendations = useMemo(
+    () => getRecommendationsForContentType(contentType),
+    [contentType]
+  );
+
+  const recommendedStyles = useMemo(() => {
+    return recommendations
+      .map(rec => {
+        const style = DOCUMENT_STYLES.find(s => s.id === rec.styleId);
+        return style ? { ...rec, style } : null;
+      })
+      .filter(Boolean) as (StyleRecommendation & { style: DocumentStyle })[];
+  }, [recommendations]);
 
   const handleThumbnailClick = useCallback(
     (style: DocumentStyle) => {
@@ -207,6 +222,82 @@ export default function StylePickerModal({
               </p>
             </div>
           ) : (
+            <>
+            {/* Recommended Section */}
+            {categoryFilter === 'all' && recommendedStyles.length > 0 && !search.trim() && (
+              <div className="mb-6">
+                <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary, #6b7280)' }}>
+                  Recommended for {CONTENT_TYPE_LABELS[contentType as keyof typeof CONTENT_TYPE_LABELS] || contentType}
+                </h3>
+                <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+                  {recommendedStyles.map(({ style, reason }) => {
+                    const isSelected = style.id === selectedId;
+                    return (
+                      <div
+                        key={`rec-${style.id}`}
+                        onClick={() => handleThumbnailClick(style)}
+                        title={style.description}
+                        className="cursor-pointer rounded-lg overflow-hidden transition-all duration-150"
+                        style={{
+                          border: isSelected
+                            ? `2px solid ${accentColor}`
+                            : `2px solid color-mix(in srgb, ${accentColor} 30%, var(--card-border, #e5e7eb))`,
+                          transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                          backgroundColor: 'var(--card-bg, #ffffff)',
+                        }}
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative" style={{ height: '200px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              transform: 'scale(0.2)',
+                              transformOrigin: 'top left',
+                              width: '500%',
+                              height: '500%',
+                              pointerEvents: 'none',
+                            }}
+                            dangerouslySetInnerHTML={{ __html: style.thumbnail(accentColor) }}
+                          />
+                          {isSelected && (
+                            <div
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: accentColor }}
+                            >
+                              <HiOutlineCheck className="w-4 h-4 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        {/* Info with Recommended badge */}
+                        <div className="px-3 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary, #111827)' }}>
+                              {style.name}
+                            </p>
+                            <span
+                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
+                              style={{
+                                backgroundColor: `color-mix(in srgb, ${accentColor} 15%, transparent)`,
+                                color: accentColor,
+                              }}
+                            >
+                              Recommended
+                            </span>
+                          </div>
+                          <p className="text-[10px] mt-0.5 italic" style={{ color: 'var(--text-muted, #9ca3af)' }}>
+                            {reason}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Divider */}
+                <div className="mt-6 border-b" style={{ borderColor: 'var(--card-border, #e5e7eb)' }} />
+                <h3 className="text-xs font-semibold uppercase tracking-wider mt-4 mb-3" style={{ color: 'var(--text-secondary, #6b7280)' }}>
+                  All Styles
+                </h3>
+              </div>
+            )}
             <div
               className="grid gap-4"
               style={{
@@ -272,7 +363,7 @@ export default function StylePickerModal({
                         >
                           {style.name}
                         </p>
-                        {isDefault && (
+                        {recommendations.some(r => r.styleId === style.id) && (
                           <span
                             className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
                             style={{
@@ -300,6 +391,7 @@ export default function StylePickerModal({
                 );
               })}
             </div>
+            </>
           )}
         </div>
 

@@ -40,6 +40,7 @@ import {
   HiOutlineCheckCircle,
   HiOutlineShieldCheck,
   HiOutlineCube,
+  HiOutlinePhone,
 } from 'react-icons/hi2';
 
 interface DashboardData {
@@ -634,6 +635,22 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {/* ── Discovery Call CTA ── */}
+          <button
+            onClick={() => router.push('/discovery-call')}
+            className="w-full rounded-xl border p-4 flex items-center gap-4 transition-all hover:shadow-sm text-left mb-4"
+            style={{ backgroundColor: 'var(--accent-light)', borderColor: 'var(--accent-border)' }}
+          >
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--accent)', color: '#fff' }}>
+              <HiOutlinePhone className="text-lg" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Drop Your Discovery Call Recording</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Upload a call recording or paste notes — get structured intelligence and one-click content generation.</p>
+            </div>
+            <HiOutlineArrowTopRightOnSquare className="text-sm flex-shrink-0" style={{ color: 'var(--accent)' }} />
+          </button>
 
           {/* ── Prompt Engine ── */}
           <div className="card rounded-xl" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>

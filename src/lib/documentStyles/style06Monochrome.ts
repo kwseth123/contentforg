@@ -1,6 +1,6 @@
 // ════════════════════════════════════════════════════════
 // Style 06 — Monochrome
-// Black, white, gray — serious financial institution feel
+// New York Times editorial — ink on paper elegance
 // ════════════════════════════════════════════════════════
 
 import type { DocumentStyle, StyleInput } from './types';
@@ -15,246 +15,452 @@ import {
   darken,
   contrastText,
   hexToRgb,
+  buildOnePagerDocument,
+  professionalSymbolCSS,
+  stripEmojis,
 } from './shared';
 
 const style06Monochrome: DocumentStyle = {
   id: 'style-06',
   name: 'Monochrome',
   category: 'clean',
-  description: 'Minimal black-and-white design with a single accent line — serious and authoritative',
-  keywords: ['monochrome', 'black', 'white', 'minimal', 'financial', 'corporate', 'ibm-plex'],
+  description: 'NYT editorial elegance — serif typography, dense columns, ink-on-paper authority',
+  keywords: ['monochrome', 'editorial', 'newspaper', 'serif', 'georgia', 'black-white', 'nyt'],
 
   render(input: StyleInput): string {
     const brand = resolveBrand(input);
+
+    // One-pager shortcut
+    if (input.contentType === 'solution-one-pager') {
+      return buildOnePagerDocument(input, brand);
+    }
+
     const {
       sections,
       contentType,
       prospect,
       companyName,
+      companyDescription,
       logoBase64,
       prospectLogoBase64,
       date,
     } = input;
 
+    const accent = brand.primary;
     const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const titleLabel = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    // Detect stat sections
+    const isStatSection = (title: string) =>
+      /metric|stat|number|result|roi|kpi|outcome|impact/i.test(title);
 
     const css = `
       ${brandCSSVars(brand)}
+      ${professionalSymbolCSS('#222222')}
+
+      @page {
+        size: letter;
+        margin: 0.75in 0.85in;
+      }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
 
       body {
-        font-family: var(--brand-font-primary);
-        color: #333333;
-        background: #FFFFFF;
-        line-height: 1.65;
-        font-size: var(--brand-font-body-size);
+        font-family: Georgia, 'Times New Roman', 'Noto Serif', serif;
+        color: #222222;
+        background: #ffffff;
+        line-height: 1.6;
+        font-size: 15px;
+        margin: 0;
+        padding: 0;
       }
 
-      /* ── Header ── */
-      .doc-header {
-        padding: 40px 64px 32px;
-        border-bottom: 1px solid #222222;
-        position: relative;
+      /* ── Masthead / Header ── */
+      .mono-masthead {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 48px 0;
       }
-      .doc-header::after {
-        content: '';
-        position: absolute;
-        bottom: -3px;
-        left: 64px;
-        width: 80px;
-        height: 3px;
-        background: var(--brand-primary);
-      }
-      .header-row {
+      .mono-logo-bar {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 20px;
+        align-items: center;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #cccccc;
+        margin-bottom: 10px;
       }
-      .header-logo img {
-        height: 32px;
+      .mono-logo-area {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .mono-logo-area img {
+        height: 30px;
+      }
+      .mono-logo-accent {
+        width: 4px;
+        height: 30px;
+        background: ${accent};
+      }
+      .mono-logo-text {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 700;
+        font-size: 16px;
+        color: #111;
+        letter-spacing: -0.01em;
+      }
+      .mono-prospect-logo img {
+        height: 24px;
         filter: grayscale(100%);
+        opacity: 0.6;
       }
-      .header-prospect-logo img {
-        height: 28px;
-        filter: grayscale(100%);
-        opacity: 0.7;
+      .mono-header-rule-thin {
+        border: none;
+        border-top: 1px solid #cccccc;
+        margin: 0;
       }
-      .header-title {
-        font-size: var(--brand-font-h1-size);
+      .mono-header-rule-thick {
+        border: none;
+        border-top: 3px double #222222;
+        margin: 10px 0 20px;
+      }
+      .mono-headline-area {
+        text-align: center;
+        padding: 0 24px;
+        margin-bottom: 4px;
+      }
+      .mono-doc-type {
+        font-family: Georgia, serif;
+        font-size: 11px;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #888;
+        margin-bottom: 12px;
+      }
+      .mono-headline {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 34px;
         font-weight: 700;
         color: #000000;
         letter-spacing: -0.02em;
-        margin-bottom: 4px;
+        line-height: 1.2;
+        margin-bottom: 10px;
       }
-      .header-meta {
-        font-size: 13px;
-        color: #888888;
+      .mono-subheadline {
+        font-family: Georgia, serif;
+        font-size: 16px;
         font-weight: 400;
+        color: #555555;
+        font-style: italic;
+        line-height: 1.45;
+        margin-bottom: 6px;
+      }
+      .mono-dateline {
+        font-family: Georgia, serif;
+        font-size: 12px;
+        color: #999999;
+        margin-bottom: 0;
+        letter-spacing: 0.02em;
+      }
+      .mono-header-rule-bottom {
+        border: none;
+        border-top: 1px solid #cccccc;
+        margin: 20px 0 0;
       }
 
-      /* ── Section wrapper ── */
-      .sections-wrapper {
-        max-width: 100%;
-      }
-      .section {
-        padding: 40px 64px;
-      }
-      .section:nth-child(odd) {
-        background: #FFFFFF;
-      }
-      .section:nth-child(even) {
-        background: #F9F9F9;
+      /* ── Wrapper ── */
+      .mono-wrapper {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 0 48px;
       }
 
-      /* ── Section headers ── */
-      .section h2 {
-        font-size: var(--brand-font-h2-size);
-        font-weight: 700;
-        color: #000000;
-        margin-bottom: 16px;
+      /* ── Sections ── */
+      .mono-section {
+        padding: 32px 0;
+        border-bottom: 1px solid #dddddd;
+      }
+      .mono-section:last-child { border-bottom: none; }
+
+      .mono-section-title {
+        font-family: Georgia, serif;
+        font-size: 13px;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: #444444;
+        margin-bottom: 18px;
         padding-bottom: 8px;
-        border-bottom: 1px solid #222222;
+        border-bottom: 1px solid #dddddd;
+        font-variant: small-caps;
       }
-      .section h3 {
-        font-size: var(--brand-font-h3-size);
+
+      /* Typography */
+      .mono-section-body h2 { display: none; }
+      .mono-section-body h3 {
+        font-family: Georgia, serif;
+        font-size: 20px;
         font-weight: 700;
         color: #111111;
-        margin: 24px 0 8px;
+        margin: 24px 0 10px;
+        line-height: 1.3;
       }
-      .section h4 {
-        font-size: 14px;
+      .mono-section-body h4 {
+        font-family: Georgia, serif;
+        font-size: 15px;
         font-weight: 700;
         color: #222222;
-        margin: 18px 0 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      .section p {
-        margin-bottom: 12px;
-        color: #333333;
-      }
-      .section strong {
-        font-weight: 600;
-        color: #000000;
-      }
-      .section em {
+        margin: 20px 0 8px;
         font-style: italic;
-        color: #555555;
       }
-      .section hr {
+      .mono-section-body p {
+        margin-bottom: 14px;
+        color: #222222;
+        line-height: 1.65;
+        text-align: justify;
+        hyphens: auto;
+      }
+      .mono-section-body strong { font-weight: 700; color: #000000; }
+      .mono-section-body em { font-style: italic; color: #444444; }
+      .mono-section-body hr {
         border: none;
         height: 1px;
-        background: #CCCCCC;
+        background: #cccccc;
         margin: 24px 0;
       }
 
-      /* ── Lists ── */
-      .section ul, .section ol {
-        margin: 10px 0 14px 22px;
+      /* Lists */
+      .mono-section-body ul, .mono-section-body ol {
+        margin: 10px 0 16px 20px;
         padding: 0;
       }
-      .section li {
-        margin-bottom: 5px;
-      }
-      .section ul li::marker {
+      .mono-section-body li {
+        margin-bottom: 6px;
+        line-height: 1.6;
         color: #222222;
       }
+      .mono-section-body ul li::marker { color: #444444; }
+
+      /* Pull quotes */
+      .mono-section-body blockquote {
+        border-left: 2px solid #333333;
+        margin: 28px 32px 28px 0;
+        padding: 0 0 0 20px;
+        font-family: Georgia, serif;
+        font-size: 17px;
+        font-style: italic;
+        color: #333333;
+        line-height: 1.55;
+        background: transparent;
+      }
+
+      /* ── Stat boxes (serif bold numbers) ── */
+      .mono-stat-row {
+        display: flex;
+        gap: 24px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+      .mono-stat-item {
+        flex: 1;
+        min-width: 120px;
+        padding: 20px 16px;
+        border: 1px solid #cccccc;
+        text-align: center;
+      }
+      .mono-stat-value {
+        font-family: Georgia, serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #000000;
+        line-height: 1.1;
+        margin-bottom: 6px;
+      }
+      .mono-stat-label {
+        font-family: Georgia, serif;
+        font-size: 11px;
+        color: #777777;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .mono-stat-content p { text-align: left; }
 
       /* ── Tables ── */
-      .section table {
+      .mono-section-body table {
         width: 100%;
         border-collapse: collapse;
-        margin: 20px 0;
-        font-size: 13px;
-      }
-      .section th {
-        background: #222222;
-        color: #FFFFFF;
-        font-weight: 600;
-        text-align: left;
-        padding: 10px 14px;
-        border: 1px solid #222222;
-      }
-      .section td {
-        padding: 9px 14px;
-        border: 1px solid #DDDDDD;
-        color: #333333;
-      }
-      .section tr:nth-child(even) td {
-        background: #F5F5F5;
-      }
-
-      /* ── Blockquotes / callouts ── */
-      .section blockquote {
-        border-left: 3px solid #222222;
-        padding: 14px 18px;
-        margin: 18px 0;
-        background: #F5F5F5;
-        color: #333333;
+        margin: 24px 0;
         font-size: 14px;
+        font-family: Georgia, serif;
+      }
+      .mono-section-body thead th {
+        background: #ffffff;
+        color: #000000;
+        font-weight: 700;
+        text-align: left;
+        padding: 8px 12px;
+        border-top: 1px solid #222222;
+        border-bottom: 1px solid #222222;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .mono-section-body td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #dddddd;
+        color: #333333;
+      }
+      .mono-section-body tr:last-child td {
+        border-bottom: 1px solid #222222;
       }
 
       /* ── Footer ── */
-      .footer {
-        text-align: center;
-        padding: 28px 64px;
-        font-size: 11px;
-        color: #AAAAAA;
-        border-top: 1px solid #DDDDDD;
-        background: #FFFFFF;
+      .mono-footer {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 24px 48px 40px;
+        border-top: 1px solid #cccccc;
       }
+      .mono-footer-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: Georgia, serif;
+        font-size: 10px;
+        color: #aaaaaa;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-variant: small-caps;
+      }
+      .mono-footer-company { font-weight: 700; color: #888888; }
     `;
 
-    const logoHtml = logoBase64
-      ? `<div class="header-logo"><img src="${logoBase64}" alt="${companyName}" /></div>`
-      : `<div class="header-logo">${brandLogoHtml(input)}</div>`;
-    const prospectLogoHtml = prospectLogoBase64
-      ? `<div class="header-prospect-logo"><img src="${prospectLogoBase64}" alt="${prospect.companyName}" /></div>`
-      : `<div></div>`;
+    // Logo with accent bar (only place accent color appears)
+    const logoArea = logoBase64
+      ? `<div class="mono-logo-area"><div class="mono-logo-accent"></div><img src="${logoBase64}" alt="${companyName}" /></div>`
+      : `<div class="mono-logo-area"><div class="mono-logo-accent"></div><span class="mono-logo-text">${companyName}</span></div>`;
 
-    const sectionsHtml = sections
-      .map((s) => {
-        const rendered = formatMarkdown(s.content);
-        return `<div class="section"><h2>${s.title}</h2>${rendered}</div>`;
-      })
-      .join('');
+    const prospectLogoHtml = prospectLogoBase64
+      ? `<div class="mono-prospect-logo"><img src="${prospectLogoBase64}" alt="${prospect.companyName}" /></div>`
+      : '';
+
+    // Build sections
+    const sectionsHtml = sections.map((s, i) => {
+      const title = stripEmojis(s.title);
+      const content = stripEmojis(s.content);
+
+      if (isStatSection(title)) {
+        const lines = content.split('\n').filter(l => l.trim());
+        const statItems: { value: string; label: string }[] = [];
+        const otherLines: string[] = [];
+        for (const line of lines) {
+          const pipeMatch = line.match(/^[*\-]?\s*\**(.+?)\**\s*[|:]\s*(.+)$/);
+          const boldMatch = line.match(/\*\*(.+?)\*\*\s*(.+)/);
+          if (pipeMatch) {
+            statItems.push({ value: pipeMatch[1].replace(/\*+/g, '').trim(), label: pipeMatch[2].replace(/\*+/g, '').trim() });
+          } else if (boldMatch) {
+            statItems.push({ value: boldMatch[1].trim(), label: boldMatch[2].trim() });
+          } else {
+            otherLines.push(line);
+          }
+        }
+
+        return `
+          <div class="mono-section">
+            <div class="mono-section-title">${title}</div>
+            ${statItems.length > 0 ? `
+              <div class="mono-stat-row">
+                ${statItems.map(st => `
+                  <div class="mono-stat-item">
+                    <div class="mono-stat-value">${st.value}</div>
+                    <div class="mono-stat-label">${st.label}</div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            ${otherLines.length > 0 ? `<div class="mono-stat-content">${formatMarkdown(otherLines.join('\n'))}</div>` : ''}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="mono-section">
+          <div class="mono-section-title">${title}</div>
+          <div class="mono-section-body">${formatMarkdown(content)}</div>
+        </div>
+      `;
+    }).join('');
 
     const body = `
-      <div class="doc-header">
-        <div class="header-row">
-          ${logoHtml}
+      <div class="mono-masthead">
+        <div class="mono-logo-bar">
+          ${logoArea}
           ${prospectLogoHtml}
         </div>
-        <div class="header-title">${contentType}</div>
-        <div class="header-meta">${prospect.companyName}${prospect.industry ? ` · ${prospect.industry}` : ''} · ${dateStr}</div>
+        <hr class="mono-header-rule-thick" />
+        <div class="mono-headline-area">
+          <div class="mono-doc-type">${titleLabel}</div>
+          <div class="mono-headline">${titleLabel} for ${prospect.companyName}</div>
+          <div class="mono-subheadline">Prepared by ${companyName}${prospect.industry ? ' for the ' + prospect.industry + ' sector' : ''}</div>
+          <div class="mono-dateline">${dateStr}</div>
+        </div>
+        <hr class="mono-header-rule-bottom" />
       </div>
-      <div class="sections-wrapper">
+
+      <div class="mono-wrapper">
         ${sectionsHtml}
       </div>
-      <div class="footer">${companyName} | ${dateStr} | Generated by ContentForg</div>
+
+      <div class="mono-footer">
+        <div class="mono-footer-inner">
+          <div><span class="mono-footer-company">${companyName}</span>${companyDescription ? ' &middot; ' + companyDescription : ''}</div>
+          <div>${dateStr}</div>
+          <div>Page 1</div>
+        </div>
+      </div>
     `;
 
-    return wrapDocument({ title: `${contentType} — ${prospect.companyName}`, css, body, fonts: brandFonts(brand) });
+    return wrapDocument({
+      title: `${titleLabel} - ${prospect.companyName} - ${companyName}`,
+      css,
+      body,
+      fonts: ['Noto Serif'],
+    });
   },
 
   thumbnail(accentColor: string): string {
     return `
-    <div style="width:1000px;font-family:'IBM Plex Sans',sans-serif;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-      <div style="padding:24px 32px 20px;border-bottom:1px solid #222;position:relative;">
-        <div style="position:absolute;bottom:-2px;left:32px;width:60px;height:3px;background:${accentColor};"></div>
-        <div style="font-size:20px;font-weight:700;color:#000;margin-bottom:4px;">Document Title</div>
-        <div style="font-size:11px;color:#888;">Company · Industry · Date</div>
+    <div style="width:1000px;font-family:Georgia,'Times New Roman',serif;background:#fff;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+      <div style="padding:20px 32px 0;">
+        <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid #ccc;margin-bottom:8px;">
+          <div style="width:3px;height:22px;background:${accentColor};"></div>
+          <span style="font-weight:700;font-size:14px;color:#111;">Company</span>
+        </div>
+        <div style="border-top:3px double #222;padding-top:14px;text-align:center;margin-bottom:12px;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:#888;margin-bottom:8px;">Proposal</div>
+          <div style="font-size:22px;font-weight:700;color:#000;letter-spacing:-0.02em;margin-bottom:6px;">Document Title</div>
+          <div style="font-size:13px;font-style:italic;color:#555;">Prepared for the enterprise sector</div>
+        </div>
+        <div style="border-top:1px solid #ccc;padding-top:16px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:#444;font-variant:small-caps;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #ddd;">Section One</div>
+          <div style="height:8px;background:#E5E5E5;border-radius:4px;margin-bottom:6px;width:95%;"></div>
+          <div style="height:8px;background:#E5E5E5;border-radius:4px;margin-bottom:6px;width:80%;"></div>
+          <div style="height:8px;background:#E5E5E5;border-radius:4px;width:65%;"></div>
+        </div>
       </div>
-      <div style="padding:20px 32px;background:#fff;">
-        <div style="font-size:13px;font-weight:700;color:#000;border-bottom:1px solid #222;padding-bottom:6px;margin-bottom:10px;">Section One</div>
-        <div style="height:8px;background:#E5E5E5;border-radius:4px;margin-bottom:6px;width:95%;"></div>
-        <div style="height:8px;background:#E5E5E5;border-radius:4px;margin-bottom:6px;width:80%;"></div>
-        <div style="height:8px;background:#E5E5E5;border-radius:4px;width:60%;"></div>
-      </div>
-      <div style="padding:20px 32px;background:#F9F9F9;">
-        <div style="font-size:13px;font-weight:700;color:#000;border-bottom:1px solid #222;padding-bottom:6px;margin-bottom:10px;">Section Two</div>
-        <div style="height:8px;background:#DCDCDC;border-radius:4px;margin-bottom:6px;width:90%;"></div>
-        <div style="height:8px;background:#DCDCDC;border-radius:4px;width:70%;"></div>
+      <div style="padding:16px 32px;">
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;border:1px solid #ccc;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#000;">42%</div>
+            <div style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#777;">Metric</div>
+          </div>
+          <div style="flex:1;border:1px solid #ccc;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#000;">3.2x</div>
+            <div style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#777;">Return</div>
+          </div>
+        </div>
       </div>
     </div>`;
   },

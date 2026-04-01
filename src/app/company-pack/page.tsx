@@ -17,6 +17,7 @@ export default function CompanyPackPage() {
 
   const [customAccent, setCustomAccent] = useState('#6366F1');
   const [isCustom, setIsCustom] = useState(false);
+  const [docStyleMode, setDocStyleMode] = useState<'professional' | 'expressive'>('professional');
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,6 +32,17 @@ export default function CompanyPackPage() {
       setIsCustom(!matchesPreset);
     }
   }, [theme]);
+
+  useEffect(() => {
+    fetch('/api/knowledge-base')
+      .then(res => res.json())
+      .then(kb => {
+        if (kb.brandGuidelines?.documentStyleMode) {
+          setDocStyleMode(kb.brandGuidelines.documentStyleMode);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const applyPreset = async (preset: ThemeConfig) => {
     // Preserve logo when switching presets
@@ -66,6 +78,23 @@ export default function CompanyPackPage() {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const toggleDocStyleMode = async (mode: 'professional' | 'expressive') => {
+    setDocStyleMode(mode);
+    try {
+      const res = await fetch('/api/knowledge-base');
+      const kb = await res.json();
+      const updatedGuidelines = { ...(kb.brandGuidelines || {}), documentStyleMode: mode };
+      await fetch('/api/knowledge-base', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...kb, brandGuidelines: updatedGuidelines }),
+      });
+      toast.success(`Document style set to ${mode}`);
+    } catch {
+      toast.error('Failed to save document style');
+    }
   };
 
   const removeLogo = async () => {
@@ -221,6 +250,58 @@ export default function CompanyPackPage() {
                   Badge Preview
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* ── Document Style ── */}
+          <div className="card">
+            <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Document Style</h2>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              Control emoji and symbol usage in generated documents
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => toggleDocStyleMode('professional')}
+                className="relative rounded-xl border-2 p-5 text-left transition-all hover:shadow-sm"
+                style={{
+                  backgroundColor: 'var(--card-bg)',
+                  borderColor: docStyleMode === 'professional' ? 'var(--accent)' : 'var(--card-border)',
+                }}
+              >
+                {docStyleMode === 'professional' && (
+                  <div
+                    className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+                  >
+                    <HiOutlineCheck className="text-xs" />
+                  </div>
+                )}
+                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Professional</p>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  No emojis. Clean typographic symbols, geometric accents, and CSS-styled indicators.
+                </p>
+              </button>
+              <button
+                onClick={() => toggleDocStyleMode('expressive')}
+                className="relative rounded-xl border-2 p-5 text-left transition-all hover:shadow-sm"
+                style={{
+                  backgroundColor: 'var(--card-bg)',
+                  borderColor: docStyleMode === 'expressive' ? 'var(--accent)' : 'var(--card-border)',
+                }}
+              >
+                {docStyleMode === 'expressive' && (
+                  <div
+                    className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+                  >
+                    <HiOutlineCheck className="text-xs" />
+                  </div>
+                )}
+                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Expressive</p>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  Tasteful unicode symbols and simple SVG icons where appropriate.
+                </p>
+              </button>
             </div>
           </div>
 

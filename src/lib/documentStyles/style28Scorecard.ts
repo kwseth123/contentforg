@@ -1,8 +1,9 @@
 // ════════════════════════════════════════════════════════
 // Style 28 — Scorecard
-// Evaluation framework layout — scored/rated sections with
-// traffic-light indicators, rating bars, letter grades,
-// summary table, and checkmark findings
+// Balanced scorecard / KPI dashboard document.
+// Kaplan & Norton meets modern design — grid of KPI cards,
+// traffic-light indicators, progress bars, RAG tables,
+// aggregate summary row, data-first layout.
 // ════════════════════════════════════════════════════════
 
 import type { DocumentStyle, StyleInput } from './types';
@@ -16,6 +17,10 @@ import {
   lighten,
   darken,
   contrastText,
+  hexToRgb,
+  buildOnePagerDocument,
+  professionalSymbolCSS,
+  stripEmojis,
 } from './shared';
 
 // ── Score / grade helpers ──────────────────────────────
@@ -23,28 +28,25 @@ import {
 const GRADES = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C'] as const;
 
 function sectionGrade(idx: number, total: number): string {
-  // Distribute grades across sections so earlier sections score higher
   const ratio = total <= 1 ? 0 : idx / (total - 1);
   const gradeIdx = Math.min(Math.floor(ratio * 4), GRADES.length - 1);
   return GRADES[gradeIdx];
 }
 
 function sectionScore(idx: number, total: number): number {
-  // 95 down to ~68 spread across sections
   return Math.round(95 - (idx / Math.max(total - 1, 1)) * 27);
 }
 
-function trafficColor(
-  score: number,
-  brand: { accent: string; primary: string },
-): string {
-  if (score >= 80) return brand.accent;              // green — brand accent
-  if (score >= 60) return lighten(brand.accent, 0.4); // amber — lightened accent
-  return '#94a3b8';                                    // muted neutral
+function ragStatus(score: number): 'green' | 'amber' | 'red' {
+  if (score >= 80) return 'green';
+  if (score >= 60) return 'amber';
+  return 'red';
 }
 
-function ratingBarPct(score: number): number {
-  return Math.max(10, Math.min(100, score));
+function ragColor(status: 'green' | 'amber' | 'red'): string {
+  if (status === 'green') return '#22c55e';
+  if (status === 'amber') return '#eab308';
+  return '#ef4444';
 }
 
 function extractFindings(content: string): string[] {
@@ -58,10 +60,27 @@ function extractFindings(content: string): string[] {
   return findings.slice(0, 5);
 }
 
+function extractStatValue(content: string): { value: string; label: string } | null {
+  const patterns = [
+    /(\d{1,3}(?:\.\d+)?%)\s*(.{0,30})/,
+    /(\$[\d,.]+[MBKmk]?)\s*(.{0,30})/,
+    /(\d+[xX])\s*(.{0,30})/,
+  ];
+  for (const p of patterns) {
+    const m = content.match(p);
+    if (m) return { value: m[1], label: m[2]?.trim() || '' };
+  }
+  return null;
+}
+
 // ── Render ─────────────────────────────────────────────
 
 function render(input: StyleInput): string {
   const brand = resolveBrand(input);
+  const accent = brand.accent || brand.primary;
+
+  if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
+
   const { sections, contentType, prospect, companyName, date } = input;
   const dateStr =
     date ||
@@ -75,181 +94,356 @@ function render(input: StyleInput): string {
     .replace(/-/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase());
 
-  // Pre-compute scores for each section
   const scored = sections.map((s, i) => ({
     ...s,
     grade: sectionGrade(i, sections.length),
     score: sectionScore(i, sections.length),
+    content: stripEmojis(s.content),
   }));
 
   const overallScore = scored.length
     ? Math.round(scored.reduce((sum, s) => sum + s.score, 0) / scored.length)
     : 82;
   const overallGrade = overallScore >= 90 ? 'A' : overallScore >= 80 ? 'B+' : overallScore >= 70 ? 'B' : 'C+';
+  const overallRag = ragStatus(overallScore);
+
+  // ── Aggregate summary cards ─────────────────────────
+  const greenCount = scored.filter(s => ragStatus(s.score) === 'green').length;
+  const amberCount = scored.filter(s => ragStatus(s.score) === 'amber').length;
+  const redCount = scored.filter(s => ragStatus(s.score) === 'red').length;
+
+  const summaryCardsHtml = `
+    <div class="sc-agg-row">
+      <div class="sc-agg-card sc-agg-overall">
+        <div class="sc-agg-label">Overall Score</div>
+        <div class="sc-agg-value" style="color:${accent};">${overallScore}<span class="sc-agg-unit">/100</span></div>
+        <div class="sc-agg-grade" style="background:${accent};color:${contrastText(accent)};">${overallGrade}</div>
+      </div>
+      <div class="sc-agg-card">
+        <div class="sc-agg-label">On Track</div>
+        <div class="sc-agg-value" style="color:#22c55e;">${greenCount}</div>
+        <div class="sc-agg-indicator"><span class="sc-traffic-light" style="background:#22c55e;"></span></div>
+      </div>
+      <div class="sc-agg-card">
+        <div class="sc-agg-label">At Risk</div>
+        <div class="sc-agg-value" style="color:#eab308;">${amberCount}</div>
+        <div class="sc-agg-indicator"><span class="sc-traffic-light" style="background:#eab308;"></span></div>
+      </div>
+      <div class="sc-agg-card">
+        <div class="sc-agg-label">Needs Attention</div>
+        <div class="sc-agg-value" style="color:#ef4444;">${redCount}</div>
+        <div class="sc-agg-indicator"><span class="sc-traffic-light" style="background:#ef4444;"></span></div>
+      </div>
+    </div>`;
 
   // ── Summary table rows ───────────────────────────────
   const summaryRows = scored
     .map(s => {
-      const tColor = trafficColor(s.score, brand);
+      const status = ragStatus(s.score);
+      const color = ragColor(status);
       return `<tr>
-        <td class="sum-name">${s.title}</td>
-        <td class="sum-grade">${s.grade}</td>
+        <td class="sum-status"><span class="sc-traffic-light" style="background:${color};"></span></td>
+        <td class="sum-name">${stripEmojis(s.title)}</td>
+        <td class="sum-grade" style="color:${accent};">${s.grade}</td>
+        <td class="sum-score">${s.score}</td>
         <td class="sum-bar-cell">
           <div class="sum-bar-track">
-            <div class="sum-bar-fill" style="width:${ratingBarPct(s.score)}%;background:${tColor};"></div>
+            <div class="sum-bar-fill" style="width:${s.score}%;background:${color};"></div>
           </div>
         </td>
-        <td class="sum-dot"><span class="traffic-dot" style="background:${tColor};"></span></td>
       </tr>`;
     })
     .join('');
 
-  // ── Section cards ────────────────────────────────────
-  const sectionsHtml = scored
+  // ── KPI cards grid ──────────────────────────────────
+  const kpiCardsHtml = scored
     .map((s, i) => {
-      const tColor = trafficColor(s.score, brand);
-      const badgeBg = i % 2 === 0 ? brand.primary : brand.secondary;
+      const status = ragStatus(s.score);
+      const color = ragColor(status);
+      const stat = extractStatValue(s.content);
       const findings = extractFindings(s.content);
-
-      const findingsHtml =
-        findings.length > 0
-          ? `<div class="sc-findings">
-              <div class="sc-findings-label">Key Findings</div>
-              ${findings.map(f => `<div class="sc-finding-item"><span class="sc-check">&#10003;</span> ${f}</div>`).join('')}
-            </div>`
-          : '';
+      const trendUp = s.score >= 75;
 
       return `
-      <div class="sc-card">
-        <div class="sc-card-badge" style="background:${badgeBg};color:${contrastText(badgeBg)};">
-          <span class="sc-badge-grade">${s.grade}</span>
-          <span class="sc-badge-score">${s.score}</span>
+      <div class="sc-kpi-card">
+        <div class="sc-kpi-header">
+          <div class="sc-kpi-category">${stripEmojis(s.title)}</div>
+          <span class="sc-traffic-light" style="background:${color};"></span>
         </div>
-        <div class="sc-card-main">
-          <div class="sc-card-top">
-            <h2 class="sc-card-title">${s.title}</h2>
-            <div class="sc-card-indicators">
-              <span class="traffic-dot" style="background:${tColor};"></span>
-              <div class="sc-mini-bar">
-                <div class="sc-mini-fill" style="width:${ratingBarPct(s.score)}%;background:${tColor};"></div>
-              </div>
-            </div>
+        <div class="sc-kpi-metrics">
+          <div class="sc-kpi-score-block">
+            <div class="sc-kpi-score-value">${s.score}</div>
+            <div class="sc-kpi-score-label">Score</div>
           </div>
-          <div class="sc-card-body">${formatMarkdown(s.content)}</div>
-          ${findingsHtml}
+          <div class="sc-kpi-grade-block" style="background:${lighten(accent, 0.88)};color:${accent};">
+            ${s.grade}
+          </div>
+          <div class="sc-kpi-trend ${trendUp ? 'trend-up' : 'trend-down'}">
+            <span class="sc-trend-arrow">${trendUp ? '&#9650;' : '&#9660;'}</span>
+          </div>
         </div>
+        <div class="sc-kpi-bar">
+          <div class="sc-kpi-bar-track">
+            <div class="sc-kpi-bar-fill" style="width:${s.score}%;background:${color};"></div>
+            <div class="sc-kpi-bar-target" style="left:80%;"></div>
+          </div>
+          <div class="sc-kpi-bar-labels">
+            <span>0</span>
+            <span class="sc-kpi-target-label">Target: 80</span>
+            <span>100</span>
+          </div>
+        </div>
+        ${stat ? `<div class="sc-kpi-stat"><span class="sc-kpi-stat-value">${stat.value}</span> ${stat.label}</div>` : ''}
+        <div class="sc-kpi-body">${formatMarkdown(s.content)}</div>
+        ${findings.length > 0 ? `
+        <div class="sc-kpi-findings">
+          ${findings.map(f => `<div class="sc-finding-row"><span class="sc-finding-check" style="color:${color};">&#10003;</span> ${stripEmojis(f)}</div>`).join('')}
+        </div>` : ''}
       </div>`;
     })
     .join('');
 
+  // ── RAG comparison table ────────────────────────────
+  const ragTableHtml = `
+    <div class="sc-rag-section">
+      <h2 class="sc-rag-title">Performance Assessment Overview</h2>
+      <table class="sc-rag-table">
+        <thead>
+          <tr>
+            <th class="rag-th-status">Status</th>
+            <th class="rag-th-category">Performance Category</th>
+            <th class="rag-th-grade">Grade</th>
+            <th class="rag-th-score">Score</th>
+            <th class="rag-th-progress">Progress to Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${summaryRows}
+        </tbody>
+        <tfoot>
+          <tr class="sc-rag-total">
+            <td><span class="sc-traffic-light" style="background:${ragColor(overallRag)};"></span></td>
+            <td class="sum-name"><strong>Overall Assessment</strong></td>
+            <td class="sum-grade" style="color:${accent};"><strong>${overallGrade}</strong></td>
+            <td class="sum-score"><strong>${overallScore}</strong></td>
+            <td class="sum-bar-cell">
+              <div class="sum-bar-track">
+                <div class="sum-bar-fill" style="width:${overallScore}%;background:${accent};"></div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+
   // ── CSS ──────────────────────────────────────────────
+  const rgb = hexToRgb(accent);
   const css = `
     ${brandCSSVars(brand)}
+    ${professionalSymbolCSS(accent)}
+
+    @page {
+      size: letter;
+      margin: 0.6in 0.7in;
+    }
 
     body {
       font-family: var(--brand-font-secondary);
       color: var(--brand-text);
-      background: #f4f5f7;
-      line-height: 1.65;
+      background: #ffffff;
+      line-height: 1.6;
       font-size: var(--brand-font-body-size);
+      -webkit-font-smoothing: antialiased;
     }
-    .page { max-width: 860px; margin: 0 auto; padding: 48px 40px; }
 
-    /* ── Header ── */
+    .sc-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    /* ── Print-ready header ── */
     .sc-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
+      padding: 28px 36px;
+      background: ${brand.primary};
+      color: ${contrastText(brand.primary)};
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 28px;
+    }
+    .sc-header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .sc-header-logo img { height: 36px; filter: brightness(0) invert(1); }
+    .sc-header-logo span { color: ${contrastText(brand.primary)}; }
+    .sc-header-divider {
+      width: 1px;
+      height: 36px;
+      background: rgba(255,255,255,0.25);
+    }
+    .sc-header-title {
+      font-family: var(--brand-font-primary);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .sc-header-right {
+      text-align: right;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .sc-header-prospect {
+      font-weight: 700;
+      font-size: 14px;
+      opacity: 1;
+      margin-bottom: 2px;
+    }
+
+    .sc-body { padding: 0 8px; }
+
+    /* ── Reporting period bar ── */
+    .sc-period-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: ${lighten(accent, 0.94)};
+      border-left: 4px solid ${accent};
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 28px;
+      font-size: 13px;
+      color: ${darken(brand.text, 0.1)};
+    }
+    .sc-period-bar strong { color: ${accent}; font-weight: 700; }
+
+    /* ── Aggregate summary row ── */
+    .sc-agg-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 16px;
       margin-bottom: 32px;
     }
-    .sc-header-left { flex: 1; }
-    .sc-header-logo { margin-bottom: 18px; }
-    .sc-header h1 {
-      font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h1-size);
-      font-weight: 700;
-      color: #111;
-      margin-bottom: 6px;
-    }
-    .sc-header-sub { font-size: 14px; color: #777; }
-
-    /* ── Overall score hero ── */
-    .sc-hero {
-      width: 110px;
+    .sc-agg-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
       text-align: center;
+      position: relative;
+    }
+    .sc-agg-card.sc-agg-overall {
+      border-color: ${lighten(accent, 0.6)};
+      background: linear-gradient(135deg, ${lighten(accent, 0.96)}, #ffffff);
+    }
+    .sc-agg-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7280;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .sc-agg-value {
+      font-family: var(--brand-font-primary);
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .sc-agg-unit {
+      font-size: 16px;
+      font-weight: 500;
+      opacity: 0.6;
+    }
+    .sc-agg-grade {
+      display: inline-block;
+      padding: 3px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+    .sc-agg-indicator { margin-top: 8px; }
+
+    /* ── Traffic light dots ── */
+    .sc-traffic-light {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
       flex-shrink: 0;
     }
-    .sc-hero-circle {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      border: 5px solid var(--brand-primary);
+
+    /* ── Visual section break ── */
+    .sc-section-break {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      margin: 0 auto 6px;
-      background: #fff;
+      gap: 16px;
+      margin: 36px 0 24px;
     }
-    .sc-hero-grade {
-      font-family: var(--brand-font-primary);
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--brand-primary);
-      line-height: 1;
+    .sc-section-break-line {
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
     }
-    .sc-hero-num {
-      font-size: 13px;
-      font-weight: 600;
-      color: #888;
-      margin-top: 2px;
-    }
-    .sc-hero-label {
-      font-size: 10px;
+    .sc-section-break-label {
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #999;
+      color: ${accent};
+      white-space: nowrap;
     }
 
-    /* ── Summary scorecard table ── */
-    .sc-summary {
-      background: #fff;
+    /* ── RAG table ── */
+    .sc-rag-section {
+      margin-bottom: 36px;
+    }
+    .sc-rag-title {
+      font-family: var(--brand-font-primary);
+      font-size: 18px;
+      font-weight: 700;
+      color: ${darken(brand.text, 0.1)};
+      margin-bottom: 16px;
+      padding-left: 14px;
+      border-left: 4px solid ${accent};
+    }
+    .sc-rag-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
       border-radius: 10px;
-      padding: 20px 24px;
-      margin-bottom: 28px;
+      overflow: hidden;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
-    .sc-summary-title {
-      font-family: var(--brand-font-primary);
-      font-size: 13px;
+    .sc-rag-table thead th {
+      background: ${lighten(brand.primary, 0.92)};
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #888;
-      margin-bottom: 12px;
+      color: ${darken(brand.text, 0.05)};
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 2px solid ${lighten(accent, 0.6)};
     }
-    .sc-summary table { width: 100%; border-collapse: collapse; }
-    .sc-summary tr { border-bottom: 1px solid #f0f0f0; }
-    .sc-summary tr:last-child { border-bottom: none; }
-    .sum-name {
-      padding: 9px 8px 9px 0;
-      font-weight: 600;
-      font-size: 14px;
-      color: #222;
-      width: 40%;
-    }
-    .sum-grade {
-      padding: 9px 12px;
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--brand-primary);
-      width: 50px;
-      text-align: center;
-    }
-    .sum-bar-cell { padding: 9px 12px; width: 35%; }
+    .rag-th-status { width: 50px; text-align: center !important; }
+    .rag-th-grade { width: 60px; text-align: center !important; }
+    .rag-th-score { width: 60px; text-align: center !important; }
+    .rag-th-progress { width: 200px; }
+    .sc-rag-table tbody tr { border-bottom: 1px solid #f3f4f6; }
+    .sc-rag-table tbody tr:hover { background: ${lighten(accent, 0.97)}; }
+    .sum-status { text-align: center; padding: 10px 14px; }
+    .sum-name { padding: 10px 14px; font-weight: 500; color: #1f2937; font-size: 14px; }
+    .sum-grade { padding: 10px 14px; text-align: center; font-weight: 800; font-size: 14px; }
+    .sum-score { padding: 10px 14px; text-align: center; font-weight: 600; font-size: 14px; color: #374151; }
+    .sum-bar-cell { padding: 10px 14px; }
     .sum-bar-track {
       height: 8px;
-      background: #eee;
+      background: #f3f4f6;
       border-radius: 4px;
       overflow: hidden;
     }
@@ -258,171 +452,277 @@ function render(input: StyleInput): string {
       border-radius: 4px;
       transition: width 0.3s;
     }
-    .sum-dot { padding: 9px 8px; text-align: center; width: 36px; }
-    .traffic-dot {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
+    .sc-rag-total {
+      background: ${lighten(accent, 0.95)} !important;
+      border-top: 2px solid ${lighten(accent, 0.6)};
     }
+    .sc-rag-total td { padding: 12px 14px !important; }
 
-    /* ── Section cards ── */
-    .sc-card {
-      display: flex;
-      background: #fff;
+    /* ── KPI card grid ── */
+    .sc-kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .sc-kpi-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
       border-radius: 10px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      overflow: hidden;
+      padding: 24px;
+      break-inside: avoid;
     }
-    .sc-card-badge {
-      width: 72px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      padding: 20px 0;
-    }
-    .sc-badge-grade {
-      font-family: var(--brand-font-primary);
-      font-size: 24px;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .sc-badge-score {
-      font-size: 12px;
-      font-weight: 600;
-      opacity: 0.85;
-      margin-top: 4px;
-    }
-    .sc-card-main {
-      flex: 1;
-      padding: 22px 26px;
-      min-width: 0;
-    }
-    .sc-card-top {
+    .sc-kpi-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
-    .sc-card-title {
+    .sc-kpi-category {
       font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h2-size);
-      font-weight: 600;
-      color: #111;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1f2937;
     }
-    .sc-card-indicators {
+    .sc-kpi-metrics {
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
+      gap: 14px;
+      margin-bottom: 14px;
     }
-    .sc-mini-bar {
-      width: 64px;
-      height: 6px;
-      background: #eee;
-      border-radius: 3px;
-      overflow: hidden;
+    .sc-kpi-score-block { }
+    .sc-kpi-score-value {
+      font-family: var(--brand-font-primary);
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+      color: ${darken(brand.text, 0.1)};
     }
-    .sc-mini-fill { height: 100%; border-radius: 3px; }
-
-    /* ── Card body typography ── */
-    .sc-card-body { color: #444; }
-    .sc-card-body h1, .sc-card-body h2, .sc-card-body h3, .sc-card-body h4 {
-      color: #111; margin: 14px 0 8px;
-    }
-    .sc-card-body h1 { font-size: 20px; }
-    .sc-card-body h2 { font-size: 17px; }
-    .sc-card-body h3 { font-size: 15px; }
-    .sc-card-body ul, .sc-card-body ol { padding-left: 22px; margin: 10px 0; }
-    .sc-card-body li { margin-bottom: 5px; }
-    .sc-card-body table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
-    .sc-card-body th {
-      background: ${lighten(brand.primary, 0.92)};
-      font-weight: 600;
-      padding: 10px 12px;
-      border-bottom: 2px solid var(--brand-primary);
-      text-align: left;
-    }
-    .sc-card-body td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-    .sc-card-body hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
-
-    /* ── Key findings checklist ── */
-    .sc-findings {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px dashed #e0e0e0;
-    }
-    .sc-findings-label {
-      font-size: 11px;
-      font-weight: 700;
+    .sc-kpi-score-label {
+      font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #999;
-      margin-bottom: 8px;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      font-weight: 600;
     }
-    .sc-finding-item {
+    .sc-kpi-grade-block {
+      font-family: var(--brand-font-primary);
+      font-size: 18px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 8px;
+      line-height: 1;
+    }
+    .sc-kpi-trend {
+      margin-left: auto;
+    }
+    .sc-trend-arrow { font-size: 14px; }
+    .trend-up .sc-trend-arrow { color: #22c55e; }
+    .trend-down .sc-trend-arrow { color: #ef4444; }
+
+    /* ── Progress bar with target marker ── */
+    .sc-kpi-bar { margin-bottom: 14px; }
+    .sc-kpi-bar-track {
+      height: 10px;
+      background: #f3f4f6;
+      border-radius: 5px;
+      overflow: visible;
+      position: relative;
+    }
+    .sc-kpi-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .sc-kpi-bar-target {
+      position: absolute;
+      top: -3px;
+      width: 2px;
+      height: 16px;
+      background: #374151;
+      border-radius: 1px;
+    }
+    .sc-kpi-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+    .sc-kpi-target-label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    /* ── KPI stat highlight ── */
+    .sc-kpi-stat {
+      background: ${lighten(accent, 0.94)};
+      border-radius: 6px;
+      padding: 8px 12px;
       font-size: 13px;
-      color: #444;
-      padding: 4px 0;
+      color: #4b5563;
+      margin-bottom: 12px;
+    }
+    .sc-kpi-stat-value {
+      font-weight: 800;
+      color: ${accent};
+      font-size: 16px;
+    }
+
+    /* ── KPI body content ── */
+    .sc-kpi-body {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+    .sc-kpi-body h1, .sc-kpi-body h2, .sc-kpi-body h3, .sc-kpi-body h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 12px 0 6px;
+    }
+    .sc-kpi-body ul, .sc-kpi-body ol { padding-left: 18px; margin: 8px 0; }
+    .sc-kpi-body li { margin-bottom: 4px; }
+    .sc-kpi-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 12px;
+    }
+    .sc-kpi-body th {
+      background: ${lighten(brand.primary, 0.93)};
+      font-weight: 600;
+      padding: 8px 10px;
+      border-bottom: 2px solid ${lighten(accent, 0.6)};
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .sc-kpi-body td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .sc-kpi-body hr { border: none; border-top: 1px solid #f3f4f6; margin: 12px 0; }
+    .sc-kpi-body strong { font-weight: 600; color: #1f2937; }
+    .sc-kpi-body p { margin-bottom: 8px; }
+
+    /* ── Findings checklist ── */
+    .sc-kpi-findings {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #e5e7eb;
+    }
+    .sc-finding-row {
       display: flex;
       align-items: baseline;
-      gap: 6px;
+      gap: 8px;
+      font-size: 12px;
+      color: #4b5563;
+      padding: 3px 0;
     }
-    .sc-check {
-      color: ${darken(brand.accent, 0.1)};
+    .sc-finding-check {
       font-weight: 700;
       font-size: 12px;
+      flex-shrink: 0;
     }
 
     /* ── Footer ── */
     .sc-footer {
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 36px;
+      background: ${brand.primary};
+      color: ${contrastText(brand.primary)};
+      border-radius: 12px 12px 0 0;
+      margin-top: 40px;
       font-size: 11px;
-      color: #999;
-      border-top: 1px solid #e0e0e0;
-      padding-top: 24px;
-      margin-top: 36px;
-      line-height: 1.8;
     }
-    .sc-footer-conf {
+    .sc-footer-left { }
+    .sc-footer-company {
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+    .sc-footer-center {
+      text-align: center;
       font-size: 10px;
-      color: #b0b0b0;
+      opacity: 0.8;
       text-transform: uppercase;
       letter-spacing: 0.1em;
+    }
+    .sc-footer-right {
+      text-align: right;
+    }
+    .sc-footer-date { opacity: 0.85; }
+    .sc-footer-page {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    @media print {
+      .sc-header, .sc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .sc-kpi-card { break-inside: avoid; }
+      .sc-rag-table { break-inside: avoid; }
     }
   `;
 
   // ── Body ─────────────────────────────────────────────
   const body = `
-    <div class="page">
+    <div class="sc-page">
       <div class="sc-header">
         <div class="sc-header-left">
-          <div class="sc-header-logo">${brandLogoHtml(input)}</div>
-          <h1>${title}</h1>
-          <div class="sc-header-sub">Evaluation for ${prospect.companyName} &middot; ${dateStr}</div>
+          <div class="sc-header-logo">${brandLogoHtml(input, 'height:34px;')}</div>
+          <div class="sc-header-divider"></div>
+          <div class="sc-header-title">${title}</div>
         </div>
-        <div class="sc-hero">
-          <div class="sc-hero-circle">
-            <div class="sc-hero-grade">${overallGrade}</div>
-            <div class="sc-hero-num">${overallScore}/100</div>
-          </div>
-          <div class="sc-hero-label">Overall Score</div>
+        <div class="sc-header-right">
+          <div class="sc-header-prospect">${prospect.companyName}</div>
+          <div>${dateStr}</div>
         </div>
       </div>
 
-      <div class="sc-summary">
-        <div class="sc-summary-title">Assessment Overview</div>
-        <table>${summaryRows}</table>
-      </div>
+      <div class="sc-body">
+        <div class="sc-period-bar">
+          <span><strong>Reporting Period:</strong> ${dateStr}</span>
+          <span>Prepared by ${companyName} for ${prospect.companyName}</span>
+        </div>
 
-      ${sectionsHtml}
+        ${summaryCardsHtml}
+
+        <div class="sc-section-break">
+          <div class="sc-section-break-line"></div>
+          <div class="sc-section-break-label">Assessment Overview</div>
+          <div class="sc-section-break-line"></div>
+        </div>
+
+        ${ragTableHtml}
+
+        <div class="sc-section-break">
+          <div class="sc-section-break-line"></div>
+          <div class="sc-section-break-label">Detailed KPI Dashboard</div>
+          <div class="sc-section-break-line"></div>
+        </div>
+
+        <div class="sc-kpi-grid">
+          ${kpiCardsHtml}
+        </div>
+      </div>
 
       <div class="sc-footer">
-        ${companyName} &middot; Assessment Date: ${dateStr}<br/>
-        <span class="sc-footer-conf">Confidential &mdash; Prepared exclusively for ${prospect.companyName}</span>
+        <div class="sc-footer-left">
+          <div class="sc-footer-company">${companyName}</div>
+          <div>${input.companyDescription || ''}</div>
+        </div>
+        <div class="sc-footer-center">Confidential &mdash; Prepared exclusively for ${prospect.companyName}</div>
+        <div class="sc-footer-right">
+          <div class="sc-footer-date">Data as of ${dateStr}</div>
+          <div class="sc-footer-page">Page 1</div>
+        </div>
       </div>
     </div>
   `;

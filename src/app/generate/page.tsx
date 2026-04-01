@@ -134,10 +134,28 @@ function buildProductCompetitorBlock(product: ProductProfile, mapping: ProductCo
   lines.push(`## PRODUCT-SPECIFIC COMPETITIVE DATA`);
   lines.push(`Product: ${product.name} vs ${mapping.competitorName}`);
   lines.push(`Their Equivalent: ${mapping.theirEquivalentProduct}`);
+  if (mapping.targetErp) lines.push(`Target ERP/Platform: ${mapping.targetErp}`);
   lines.push(`How We Win: ${mapping.howWeWin.map(b => `- ${b}`).join('\n')}`);
   lines.push(`How They Win (internal): ${mapping.howTheyWin.map(b => `- ${b}`).join('\n')}`);
+  if (mapping.keyDifferentiators?.length) {
+    lines.push(`Key Differentiators: ${mapping.keyDifferentiators.map(d => `- ${d}`).join('\n')}`);
+  }
   lines.push(`Recommended Talk Track: ${mapping.talkTrack}`);
   lines.push(`Historical Win Rate: ${mapping.winRate}%`);
+  if (mapping.landmineQuestions?.length) {
+    lines.push(`Landmine Questions (to expose their weaknesses):`);
+    lines.push(mapping.landmineQuestions.map(q => `- "${q}"`).join('\n'));
+  }
+  if (mapping.objectionResponses?.length) {
+    lines.push(`Objection Responses:`);
+    lines.push(mapping.objectionResponses.map(o => `- When they say: "${o.objection}" → Respond: "${o.response}"`).join('\n'));
+  }
+  if (mapping.pricingComparison) {
+    lines.push(`Pricing Comparison: ${mapping.pricingComparison}`);
+  }
+  if (mapping.recentIntel) {
+    lines.push(`Recent Intel: ${mapping.recentIntel}`);
+  }
   lines.push('');
   lines.push('Use this specific product-level competitive data to make the analysis precise and actionable.');
   return lines.join('\n');
@@ -329,6 +347,22 @@ function GeneratePage() {
   // ── Prospect Memory ──
   const { findProspect } = useProspectMemory();
   const [prospectSuggestion, setProspectSuggestion] = useState<{companyName:string;items:{contentTypeLabel:string}[]}|null>(null);
+
+  // ── Simple / Advanced Mode ──
+  const [viewMode, setViewMode] = useState<'simple' | 'advanced'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('contentforg-view-mode') as 'simple' | 'advanced') || 'simple';
+    }
+    return 'simple';
+  });
+
+  // Persist view mode
+  useEffect(() => {
+    localStorage.setItem('contentforg-view-mode', viewMode);
+  }, [viewMode]);
+
+  // Simple mode prompt
+  const [simplePrompt, setSimplePrompt] = useState('');
 
   // Derived: active (non-sunset) products
   const activeProducts = allProducts.filter(p => p.status !== 'sunset');
@@ -864,6 +898,18 @@ and exact talk tracks for when prospects bring them up.`;
 
     await checkBrandCompliance(parsed);
 
+    // Content density check
+    const { checkContentDensity } = await import('@/lib/prompts');
+    const densityResult = checkContentDensity(parsed);
+    if (!densityResult.passed) {
+      const sparseNames = densityResult.sparse.map(s => s.sectionTitle).join(', ');
+      toast(`Some sections may need strengthening: ${sparseNames}`, {
+        icon: '●',
+        duration: 5000,
+        style: { fontSize: '13px' },
+      });
+    }
+
     // Fetch images if toggle is on
     if (imagesOn && parsed.length > 0) {
       fetch('/api/images', {
@@ -1332,7 +1378,7 @@ and exact talk tracks for when prospects bring them up.`;
         }
       } else if (violation.type === 'missing-element') {
         // For missing elements, just remove from list (user should add manually)
-        toast('Missing element noted — please add it manually', { icon: '\u{1F4CB}' });
+        toast('Missing element noted — please add it manually', { icon: '○' });
         setCompliance((prev) => {
           if (!prev) return prev;
           const remaining = prev.violations.filter((v) => v.id !== violation.id);
@@ -1432,7 +1478,7 @@ and exact talk tracks for when prospects bring them up.`;
     // Mark missing-element violations as acknowledged
     const missingViolations = compliance.violations.filter((v) => v.type === 'missing-element');
     if (missingViolations.length > 0) {
-      toast(`${missingViolations.length} missing element(s) noted — please add manually`, { icon: '\u{1F4CB}' });
+      toast(`${missingViolations.length} missing element(s) noted — please add manually`, { icon: '○' });
     }
 
     // Clear all violations
@@ -1682,9 +1728,9 @@ and exact talk tracks for when prospects bring them up.`;
 
   const violationIcon = (type: BrandViolation['type']) => {
     switch (type) {
-      case 'banned-word': return '\u{1F6AB}';
-      case 'off-voice': return '\u26A0\uFE0F';
-      case 'missing-element': return '\u{1F4CB}';
+      case 'banned-word': return '⊘';
+      case 'off-voice': return '△';
+      case 'missing-element': return '○';
     }
   };
 
@@ -1734,6 +1780,37 @@ and exact talk tracks for when prospects bring them up.`;
                 </span>
               )}
             </div>
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ backgroundColor: 'var(--card-border, #f3f4f6)' }}>
+              <button
+                onClick={() => setViewMode('simple')}
+                className="px-4 py-1.5 text-xs font-semibold rounded-md transition-all"
+                style={viewMode === 'simple' ? {
+                  backgroundColor: 'var(--card-bg, #ffffff)',
+                  color: 'var(--text-primary, #111827)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+                } : {
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-secondary, #6b7280)',
+                }}
+              >
+                Simple
+              </button>
+              <button
+                onClick={() => setViewMode('advanced')}
+                className="px-4 py-1.5 text-xs font-semibold rounded-md transition-all"
+                style={viewMode === 'advanced' ? {
+                  backgroundColor: 'var(--card-bg, #ffffff)',
+                  color: 'var(--text-primary, #111827)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+                } : {
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-secondary, #6b7280)',
+                }}
+              >
+                Advanced
+              </button>
+            </div>
             {/* Right side: Generate buttons */}
             <div className="flex items-center gap-2 ml-auto">
               {selectedPersonas.length >= 2 && personaMode === 'separate' && (
@@ -1768,6 +1845,101 @@ and exact talk tracks for when prospects bring them up.`;
               setStickyScrolled(el.scrollTop > 0);
             }}
           >
+            {viewMode === 'simple' ? (
+              <div className="flex flex-col h-full">
+                {/* Simple mode heading */}
+                <div className="px-6 pt-6 pb-4">
+                  <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>What do you need?</h2>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Describe what you want to create and we&apos;ll handle the rest.</p>
+                </div>
+
+                {/* Starter prompt chips */}
+                <div className="px-6 pb-4 flex flex-wrap gap-2">
+                  {STARTER_PROMPTS.map((sp, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setSimplePrompt(sp.text);
+                        setContentType(sp.contentType);
+                      }}
+                      className="px-3 py-1.5 text-xs rounded-full border transition-colors hover:border-current"
+                      style={{
+                        borderColor: 'var(--card-border)',
+                        color: 'var(--text-secondary)',
+                        backgroundColor: 'var(--card-bg)'
+                      }}
+                    >
+                      {sp.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Main prompt textarea */}
+                <div className="flex-1 px-6 pb-4">
+                  <textarea
+                    value={simplePrompt}
+                    onChange={(e) => {
+                      setSimplePrompt(e.target.value);
+                      // Auto-detect content type from prompt
+                      const detected = detectContentType(e.target.value);
+                      if (detected) {
+                        setContentType(detected);
+                        setDetectedType(detected);
+                      }
+                    }}
+                    placeholder="e.g. Create a battle card against Salesforce for our healthcare prospects..."
+                    className="w-full h-48 p-4 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2"
+                    style={{
+                      borderColor: 'var(--card-border)',
+                      backgroundColor: 'var(--content-bg)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+
+                  {/* Detected type indicator */}
+                  {detectedType && (
+                    <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      Detected: <span className="font-medium" style={{ color: 'var(--accent)' }}>{CONTENT_TYPE_LABELS[detectedType]}</span>
+                    </p>
+                  )}
+
+                  {/* Advanced settings link */}
+                  <button
+                    onClick={() => setViewMode('advanced')}
+                    className="mt-3 text-xs font-medium"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    Advanced settings →
+                  </button>
+                </div>
+
+                {/* Generate button */}
+                <div className="px-6 pb-6">
+                  <button
+                    onClick={() => {
+                      // Set the additional context to the simple prompt before generating
+                      setAdditionalContext(simplePrompt);
+                      // Trigger generation via style picker (same flow as advanced mode)
+                      setShowStylePicker(true);
+                    }}
+                    disabled={generating || !simplePrompt.trim()}
+                    className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--accent)' }}
+                  >
+                    {generating ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <HiOutlineArrowPath className="animate-spin" /> Generating...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <HiOutlineSparkles /> Generate
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+            <>
             <div className="p-6 border-b">
               <h1 className="text-xl font-bold text-gray-900">Generate Content</h1>
               <p className="text-sm text-gray-500 mt-1">Fill in prospect details and generate</p>
@@ -2249,6 +2421,8 @@ and exact talk tracks for when prospects bring them up.`;
               </div>
             )}
             </div>
+            </>
+            )}
           </div>
 
           {/* Right Panel: Output */}

@@ -96,6 +96,36 @@ export default function FeatureMatrixPage() {
   const [manualStatus, setManualStatus] = useState<CellStatus>('yes');
   const [manualFeatures, setManualFeatures] = useState<ExtractedFeature[]>([]);
 
+  // ─── Analysis mode ─────────────────────────────────────────────────
+  const [analysisMode, setAnalysisMode] = useState<'competitor' | 'discovery' | 'full-analysis'>('competitor');
+
+  // ─── Discovery mode results ───────────────────────────────────────
+  interface DiscoveryResult {
+    whatWeHave: string[];
+    whatTheyNeed: string[];
+    ourGaps: string[];
+    competitiveIntel: string[];
+  }
+  const [discoveryResult, setDiscoveryResult] = useState<DiscoveryResult | null>(null);
+  const [expandedDiscoverySections, setExpandedDiscoverySections] = useState<Set<string>>(
+    new Set(['whatWeHave', 'whatTheyNeed', 'ourGaps', 'competitiveIntel'])
+  );
+
+  const toggleDiscoverySection = useCallback((key: string) => {
+    setExpandedDiscoverySections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // ─── Full Analysis mode state ─────────────────────────────────────
+  const [fullAnalysisYourContent, setFullAnalysisYourContent] = useState('');
+  const [fullAnalysisCompContent, setFullAnalysisCompContent] = useState('');
+  const fullAnalysisYourFileRef = useRef<HTMLInputElement>(null);
+  const fullAnalysisCompFileRef = useRef<HTMLInputElement>(null);
+
   // ─── Category collapse ─────────────────────────────────────────────
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
@@ -270,22 +300,28 @@ export default function FeatureMatrixPage() {
       const res = await fetch('/api/feature-extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: 'url', content: competitorUrl }),
+        body: JSON.stringify({ source: 'url', content: competitorUrl, mode: analysisMode }),
       });
       if (!res.ok) throw new Error('Extraction failed');
-      const data: ExtractionResult = await res.json();
-      setExtractedFeatures(data.features);
-      if (data.competitorName && !competitorName) setCompetitorName(data.competitorName);
-      const checks: Record<number, boolean> = {};
-      data.features.forEach((_, i) => { checks[i] = true; });
-      setFeatureChecked(checks);
-      toast.success(`Extracted ${data.features.length} features`);
+      const data = await res.json();
+      if (analysisMode === 'discovery' && data.discoveryResult) {
+        setDiscoveryResult(data.discoveryResult);
+        toast.success('Discovery analysis complete');
+      } else {
+        const extractionData = data as ExtractionResult;
+        setExtractedFeatures(extractionData.features);
+        if (extractionData.competitorName && !competitorName) setCompetitorName(extractionData.competitorName);
+        const checks: Record<number, boolean> = {};
+        extractionData.features.forEach((_, i) => { checks[i] = true; });
+        setFeatureChecked(checks);
+        toast.success(`Extracted ${extractionData.features.length} features`);
+      }
     } catch {
       toast.error('Failed to extract features from URL');
     } finally {
       setExtracting(false);
     }
-  }, [competitorUrl, competitorName]);
+  }, [competitorUrl, competitorName, analysisMode]);
 
   // ═══════════════════════════════════════════════════════════════════
   // File upload
@@ -299,22 +335,28 @@ export default function FeatureMatrixPage() {
       const res = await fetch('/api/feature-extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: 'text', content: text }),
+        body: JSON.stringify({ source: 'text', content: text, mode: analysisMode }),
       });
       if (!res.ok) throw new Error('Extraction failed');
-      const data: ExtractionResult = await res.json();
-      setExtractedFeatures(data.features);
-      if (data.competitorName && !competitorName) setCompetitorName(data.competitorName);
-      const checks: Record<number, boolean> = {};
-      data.features.forEach((_, i) => { checks[i] = true; });
-      setFeatureChecked(checks);
-      toast.success(`Extracted ${data.features.length} features from file`);
+      const data = await res.json();
+      if (analysisMode === 'discovery' && data.discoveryResult) {
+        setDiscoveryResult(data.discoveryResult);
+        toast.success('Discovery analysis complete');
+      } else {
+        const extractionData = data as ExtractionResult;
+        setExtractedFeatures(extractionData.features);
+        if (extractionData.competitorName && !competitorName) setCompetitorName(extractionData.competitorName);
+        const checks: Record<number, boolean> = {};
+        extractionData.features.forEach((_, i) => { checks[i] = true; });
+        setFeatureChecked(checks);
+        toast.success(`Extracted ${extractionData.features.length} features from file`);
+      }
     } catch {
       toast.error('Failed to extract features from file');
     } finally {
       setExtracting(false);
     }
-  }, [competitorName]);
+  }, [competitorName, analysisMode]);
 
   const handleFileDrop = useCallback(
     (e: React.DragEvent) => {
@@ -348,22 +390,28 @@ export default function FeatureMatrixPage() {
       const res = await fetch('/api/feature-extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: 'transcript', content: voiceTranscript, competitorName }),
+        body: JSON.stringify({ source: 'transcript', content: voiceTranscript, competitorName, mode: analysisMode }),
       });
       if (!res.ok) throw new Error('Extraction failed');
-      const data: ExtractionResult = await res.json();
-      setExtractedFeatures(data.features);
-      if (data.competitorName && !competitorName) setCompetitorName(data.competitorName);
-      const checks: Record<number, boolean> = {};
-      data.features.forEach((_, i) => { checks[i] = true; });
-      setFeatureChecked(checks);
-      toast.success(`Extracted ${data.features.length} features from voice`);
+      const data = await res.json();
+      if (analysisMode === 'discovery' && data.discoveryResult) {
+        setDiscoveryResult(data.discoveryResult);
+        toast.success('Discovery analysis complete');
+      } else {
+        const extractionData = data as ExtractionResult;
+        setExtractedFeatures(extractionData.features);
+        if (extractionData.competitorName && !competitorName) setCompetitorName(extractionData.competitorName);
+        const checks: Record<number, boolean> = {};
+        extractionData.features.forEach((_, i) => { checks[i] = true; });
+        setFeatureChecked(checks);
+        toast.success(`Extracted ${extractionData.features.length} features from voice`);
+      }
     } catch {
       toast.error('Failed to extract features from transcript');
     } finally {
       setExtracting(false);
     }
-  }, [voiceTranscript, competitorName]);
+  }, [voiceTranscript, competitorName, analysisMode]);
 
   // ═══════════════════════════════════════════════════════════════════
   // Manual feature add
@@ -567,6 +615,70 @@ export default function FeatureMatrixPage() {
     },
     [matrix],
   );
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Full Analysis Mode handler
+  // ═══════════════════════════════════════════════════════════════════
+
+  const handleFullAnalysisFileUpload = useCallback(async (file: File, target: 'yours' | 'competitor') => {
+    const text = await file.text();
+    if (target === 'yours') {
+      setFullAnalysisYourContent(text);
+      toast.success('Your product content loaded');
+    } else {
+      setFullAnalysisCompContent(text);
+      toast.success('Competitor content loaded');
+    }
+  }, []);
+
+  const handleRunFullAnalysis = useCallback(async () => {
+    if (!fullAnalysisYourContent.trim() && !fullAnalysisCompContent.trim()) {
+      toast.error('Please upload content for at least one side');
+      return;
+    }
+    setExtracting(true);
+    setExtractedFeatures(null);
+    setDiscoveryResult(null);
+    try {
+      const res = await fetch('/api/feature-extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: 'text',
+          content: fullAnalysisCompContent || fullAnalysisYourContent,
+          yourContent: fullAnalysisYourContent,
+          competitorName: competitorName || 'Competitor',
+          mode: 'full-analysis',
+        }),
+      });
+      if (!res.ok) throw new Error('Full analysis failed');
+      const data = await res.json();
+
+      // Set discovery results
+      if (data.discoveryResult) {
+        setDiscoveryResult(data.discoveryResult);
+      }
+
+      // Set extracted features for the matrix
+      if (data.features && data.features.length > 0 && matrix) {
+        const name = competitorName.trim() || data.competitorName || 'Competitor';
+        let updated = addCompetitorColumn(matrix, name);
+        const newCol = updated.columns[updated.columns.length - 1];
+        updated = mergeExtractedFeatures(updated, newCol.id, data.features);
+        setMatrix(updated);
+      }
+
+      toast.success('Full analysis complete');
+      setFullAnalysisYourContent('');
+      setFullAnalysisCompContent('');
+      setCompetitorName('');
+      setShowAddCompetitor(false);
+    } catch {
+      toast.error('Full analysis failed');
+    } finally {
+      setExtracting(false);
+    }
+  }, [fullAnalysisYourContent, fullAnalysisCompContent, competitorName, matrix]);
 
   // ═══════════════════════════════════════════════════════════════════
   // Export: Print
@@ -826,6 +938,38 @@ export default function FeatureMatrixPage() {
             borderColor: 'var(--card-border)',
           }}
         >
+          {/* Mode Selection */}
+          <div className="px-4 py-4 border-b" style={{ borderColor: 'var(--card-border)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+              Analysis Mode
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                { id: 'competitor' as const, label: 'Competitor Mode', desc: 'Upload content about a competitor to compare features', icon: '◆' },
+                { id: 'discovery' as const, label: 'Discovery Mode', desc: 'Upload any content for holistic AI analysis', icon: '◎' },
+                { id: 'full-analysis' as const, label: 'Full Analysis', desc: 'Upload both your product and competitor content', icon: '▦' },
+              ].map(mode => (
+                <button
+                  key={mode.id}
+                  onClick={() => setAnalysisMode(mode.id)}
+                  className="text-left p-3 rounded-lg border-2 transition-all"
+                  style={{
+                    borderColor: analysisMode === mode.id ? 'var(--accent)' : 'var(--card-border)',
+                    backgroundColor: analysisMode === mode.id ? 'var(--accent-light)' : 'var(--card-bg)',
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm">{mode.icon}</span>
+                    <span className="text-xs font-semibold" style={{ color: analysisMode === mode.id ? 'var(--accent)' : 'var(--text-primary)' }}>
+                      {mode.label}
+                    </span>
+                  </div>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{mode.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="p-4 space-y-5">
             {/* ─── Section 1A: Your Product ─────────────────────── */}
             <div>
@@ -876,15 +1020,149 @@ export default function FeatureMatrixPage() {
               )}
             </div>
 
-            {/* ─── Section 1B: Add a Competitor ─────────────────── */}
+            {/* ─── Section 1B: Add a Competitor / Full Analysis ── */}
+            {analysisMode === 'full-analysis' ? (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  Full Analysis
+                </h3>
+                <div className="space-y-3">
+                  {/* Competitor Name */}
+                  <input
+                    type="text"
+                    placeholder="Competitor Name"
+                    value={competitorName}
+                    onChange={(e) => setCompetitorName(e.target.value)}
+                    className="w-full text-sm rounded-lg px-3 py-2 border outline-none focus:ring-2"
+                    style={{
+                      background: 'var(--card-bg)',
+                      borderColor: 'var(--card-border)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+
+                  {/* Your Product Upload */}
+                  <div
+                    className="rounded-lg border p-3"
+                    style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+                  >
+                    <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                      Your Product
+                    </p>
+                    {fullAnalysisYourContent ? (
+                      <div className="flex items-center gap-2">
+                        <HiOutlineCheck className="text-green-600 flex-shrink-0" />
+                        <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
+                          Content loaded ({fullAnalysisYourContent.length.toLocaleString()} chars)
+                        </span>
+                        <button
+                          onClick={() => setFullAnalysisYourContent('')}
+                          className="p-0.5 rounded hover:bg-red-50"
+                        >
+                          <HiOutlineXMark className="text-xs text-red-400" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fullAnalysisYourFileRef.current?.click()}
+                        className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors hover:border-gray-400"
+                        style={{ borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}
+                      >
+                        <HiOutlineDocumentArrowUp className="text-xl mx-auto mb-1" />
+                        <p className="text-[10px]">Upload your product content</p>
+                      </div>
+                    )}
+                    <input
+                      ref={fullAnalysisYourFileRef}
+                      type="file"
+                      accept=".pdf,.docx,.txt"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFullAnalysisFileUpload(file, 'yours');
+                      }}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Competitor Upload */}
+                  <div
+                    className="rounded-lg border p-3"
+                    style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+                  >
+                    <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                      Competitor
+                    </p>
+                    {fullAnalysisCompContent ? (
+                      <div className="flex items-center gap-2">
+                        <HiOutlineCheck className="text-green-600 flex-shrink-0" />
+                        <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
+                          Content loaded ({fullAnalysisCompContent.length.toLocaleString()} chars)
+                        </span>
+                        <button
+                          onClick={() => setFullAnalysisCompContent('')}
+                          className="p-0.5 rounded hover:bg-red-50"
+                        >
+                          <HiOutlineXMark className="text-xs text-red-400" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fullAnalysisCompFileRef.current?.click()}
+                        className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors hover:border-gray-400"
+                        style={{ borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}
+                      >
+                        <HiOutlineDocumentArrowUp className="text-xl mx-auto mb-1" />
+                        <p className="text-[10px]">Upload competitor content</p>
+                      </div>
+                    )}
+                    <input
+                      ref={fullAnalysisCompFileRef}
+                      type="file"
+                      accept=".pdf,.docx,.txt"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFullAnalysisFileUpload(file, 'competitor');
+                      }}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Run Full Analysis Button */}
+                  <button
+                    onClick={handleRunFullAnalysis}
+                    disabled={extracting || (!fullAnalysisYourContent && !fullAnalysisCompContent)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors btn-accent disabled:opacity-50"
+                  >
+                    {extracting ? (
+                      <>
+                        <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <HiOutlineSparkles className="text-base" />
+                        Run Full Analysis
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div>
               <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
-                Competitors
+                {analysisMode === 'discovery' ? 'Content Sources' : 'Competitors'}
               </h3>
-              <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                {competitorCount} of {MAX_COMPETITORS} competitors added
-              </p>
-              {competitorCount < MAX_COMPETITORS && (
+              {analysisMode === 'competitor' && (
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                  {competitorCount} of {MAX_COMPETITORS} competitors added
+                </p>
+              )}
+              {analysisMode === 'discovery' && (
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Upload or paste any content for AI analysis
+                </p>
+              )}
+              {(analysisMode === 'competitor' ? competitorCount < MAX_COMPETITORS : true) && (
                 <button
                   onClick={() => {
                     setShowAddCompetitor(true);
@@ -897,7 +1175,7 @@ export default function FeatureMatrixPage() {
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors btn-accent"
                 >
                   <HiOutlinePlus className="text-base" />
-                  Add Competitor
+                  {analysisMode === 'discovery' ? 'Analyze Content' : 'Add Competitor'}
                 </button>
               )}
 
@@ -1218,6 +1496,7 @@ export default function FeatureMatrixPage() {
                 </div>
               )}
             </div>
+            )}
 
             {/* ─── Section 1C: Feature Categories ───────────────── */}
             <div>
@@ -1530,6 +1809,102 @@ export default function FeatureMatrixPage() {
                 )}
               </div>
             </div>
+
+            {/* ─── Discovery Mode Results ──────────────────── */}
+            {analysisMode === 'discovery' && discoveryResult && (
+              <div className="space-y-4 mb-6">
+                <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Discovery Analysis</h2>
+                {[
+                  { key: 'whatWeHave', title: 'What We Have', items: discoveryResult.whatWeHave, color: '#22c55e' },
+                  { key: 'whatTheyNeed', title: 'What They Need', items: discoveryResult.whatTheyNeed, color: '#3b82f6' },
+                  { key: 'ourGaps', title: 'Our Gaps', items: discoveryResult.ourGaps, color: '#f59e0b' },
+                  { key: 'competitiveIntel', title: 'Competitive Intel', items: discoveryResult.competitiveIntel, color: '#ef4444' },
+                ].map(section => (
+                  <div key={section.key} className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--card-border)' }}>
+                    <button
+                      onClick={() => toggleDiscoverySection(section.key)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-left"
+                      style={{ backgroundColor: 'var(--card-bg)' }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
+                        <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{section.title}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--card-border)', color: 'var(--text-secondary)' }}>
+                          {section.items.length}
+                        </span>
+                      </div>
+                      {expandedDiscoverySections.has(section.key) ? (
+                        <HiOutlineChevronDown className="text-sm" style={{ color: 'var(--text-muted)' }} />
+                      ) : (
+                        <HiOutlineChevronRight className="text-sm" style={{ color: 'var(--text-muted)' }} />
+                      )}
+                    </button>
+                    {expandedDiscoverySections.has(section.key) && (
+                      <div className="px-4 py-3 space-y-2">
+                        {section.items.length === 0 ? (
+                          <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No items detected</p>
+                        ) : (
+                          section.items.map((item, i) => (
+                            <div key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
+                              <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: section.color }} />
+                              <span>{item}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ─── Full Analysis Mode Discovery Results ──────── */}
+            {analysisMode === 'full-analysis' && discoveryResult && (
+              <div className="space-y-4 mb-6">
+                <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Intelligence Report</h2>
+                {[
+                  { key: 'whatWeHave', title: 'What We Have', items: discoveryResult.whatWeHave, color: '#22c55e' },
+                  { key: 'whatTheyNeed', title: 'What They Need', items: discoveryResult.whatTheyNeed, color: '#3b82f6' },
+                  { key: 'ourGaps', title: 'Our Gaps', items: discoveryResult.ourGaps, color: '#f59e0b' },
+                  { key: 'competitiveIntel', title: 'Competitive Intel', items: discoveryResult.competitiveIntel, color: '#ef4444' },
+                ].map(section => (
+                  <div key={section.key} className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--card-border)' }}>
+                    <button
+                      onClick={() => toggleDiscoverySection(section.key)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-left"
+                      style={{ backgroundColor: 'var(--card-bg)' }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
+                        <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{section.title}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--card-border)', color: 'var(--text-secondary)' }}>
+                          {section.items.length}
+                        </span>
+                      </div>
+                      {expandedDiscoverySections.has(section.key) ? (
+                        <HiOutlineChevronDown className="text-sm" style={{ color: 'var(--text-muted)' }} />
+                      ) : (
+                        <HiOutlineChevronRight className="text-sm" style={{ color: 'var(--text-muted)' }} />
+                      )}
+                    </button>
+                    {expandedDiscoverySections.has(section.key) && (
+                      <div className="px-4 py-3 space-y-2">
+                        {section.items.length === 0 ? (
+                          <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No items detected</p>
+                        ) : (
+                          section.items.map((item, i) => (
+                            <div key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
+                              <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: section.color }} />
+                              <span>{item}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* ─── Live Matrix Table ────────────────────────── */}
             <div className="overflow-x-auto rounded-xl border" style={{ borderColor: 'var(--card-border)' }}>

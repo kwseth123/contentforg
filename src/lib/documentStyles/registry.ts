@@ -544,3 +544,84 @@ const DEFAULT_STYLE_MAP: Record<string, string> = {
 export function getDefaultStyleForContentType(contentType: string): string {
   return DEFAULT_STYLE_MAP[contentType] || 'style-01';
 }
+
+// ════════════════════════════════════════════════════════
+// Content Type Recommendations
+// ════════════════════════════════════════════════════════
+
+export interface StyleRecommendation {
+  styleId: string;
+  reason: string;
+}
+
+export const CONTENT_TYPE_RECOMMENDATIONS: Record<string, StyleRecommendation[]> = {
+  'solution-one-pager': [
+    { styleId: 'style-01', reason: 'Best for clean executive presentations' },
+    { styleId: 'style-02', reason: 'Strong visual impact with split layout' },
+    { styleId: 'style-24', reason: 'Premium editorial feel for C-suite' },
+  ],
+  'battle-card': [
+    { styleId: 'style-09', reason: 'Bold dark theme commands attention' },
+    { styleId: 'style-10', reason: 'Authoritative newspaper-style layout' },
+    { styleId: 'style-11', reason: 'Confident serif typography' },
+  ],
+  'competitive-analysis': [
+    { styleId: 'style-29', reason: 'Purpose-built for comparisons' },
+    { styleId: 'style-23', reason: 'Enterprise-grade data presentation' },
+    { styleId: 'style-17', reason: 'Classic credibility for stakeholders' },
+  ],
+  'executive-summary': [
+    { styleId: 'style-24', reason: 'HBR-quality editorial layout' },
+    { styleId: 'style-22', reason: 'Boardroom-ready executive format' },
+    { styleId: 'style-19', reason: 'Strategy-firm credibility' },
+  ],
+  'discovery-call-prep': [
+    { styleId: 'style-20', reason: 'Clean technical reference format' },
+    { styleId: 'style-17', reason: 'Professional and scannable' },
+    { styleId: 'style-06', reason: 'Distraction-free monochrome' },
+  ],
+  'roi-business-case': [
+    { styleId: 'style-18', reason: 'Financial document credibility' },
+    { styleId: 'style-17', reason: 'Classic business document format' },
+    { styleId: 'style-19', reason: 'Consulting-firm quality' },
+  ],
+  'case-study': [
+    { styleId: 'style-25', reason: 'Narrative storytelling format' },
+    { styleId: 'style-24', reason: 'Premium editorial presentation' },
+    { styleId: 'style-03', reason: 'Magazine-quality grid layout' },
+  ],
+  'outbound-email-sequence': [
+    { styleId: 'style-01', reason: 'Clean minimal for email content' },
+    { styleId: 'style-04', reason: 'Typography-focused readability' },
+    { styleId: 'style-06', reason: 'Professional monochrome' },
+  ],
+  'linkedin-post': [
+    { styleId: 'style-03', reason: 'Magazine-style visual appeal' },
+    { styleId: 'style-11', reason: 'Bold statements stand out' },
+    { styleId: 'style-07', reason: 'Eye-catching asymmetric layout' },
+  ],
+  'conference-leave-behind': [
+    { styleId: 'style-05', reason: 'Full-bleed visual impact' },
+    { styleId: 'style-13', reason: 'Bold color blocks grab attention' },
+    { styleId: 'style-30', reason: 'Strong visual hierarchy' },
+  ],
+  'proposal-framework': [
+    { styleId: 'style-19', reason: 'Consulting-deck credibility' },
+    { styleId: 'style-17', reason: 'Classic business format' },
+    { styleId: 'style-22', reason: 'Boardroom-ready presentation' },
+  ],
+  'implementation-timeline': [
+    { styleId: 'style-27', reason: 'Purpose-built timeline format' },
+    { styleId: 'style-20', reason: 'Clean technical layout' },
+    { styleId: 'style-08', reason: 'Precise Swiss grid system' },
+  ],
+  'mutual-action-plan': [
+    { styleId: 'style-28', reason: 'Scorecard format for tracking' },
+    { styleId: 'style-17', reason: 'Professional business format' },
+    { styleId: 'style-23', reason: 'Enterprise data presentation' },
+  ],
+};
+
+export function getRecommendationsForContentType(contentType: string): StyleRecommendation[] {
+  return CONTENT_TYPE_RECOMMENDATIONS[contentType] || [];
+}

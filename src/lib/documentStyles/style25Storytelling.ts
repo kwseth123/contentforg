@@ -1,23 +1,57 @@
 // ════════════════════════════════════════════════════════
 // Style 25 — Storytelling
-// Narrative arc structure — chapters, customer scenario,
-// serif headings, journalist-written case study feel
+// Beautifully produced case study / brand story.
+// Narrative flow with chapter markers, hero headlines,
+// background transitions, and warm inviting typography.
 // ════════════════════════════════════════════════════════
 
 import type { DocumentStyle, StyleInput } from './types';
 import {
   resolveBrand,
   brandCSSVars,
-  brandFonts,
-  brandLogoHtml,
   formatMarkdown,
+  brandLogoHtml,
   wrapDocument,
   lighten,
+  darken,
+  contrastText,
+  hexToRgb,
+  brandFonts,
+  buildOnePagerDocument,
+  professionalSymbolCSS,
+  stripEmojis,
 } from './shared';
 
-// ── Chapter mapping ──────────────────────────────────────
+// ── Stat extraction ──────────────────────────────────────
 
-const CHAPTER_TITLES = ['The Challenge', 'The Solution', 'The Results'];
+function extractStats(sections: StyleInput['sections']): { value: string; label: string }[] {
+  const allContent = sections.map(s => s.content).join('\n');
+  const stats: { value: string; label: string }[] = [];
+  const pctMatches = allContent.match(/(\d{1,4}(?:\.\d+)?%)/g);
+  if (pctMatches) {
+    for (const m of pctMatches.slice(0, 2)) {
+      const idx = allContent.indexOf(m);
+      const surrounding = allContent.substring(Math.max(0, idx - 40), idx + m.length + 40);
+      const words = surrounding.replace(/[^a-zA-Z\s]/g, ' ').trim().split(/\s+/).filter(w => w.length > 2).slice(0, 3);
+      stats.push({ value: m, label: words.join(' ') || 'improvement' });
+    }
+  }
+  const dollarMatches = allContent.match(/\$[\d,.]+[KkMmBb]?/g);
+  if (dollarMatches) {
+    for (const m of dollarMatches.slice(0, 1)) {
+      stats.push({ value: m, label: 'value' });
+    }
+  }
+  const multMatches = allContent.match(/(\d+(?:\.\d+)?)[xX]\b/g);
+  if (multMatches) {
+    for (const m of multMatches.slice(0, 1)) {
+      stats.push({ value: m, label: 'multiplier' });
+    }
+  }
+  return stats.slice(0, 3);
+}
+
+// ── Customer quote extraction ──────────────────────────────
 
 function extractCustomerQuote(content: string): string | null {
   const sentences = content.split(/(?<=[.!?])\s+/);
@@ -29,223 +63,400 @@ function extractCustomerQuote(content: string): string | null {
 
 function render(input: StyleInput): string {
   const brand = resolveBrand(input);
+  const accent = brand.accent || brand.primary;
+
+  if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
+
   const { sections, contentType, prospect, companyName, date } = input;
-  const dateStr =
-    date ||
-    new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const stats = extractStats(sections);
+  const rgb = hexToRgb(accent);
+  const lightBg = lighten(accent, 0.96);
+  const warmBg = lighten(accent, 0.93);
+
+  const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   // Find a good pull quote from mid-document
   const midIdx = Math.floor(sections.length / 2);
-  const customerQuote = extractCustomerQuote(
-    sections[midIdx]?.content || sections[0]?.content || '',
-  );
+  const customerQuote = extractCustomerQuote(sections[midIdx]?.content || sections[0]?.content || '');
 
-  const sectionsHtml = sections
-    .map((s, i) => {
-      const chapterLabel =
-        CHAPTER_TITLES[i] || `Chapter ${String(i + 1).padStart(2, '0')}`;
-      const chapterNum = String(i + 1).padStart(2, '0');
-
-      const showQuote = i === midIdx && customerQuote;
-
-      return `
-      <div class="chapter">
-        <div class="chapter-header">
-          <span class="chapter-num">Chapter ${chapterNum}</span>
-          <span class="chapter-dash">&mdash;</span>
-          <span class="chapter-name">${s.title || chapterLabel}</span>
+  // Inline stat highlights
+  const inlineStatsHtml = stats.length > 0 ? `
+    <div class="st-inline-stats">
+      ${stats.map(s => `
+        <div class="st-inline-stat">
+          <span class="st-inline-value">${s.value}</span>
+          <span class="st-inline-label">${s.label}</span>
         </div>
-        <div class="chapter-body">${formatMarkdown(s.content)}</div>
-        ${
-          showQuote
-            ? `<div class="customer-callout">
-                <div class="callout-mark">&ldquo;</div>
-                <p class="callout-text">${customerQuote}</p>
-                <p class="callout-attr">&mdash; ${prospect.companyName} stakeholder</p>
-              </div>`
-            : ''
-        }
+      `).join('')}
+    </div>` : '';
+
+  // Sections HTML with alternating backgrounds
+  const sectionsHtml = sections.map((s, i) => {
+    const chapterNum = String(i + 1).padStart(2, '0');
+    const isAlternate = i % 2 === 1;
+    const bgClass = isAlternate ? 'st-section-alt' : '';
+    const cleanContent = stripEmojis(s.content);
+    const showQuote = i === midIdx && customerQuote;
+
+    return `
+      <div class="st-chapter ${bgClass}">
+        <div class="st-chapter-inner">
+          <div class="st-chapter-marker">
+            <span class="st-chapter-line"></span>
+            <span class="st-chapter-label">Chapter ${chapterNum}</span>
+            <span class="st-chapter-line"></span>
+          </div>
+          <h2 class="st-chapter-title">${stripEmojis(s.title)}</h2>
+          <div class="st-chapter-body">${formatMarkdown(cleanContent)}</div>
+          ${showQuote ? `
+            <div class="st-callout">
+              <div class="st-callout-mark">&ldquo;</div>
+              <p class="st-callout-text">${stripEmojis(customerQuote!)}</p>
+              <p class="st-callout-attr">&mdash; ${prospect.companyName} stakeholder</p>
+            </div>` : ''}
+          ${i === Math.floor(sections.length / 3) && stats.length > 0 ? inlineStatsHtml : ''}
+        </div>
       </div>`;
-    })
-    .join('');
+  }).join('');
 
   const css = `
     ${brandCSSVars(brand)}
+    ${professionalSymbolCSS(accent)}
+
+    @page {
+      size: letter;
+      margin: 0.7in 0.85in;
+      @bottom-center {
+        content: counter(page);
+        font-family: 'Nunito', sans-serif;
+        font-size: 9px;
+        color: #bbb;
+      }
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .st-chapter { break-inside: avoid; }
+    }
 
     body {
-      font-family: var(--brand-font-secondary);
-      color: var(--brand-text);
-      background: #fff;
-      line-height: 1.75;
-      font-size: var(--brand-font-body-size);
+      font-family: 'Nunito', 'Quicksand', sans-serif;
+      color: ${brand.text};
+      background: #ffffff;
+      line-height: 1.8;
+      font-size: ${brand.bodySize}px;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 0;
     }
 
-    .page {
-      max-width: 780px;
+    /* ── Wrapper ── */
+    .st-wrapper {
+      max-width: 820px;
       margin: 0 auto;
-      padding: 64px 56px 48px;
     }
 
-    /* ── Opening scene ── */
-    .opening {
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 48px;
-      margin-bottom: 48px;
+    /* ── Hero header ── */
+    .st-hero {
+      background: linear-gradient(135deg, ${brand.primary} 0%, ${darken(brand.primary, 0.2)} 100%);
+      color: ${contrastText(brand.primary)};
+      padding: 64px 60px 56px;
+      position: relative;
+      overflow: hidden;
     }
-    .opening-logo { margin-bottom: 32px; }
-    .opening-scene {
-      font-size: 20px;
-      font-style: italic;
-      color: #555;
-      line-height: 1.6;
-      margin-bottom: 16px;
+    .st-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
     }
-    .opening-title {
-      font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h1-size);
-      font-weight: 700;
-      color: #111;
-      line-height: 1.2;
-      margin-bottom: 8px;
-    }
-    .opening-byline {
-      font-size: 14px;
-      color: #888;
-    }
-
-    /* ── Chapter ── */
-    .chapter {
-      margin-bottom: 56px;
-    }
-    .chapter-header {
+    .st-hero-top {
       display: flex;
-      align-items: baseline;
-      gap: 10px;
-      margin-bottom: 20px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
     }
-    .chapter-num {
-      font-family: var(--brand-font-primary);
+    .st-hero-logo img { height: 32px; filter: brightness(10); }
+    .st-hero-meta {
+      text-align: right;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .st-hero-prospect {
+      font-weight: 700;
       font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--brand-primary);
+      opacity: 1;
     }
-    .chapter-dash { color: #ccc; }
-    .chapter-name {
-      font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h2-size);
-      font-weight: 600;
-      color: #111;
+    .st-hero-overline {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: ${brand.h1Size + 10}px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-subtitle {
+      font-size: 17px;
+      line-height: 1.6;
+      opacity: 0.85;
+      max-width: 540px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-byline {
+      margin-top: 24px;
+      font-size: 12px;
+      opacity: 0.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Photography placeholder ── */
+    .st-photo-band {
+      height: 6px;
+      background: linear-gradient(to right, ${accent}, ${lighten(accent, 0.3)}, ${accent});
+    }
+
+    /* ── Chapters ── */
+    .st-chapter {
+      padding: 48px 60px;
+      background: #ffffff;
+      transition: background 0.3s;
+    }
+    .st-chapter-alt {
+      background: ${lightBg};
+    }
+    .st-chapter-inner {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .st-chapter-marker {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .st-chapter-line {
+      flex: 1;
+      height: 1px;
+      background: ${lighten(accent, 0.7)};
+    }
+    .st-chapter-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: ${accent};
+      white-space: nowrap;
+    }
+    .st-chapter-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: ${brand.h2Size + 4}px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.25;
+      margin-bottom: 20px;
     }
 
     /* ── Chapter body ── */
-    .chapter-body {
-      color: #333;
-      line-height: 1.8;
+    .st-chapter-body {
+      color: #444;
+      line-height: 1.85;
     }
-    .chapter-body h1, .chapter-body h2,
-    .chapter-body h3, .chapter-body h4 {
-      color: #111;
-      margin: 20px 0 10px;
+    .st-chapter-body p { margin-bottom: 16px; }
+    .st-chapter-body h1, .st-chapter-body h2,
+    .st-chapter-body h3, .st-chapter-body h4 {
+      font-family: 'Nunito', sans-serif;
+      color: #1a1a1a;
+      margin: 24px 0 12px;
     }
-    .chapter-body h1 { font-size: 20px; }
-    .chapter-body h2 { font-size: 17px; }
-    .chapter-body h3 { font-size: 15px; }
-    .chapter-body ul, .chapter-body ol {
+    .st-chapter-body h1 { font-size: 22px; font-weight: 700; }
+    .st-chapter-body h2 { font-size: 18px; font-weight: 700; }
+    .st-chapter-body h3 { font-size: 16px; font-weight: 600; }
+    .st-chapter-body ul, .st-chapter-body ol {
       padding-left: 24px;
-      margin: 12px 0;
+      margin: 14px 0;
     }
-    .chapter-body li { margin-bottom: 6px; }
-    .chapter-body table {
+    .st-chapter-body li {
+      margin-bottom: 8px;
+      line-height: 1.7;
+    }
+    .st-chapter-body strong { font-weight: 700; color: #1a1a1a; }
+    .st-chapter-body em { font-style: italic; }
+
+    /* ── Tables ── */
+    .st-chapter-body table {
       width: 100%;
       border-collapse: collapse;
-      margin: 16px 0;
-      font-size: 13px;
-    }
-    .chapter-body th {
-      background: ${lighten(brand.primary, 0.92)};
-      font-weight: 600;
-      padding: 10px 12px;
-      border-bottom: 2px solid var(--brand-primary);
-      text-align: left;
-    }
-    .chapter-body td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    .chapter-body hr {
-      border: none;
-      border-top: 1px solid #e5e7eb;
       margin: 20px 0;
-    }
-    .chapter-body strong { font-weight: 600; }
-    .chapter-body em { font-style: italic; }
-
-    /* ── Customer callout ── */
-    .customer-callout {
-      background: ${lighten(brand.primary, 0.94)};
+      font-size: 13px;
       border-radius: 8px;
-      padding: 32px 36px 28px;
-      margin: 36px 0;
+      overflow: hidden;
+    }
+    .st-chapter-body th {
+      background: ${warmBg};
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid ${accent};
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: ${darken(accent, 0.2)};
+    }
+    .st-chapter-body td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+    }
+    .st-chapter-body tr:last-child td { border-bottom: none; }
+    .st-chapter-body hr {
+      border: none;
+      border-top: 1px solid #e5e5e5;
+      margin: 24px 0;
+    }
+
+    /* ── Callout / pull quote ── */
+    .st-callout {
+      background: ${warmBg};
+      border-radius: 12px;
+      padding: 36px 40px 28px;
+      margin: 32px 0;
       position: relative;
     }
-    .callout-mark {
+    .st-callout-mark {
       font-family: Georgia, 'Times New Roman', serif;
-      font-size: 56px;
-      color: var(--brand-primary);
-      line-height: 1;
+      font-size: 64px;
+      color: ${accent};
       opacity: 0.25;
+      line-height: 0.6;
       position: absolute;
-      top: 12px;
-      left: 20px;
+      top: 16px;
+      left: 24px;
     }
-    .callout-text {
-      font-size: 17px;
+    .st-callout-text {
+      font-size: 18px;
       font-style: italic;
       color: #333;
-      line-height: 1.6;
+      line-height: 1.65;
       margin-bottom: 12px;
+      padding-left: 8px;
     }
-    .callout-attr {
+    .st-callout-attr {
       font-size: 13px;
-      font-weight: 600;
-      color: var(--brand-primary);
+      font-weight: 700;
+      color: ${accent};
+      padding-left: 8px;
+    }
+
+    /* ── Inline stats ── */
+    .st-inline-stats {
+      display: flex;
+      gap: 20px;
+      margin: 32px 0;
+    }
+    .st-inline-stat {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid ${lighten(accent, 0.8)};
+      border-radius: 10px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .st-chapter-alt .st-inline-stat {
+      background: #ffffff;
+    }
+    .st-inline-value {
+      display: block;
+      font-size: 30px;
+      font-weight: 800;
+      color: ${accent};
+      line-height: 1.1;
+    }
+    .st-inline-label {
+      display: block;
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 6px;
     }
 
     /* ── Footer ── */
-    .story-footer {
+    .st-footer {
+      background: ${lighten(brand.primary, 0.96)};
+      padding: 36px 60px;
       text-align: center;
+    }
+    .st-footer-end {
+      font-size: 22px;
+      font-weight: 700;
+      color: ${brand.primary};
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+    .st-footer-divider {
+      width: 40px;
+      height: 2px;
+      background: ${accent};
+      margin: 0 auto 16px;
+      border-radius: 1px;
+    }
+    .st-footer-info {
       font-size: 11px;
       color: #999;
-      border-top: 1px solid #e0e0e0;
-      padding-top: 24px;
-      margin-top: 48px;
+      line-height: 1.8;
+    }
+    .st-footer-company {
+      font-weight: 700;
+      color: #777;
     }
   `;
 
-  const title = contentType
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase());
-
   const body = `
-    <div class="page">
-      <div class="opening">
-        <div class="opening-logo">${brandLogoHtml(input)}</div>
-        <p class="opening-scene">Imagine a ${prospect.industry || 'growing'} company facing a critical inflection point&hellip;</p>
-        <h1 class="opening-title">${title}</h1>
-        <p class="opening-byline">A story of transformation at ${prospect.companyName} &middot; ${dateStr}</p>
+    <div class="st-wrapper">
+      <div class="st-hero">
+        <div class="st-hero-top">
+          <div class="st-hero-logo">${brandLogoHtml(input, 'height:32px;filter:brightness(10);')}</div>
+          <div class="st-hero-meta">
+            <div class="st-hero-prospect">${prospect.companyName}</div>
+            <div>${dateStr}</div>
+          </div>
+        </div>
+        <div class="st-hero-overline">A ${prospect.industry || 'Transformation'} Story</div>
+        <h1 class="st-hero-title">${title}</h1>
+        <p class="st-hero-subtitle">How ${prospect.companyName} partnered with ${companyName} to achieve transformative results${prospect.industry ? ' in ' + prospect.industry : ''}.</p>
+        <div class="st-hero-byline">By ${companyName} &middot; ${dateStr}</div>
       </div>
+
+      <div class="st-photo-band"></div>
 
       ${sectionsHtml}
 
-      <div class="story-footer">
-        ${companyName} | ${dateStr} | Generated by ContentForg
-      </div>
+      <footer class="st-footer">
+        <div class="st-footer-end">The End</div>
+        <div class="st-footer-divider"></div>
+        <div class="st-footer-info">
+          <span class="st-footer-company">${companyName}</span>${input.companyDescription ? ' | ' + input.companyDescription : ''}<br/>
+          Prepared for ${prospect.companyName} &middot; ${dateStr}
+        </div>
+      </footer>
     </div>
   `;
 
@@ -253,7 +464,7 @@ function render(input: StyleInput): string {
     title: `${title} — ${prospect.companyName}`,
     css,
     body,
-    fonts: brandFonts(brand),
+    fonts: ['Nunito', ...brandFonts(brand)],
   });
 }
 
@@ -261,30 +472,27 @@ function render(input: StyleInput): string {
 
 function thumbnail(accentColor: string): string {
   return `<div style="width:100%;height:100%;background:#fff;border-radius:6px;overflow:hidden;font-family:sans-serif;position:relative;">
-    <div style="padding:10px 12px 8px;border-bottom:1px solid #eee;">
-      <div style="width:30%;height:5px;background:#111;border-radius:2px;margin-bottom:4px;"></div>
-      <div style="width:55%;height:7px;background:#111;border-radius:2px;margin-bottom:3px;"></div>
-      <div style="width:40%;height:4px;background:#999;border-radius:2px;"></div>
+    <div style="background:linear-gradient(135deg,${accentColor},#333);padding:10px 12px 8px;color:#fff;">
+      <div style="font-size:5px;letter-spacing:1px;text-transform:uppercase;opacity:0.6;margin-bottom:3px;">A STORY</div>
+      <div style="width:70%;height:7px;background:#fff;opacity:0.9;border-radius:2px;margin-bottom:3px;"></div>
+      <div style="width:45%;height:4px;background:#fff;opacity:0.5;border-radius:2px;"></div>
     </div>
+    <div style="height:3px;background:linear-gradient(to right,${accentColor},transparent);"></div>
     <div style="padding:6px 12px;">
       <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;">
-        <div style="font-size:7px;color:${accentColor};font-weight:700;">Ch 01</div>
-        <div style="color:#ccc;">—</div>
-        <div style="width:40%;height:5px;background:#222;border-radius:2px;"></div>
+        <div style="flex:1;height:1px;background:#eee;"></div>
+        <div style="font-size:6px;color:${accentColor};font-weight:700;letter-spacing:1px;">CH 01</div>
+        <div style="flex:1;height:1px;background:#eee;"></div>
       </div>
+      <div style="width:50%;height:5px;background:#222;border-radius:2px;margin-bottom:3px;"></div>
       <div style="width:90%;height:3px;background:#ddd;border-radius:2px;margin-bottom:2px;"></div>
       <div style="width:75%;height:3px;background:#ddd;border-radius:2px;margin-bottom:5px;"></div>
-      <div style="background:${accentColor}11;border-radius:4px;padding:5px 6px;margin-bottom:5px;">
+      <div style="background:${accentColor}11;border-radius:4px;padding:5px 6px;">
         <div style="width:70%;height:3px;background:#bbb;border-radius:2px;margin-bottom:2px;"></div>
         <div style="width:50%;height:3px;background:${accentColor};border-radius:2px;opacity:0.5;"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:4px;">
-        <div style="font-size:7px;color:${accentColor};font-weight:700;">Ch 02</div>
-        <div style="color:#ccc;">—</div>
-        <div style="width:35%;height:5px;background:#222;border-radius:2px;"></div>
-      </div>
     </div>
-    <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:7px;padding:4px;color:#999;">Storytelling</div>
+    <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:7px;padding:4px;color:#999;background:#fafafa;">Storytelling</div>
   </div>`;
 }
 

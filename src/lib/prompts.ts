@@ -16,6 +16,9 @@ VOICE: Write like a confident sales professional who knows this industry deeply 
 
 SURPRISE: Include one unexpected insight, stat, or angle that the prospect probably hasn't heard before. This is the sentence that makes them forward the document to their boss.
 
+MINIMUM CONTENT DENSITY (CRITICAL):
+Every section must contain at minimum: a headline, 2-3 substantive sentences or bullet points, and one specific fact/number/proof point. A section with only one sentence is a FAILED section. Never generate a section with fewer than 3 meaningful content elements. If you cannot fill a section with meaningful content, merge it with an adjacent section rather than leaving it sparse. White space is the enemy — every section should feel substantial and valuable.
+
 `;
 
 export function buildSystemPrompt(kb: KnowledgeBase, product?: ProductProfile): string {
@@ -181,25 +184,40 @@ Prospect Details:
 
 ${toneInstruction(toneLevel)}
 
+SOLUTION ONE-PAGER RULES:
+- This document MUST fit on exactly ONE printed page. Be ruthlessly concise.
+- Structure: Hero headline (1 sentence), 3 key stats, Challenge (3 bullets max, 15 words each), Solution (3 bullets max, 15 words each), Why Us (3 differentiators), 1 customer proof quote.
+- Maximum 15 words per bullet point. Every word must earn its place.
+- Lead with the single most impactful statistic or metric you can find.
+- Do NOT pad content. Do NOT explain what you are about to say — just say it.
+- Do NOT use section headers like "The Challenge:" — use bold lead-in words on each bullet instead.
+- Generate exactly these sections with these exact titles:
+  1. "Hero" — One powerful headline sentence + 2 lines of supporting context
+  2. "Key Metrics" — Exactly 3 stats formatted as "NUMBER | LABEL" (e.g., "40% | Reduction in Pick Time")
+  3. "The Challenge" — 3 bullet points, each starting with a bold phrase
+  4. "The Solution" — 3 bullet points, each starting with a bold phrase
+  5. "Why Us" — 3 short bold differentiator statements
+  6. "Proof" — One customer quote with attribution, or "Companies like [prospect] typically see..."
+
 Structure your response with these exact sections (use "## SECTION: Title" format for each):
 
+## SECTION: Hero
+One powerful headline sentence that captures the core value proposition for ${prospect.companyName}. Follow with exactly 2 lines of supporting context. No fluff.
+
+## SECTION: Key Metrics
+Exactly 3 stats, each on its own line, formatted as "NUMBER | LABEL" (e.g., "40% | Reduction in Pick Time"). Use real metrics from the knowledge base or credible industry benchmarks.
+
 ## SECTION: The Challenge
-What ${prospect.companyName} is facing — tied to their pain points: ${prospect.painPoints}
+Exactly 3 bullet points about what ${prospect.companyName} faces. Each bullet starts with a **bold lead-in phrase** followed by a concise statement. Max 15 words per bullet. Pain points: ${prospect.painPoints}
 
-## SECTION: Our Solution
-How our product/service directly solves their challenges.
-
-## SECTION: Key Benefits
-3-5 quantifiable benefits with ROI focus.
-
-## SECTION: How It Works
-Simple explanation of implementation/adoption.
+## SECTION: The Solution
+Exactly 3 bullet points showing how we solve each challenge. Each bullet starts with a **bold lead-in phrase** followed by a concise statement. Max 15 words per bullet.
 
 ## SECTION: Why Us
-Differentiators that matter most to ${prospect.industry} companies of size ${prospect.companySize}.
+Exactly 3 bold differentiator statements. Each is a single short sentence that sets us apart for ${prospect.industry} companies of size ${prospect.companySize}.
 
-## SECTION: Next Steps
-Clear call to action.
+## SECTION: Proof
+One customer quote with attribution. If no real quote exists, use: "Companies like ${prospect.companyName} typically see [specific result]..." Keep it to 2 sentences max.
 
 Prospect Details:
 - Company: ${prospect.companyName}
@@ -1287,6 +1305,37 @@ Prospect Details:
 - Current Stack: ${prospect.techStack}
 - Pain Points: ${prospect.painPoints}`,
 
+  'why-we-win': (prospect, toneLevel) => `Create a "Why We Win" one-pager for deals involving ${prospect.companyName}. This is an internal sales enablement document that gives reps a quick-reference sheet for competitive situations.
+
+${toneInstruction(toneLevel)}
+
+Structure your response with these exact sections (use "## SECTION: Title" format for each):
+
+## SECTION: Why We Win
+A concise summary of our competitive advantages in this deal/market segment. 3-5 bullet points that are specific, provable, and relevant to ${prospect.industry}.
+
+## SECTION: Head-to-Head Comparison
+Create a comparison highlighting where we lead vs. the competition. Focus on capabilities that matter most to ${prospect.companyName} based on their pain points.
+
+## SECTION: Proof Points
+2-3 customer success stories or metrics that demonstrate why we win in similar situations. Include specific numbers where possible.
+
+## SECTION: Landmine Questions
+5-7 questions reps should ask prospects to expose competitor weaknesses. These should be genuine discovery questions that naturally highlight our strengths.
+
+## SECTION: Objection Responses
+Common objections prospects raise about us (vs. competitors) and sharp, confident responses. Include 3-5 objection/response pairs.
+
+## SECTION: Quick Talk Track
+A 60-second elevator pitch for why we win this deal. Written in first person, conversational tone that a rep can use verbatim.
+
+Prospect Details:
+- Company: ${prospect.companyName}
+- Industry: ${prospect.industry}
+- Size: ${prospect.companySize}
+- Current Stack: ${prospect.techStack}
+- Pain Points: ${prospect.painPoints}`,
+
   'linkedin-post': (prospect, toneLevel) => `Generate a LinkedIn thought leadership post. Structure:
 
 ${toneInstruction(toneLevel)}
@@ -1943,4 +1992,40 @@ Vendor risk factors and mitigations: single-vendor dependency risk, business con
   };
 
   return instructions[personaId] || '';
+}
+
+/**
+ * Check sections for minimum content density. Returns sections that are too sparse.
+ */
+export function checkContentDensity(sections: { id: string; title: string; content: string }[]): {
+  sparse: { sectionId: string; sectionTitle: string; wordCount: number; elementCount: number }[];
+  passed: boolean;
+} {
+  const sparse: { sectionId: string; sectionTitle: string; wordCount: number; elementCount: number }[] = [];
+
+  for (const section of sections) {
+    const content = section.content.trim();
+    if (!content) {
+      sparse.push({ sectionId: section.id, sectionTitle: section.title, wordCount: 0, elementCount: 0 });
+      continue;
+    }
+
+    // Count meaningful elements
+    const lines = content.split('\n').filter(l => l.trim().length > 0);
+    const bulletPoints = (content.match(/^[-*•]\s/gm) || []).length;
+    const numberedItems = (content.match(/^\d+\.\s/gm) || []).length;
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10).length;
+    const boldPhrases = (content.match(/\*\*[^*]+\*\*/g) || []).length;
+    const headings = (content.match(/^#{1,4}\s/gm) || []).length;
+
+    const elementCount = Math.max(lines.length, bulletPoints + numberedItems + sentences);
+    const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
+
+    // A section is sparse if it has fewer than 3 meaningful elements OR fewer than 20 words
+    if (elementCount < 3 && wordCount < 20) {
+      sparse.push({ sectionId: section.id, sectionTitle: section.title, wordCount, elementCount });
+    }
+  }
+
+  return { sparse, passed: sparse.length === 0 };
 }

@@ -16,6 +16,8 @@ import {
   HiOutlineCube,
   HiOutlinePaintBrush,
   HiOutlineTableCells,
+  HiOutlineLightBulb,
+  HiOutlinePhone,
 } from 'react-icons/hi2';
 import Logo from '@/components/Logo';
 
@@ -31,6 +33,11 @@ const SALES_TOOLS_NAV = [
   { href: '/products', label: 'Products', icon: HiOutlineCube },
   { href: '/roi-calculator', label: 'ROI Calculator', icon: HiOutlineCalculator },
   { href: '/feature-matrix', label: 'Feature Matrix', icon: HiOutlineTableCells },
+  { href: '/discovery-call', label: 'Discovery Calls', icon: HiOutlinePhone },
+];
+
+const INTELLIGENCE_NAV = [
+  { href: '/knowledge-brain', label: 'Knowledge Brain', icon: HiOutlineLightBulb },
 ];
 
 const SETTINGS_NAV_ADMIN = [
@@ -124,6 +131,7 @@ export default function Sidebar() {
       <nav className="flex-1 py-4 overflow-y-auto">
         <NavGroup label="Workspace" items={WORKSPACE_NAV} />
         <NavGroup label="Sales Tools" items={SALES_TOOLS_NAV} />
+        <NavGroup label="Intelligence" items={INTELLIGENCE_NAV} />
         {role === 'admin' && <NavGroup label="Settings" items={SETTINGS_NAV_ADMIN} />}
       </nav>
 

@@ -1,6 +1,6 @@
 // ════════════════════════════════════════════════════════
-// Style 05 — Full Bleed Image
-// Cinematic hero gradient, refined single-column layout
+// Style 05 — Full Bleed
+// Premium annual report / product launch — bold color blocking
 // ════════════════════════════════════════════════════════
 
 import type { DocumentStyle, StyleInput } from './types';
@@ -15,258 +15,512 @@ import {
   darken,
   contrastText,
   hexToRgb,
+  buildOnePagerDocument,
+  professionalSymbolCSS,
+  stripEmojis,
 } from './shared';
 
 const style05FullBleed: DocumentStyle = {
   id: 'style-05',
   name: 'Full Bleed',
   category: 'clean',
-  description: 'Cinematic hero gradient with refined typography and stat callout boxes',
-  keywords: ['hero', 'cinematic', 'full-bleed', 'gradient', 'modern', 'poppins'],
+  description: 'Premium full-bleed color blocking with bold stat bands and architectural edges',
+  keywords: ['full-bleed', 'annual-report', 'color-block', 'premium', 'modern', 'architectural'],
 
   render(input: StyleInput): string {
     const brand = resolveBrand(input);
+
+    // One-pager shortcut
+    if (input.contentType === 'solution-one-pager') {
+      return buildOnePagerDocument(input, brand);
+    }
+
     const {
       sections,
       contentType,
       prospect,
       companyName,
+      companyDescription,
       logoBase64,
       prospectLogoBase64,
       date,
     } = input;
 
-    const darker = darken(brand.primary, 0.35);
-    const lighter = lighten(brand.primary, 0.92);
-    const borderAccent = lighten(brand.primary, 0.6);
+    const accent = brand.primary;
+    const accentDark = darken(accent, 0.25);
+    const accentLight = lighten(accent, 0.94);
+    const accentMid = lighten(accent, 0.85);
+    const textOnAccent = contrastText(accent);
     const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const titleLabel = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    // Detect stat-like sections for the stat band treatment
+    const isStatSection = (title: string) =>
+      /metric|stat|number|result|roi|kpi|outcome|impact/i.test(title);
 
     const css = `
       ${brandCSSVars(brand)}
+      ${professionalSymbolCSS(accent)}
+
+      @page {
+        size: letter;
+        margin: 0;
+      }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
 
       body {
         font-family: var(--brand-font-primary);
-        color: #2D2D2D;
-        background: #FFFFFF;
+        color: ${brand.text};
+        background: #ffffff;
         line-height: 1.7;
         font-size: var(--brand-font-body-size);
+        margin: 0;
+        padding: 0;
       }
 
-      /* ── Hero ── */
-      .hero {
-        position: relative;
+      /* ── Full-Bleed Header ── */
+      .fb-header {
         width: 100%;
-        min-height: 40vh;
-        background: linear-gradient(135deg, var(--brand-primary) 0%, ${darker} 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 48px 64px;
+        background: ${accent};
+        color: ${textOnAccent};
+        padding: 56px 0 52px;
+        position: relative;
         overflow: hidden;
       }
-      .hero::after {
+      .fb-header::after {
         content: '';
         position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 100%);
-        pointer-events: none;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: ${accentDark};
       }
-      .hero-logo {
-        position: absolute;
-        top: 32px;
-        left: 64px;
-        z-index: 2;
-      }
-      .hero-logo img {
-        height: 40px;
-        filter: brightness(0) invert(1);
-      }
-      .hero-prospect-logo {
-        position: absolute;
-        top: 32px;
-        right: 64px;
-        z-index: 2;
-      }
-      .hero-prospect-logo img {
-        height: 36px;
-        filter: brightness(0) invert(1);
-        opacity: 0.85;
-      }
-      .hero-title {
-        position: relative;
-        z-index: 2;
-        font-size: var(--brand-font-h1-size);
-        font-weight: 700;
-        color: #FFFFFF;
-        text-shadow: 0 2px 12px rgba(0,0,0,0.3);
-        margin-bottom: 8px;
-        max-width: 700px;
-      }
-      .hero-subtitle {
-        position: relative;
-        z-index: 2;
-        font-size: 16px;
-        font-weight: 400;
-        color: rgba(255,255,255,0.85);
-        max-width: 600px;
-      }
-
-      /* ── Content ── */
-      .content-wrapper {
+      .fb-header-inner {
         max-width: 800px;
         margin: 0 auto;
-        padding: 56px 64px 40px;
+        padding: 0 48px;
+      }
+      .fb-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+      .fb-header-logo img {
+        height: 38px;
+        filter: brightness(0) invert(1);
+      }
+      .fb-header-logo-text {
+        font-weight: 700;
+        font-size: 18px;
+        color: ${textOnAccent};
+        letter-spacing: -0.01em;
+      }
+      .fb-header-meta {
+        text-align: right;
+        font-size: 12px;
+        opacity: 0.85;
+        line-height: 1.6;
+      }
+      .fb-header-meta .prospect-name {
+        font-weight: 700;
+        font-size: 14px;
+        opacity: 1;
+      }
+      .fb-prospect-logo img {
+        height: 28px;
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+        margin-bottom: 4px;
+      }
+      .fb-header-title {
+        font-size: calc(var(--brand-font-h1-size) + 4px);
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+        color: ${textOnAccent};
+      }
+      .fb-header-subtitle {
+        font-size: 16px;
+        font-weight: 400;
+        opacity: 0.85;
+        color: ${textOnAccent};
+      }
+      .fb-header-type {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        background: rgba(255,255,255,0.18);
+        padding: 4px 14px;
+        margin-bottom: 16px;
       }
 
-      /* ── Sections ── */
-      .section {
-        margin-bottom: 48px;
+      /* ── Content Wrapper ── */
+      .fb-content {
+        max-width: 800px;
+        margin: 0 auto;
       }
-      .section h2 {
+
+      /* ── Alternating Section Bands ── */
+      .fb-band {
+        width: 100%;
+        padding: 0;
+      }
+      .fb-band-white { background: #ffffff; }
+      .fb-band-gray { background: ${accentLight}; }
+
+      .fb-section {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 44px 48px;
+      }
+
+      /* Section header */
+      .fb-section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+        padding-bottom: 14px;
+        border-bottom: 3px solid ${accent};
+      }
+      .fb-section-num {
+        font-size: 12px;
+        font-weight: 700;
+        color: ${accent};
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        flex-shrink: 0;
+      }
+      .fb-section-title {
         font-size: var(--brand-font-h2-size);
-        font-weight: 600;
-        color: #1A1A1A;
-        margin-bottom: 6px;
-        padding-bottom: 10px;
-        border-bottom: 3px solid var(--brand-primary);
-        display: inline-block;
+        font-weight: 700;
+        color: #1a1a1a;
+        letter-spacing: -0.01em;
       }
-      .section h3 {
+
+      /* Typography within sections */
+      .fb-section h2 { display: none; }
+      .fb-section h3 {
         font-size: var(--brand-font-h3-size);
+        font-weight: 600;
+        color: #222;
+        margin: 28px 0 10px;
+        padding-left: 14px;
+        border-left: 3px solid ${lighten(accent, 0.5)};
+      }
+      .fb-section h4 {
+        font-size: 15px;
         font-weight: 600;
         color: #333;
         margin: 20px 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
-      .section h4 {
-        font-size: 15px;
-        font-weight: 600;
-        color: #444;
-        margin: 16px 0 6px;
+      .fb-section p {
+        margin-bottom: 14px;
+        color: #3a3a3a;
+        line-height: 1.75;
       }
-      .section p {
-        margin-bottom: 12px;
-        color: #3A3A3A;
-      }
-      .section strong {
-        font-weight: 600;
-        color: #1A1A1A;
-      }
-      .section em {
-        font-style: italic;
-        color: #555;
-      }
-      .section hr {
+      .fb-section strong { font-weight: 600; color: #1a1a1a; }
+      .fb-section em { font-style: italic; color: #555; }
+      .fb-section hr {
         border: none;
         height: 1px;
-        background: #E0E0E0;
+        background: #e0e0e0;
         margin: 28px 0;
       }
 
-      /* ── Lists ── */
-      .section ul, .section ol {
-        margin: 12px 0 16px 24px;
+      /* Lists */
+      .fb-section ul, .fb-section ol {
+        margin: 12px 0 18px 0;
+        padding: 0 0 0 24px;
+      }
+      .fb-section li {
+        margin-bottom: 8px;
+        padding-left: 4px;
+        line-height: 1.65;
+      }
+      .fb-section ul li::marker { color: ${accent}; font-weight: 700; }
+
+      /* ── Stat Band (full-bleed accent) ── */
+      .fb-stat-band {
+        width: 100%;
+        background: ${accent};
+        color: ${textOnAccent};
         padding: 0;
       }
-      .section li {
+      .fb-stat-band-inner {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 48px;
+      }
+      .fb-stat-band-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        opacity: 0.8;
+        margin-bottom: 20px;
+        color: ${textOnAccent};
+      }
+      .fb-stat-grid {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+      }
+      .fb-stat-item {
+        flex: 1;
+        min-width: 140px;
+        text-align: center;
+        padding: 20px 16px;
+        background: rgba(255,255,255,0.12);
+      }
+      .fb-stat-value {
+        font-size: 36px;
+        font-weight: 800;
+        line-height: 1.1;
+        color: ${textOnAccent};
         margin-bottom: 6px;
-        padding-left: 4px;
       }
-      .section ul li::marker {
-        color: var(--brand-primary);
+      .fb-stat-label {
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: ${textOnAccent};
       }
-
-      /* ── Stat callout boxes ── */
-      .section blockquote,
-      .section .callout {
-        background: ${lighter};
-        border-left: 4px solid var(--brand-primary);
-        padding: 16px 20px;
-        margin: 20px 0;
-        border-radius: 0 6px 6px 0;
-        font-size: 15px;
-        color: #2D2D2D;
+      .fb-stat-content {
+        color: ${textOnAccent};
+        line-height: 1.65;
       }
+      .fb-stat-content p { color: ${textOnAccent}; }
+      .fb-stat-content strong { color: ${textOnAccent}; font-weight: 700; }
+      .fb-stat-content li { color: ${textOnAccent}; }
+      .fb-stat-content ul li::marker { color: rgba(255,255,255,0.6); }
 
       /* ── Tables ── */
-      .section table {
+      .fb-section table {
         width: 100%;
         border-collapse: collapse;
-        margin: 20px 0;
+        margin: 24px 0;
         font-size: 14px;
       }
-      .section th {
-        background: var(--brand-primary);
-        color: ${contrastText(brand.primary)};
+      .fb-section thead th {
+        background: ${accent};
+        color: ${textOnAccent};
         font-weight: 600;
         text-align: left;
-        padding: 10px 14px;
+        padding: 12px 16px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
-      .section td {
-        padding: 10px 14px;
-        border-bottom: 1px solid #E8E8E8;
-        color: #3A3A3A;
+      .fb-section td {
+        padding: 11px 16px;
+        border-bottom: 1px solid #e5e5e5;
+        color: #3a3a3a;
       }
-      .section tr:nth-child(even) td {
-        background: #FAFAFA;
+      .fb-section tr:nth-child(even) td {
+        background: #fafafa;
+      }
+      .fb-section th:first-child { padding-left: 16px; }
+
+      /* Blockquotes as callouts */
+      .fb-section blockquote {
+        background: ${accentMid};
+        border-left: 4px solid ${accent};
+        padding: 18px 24px;
+        margin: 24px 0;
+        font-size: 15px;
+        color: #2d2d2d;
       }
 
       /* ── Footer ── */
-      .footer {
-        text-align: center;
-        padding: 32px 64px;
-        font-size: 12px;
+      .fb-footer {
+        width: 100%;
+        background: #1a1a1a;
         color: #999;
-        border-top: 1px solid #ECECEC;
+        padding: 0;
+      }
+      .fb-footer-inner {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 28px 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+      }
+      .fb-footer-company {
+        font-weight: 600;
+        color: #ccc;
+      }
+      .fb-footer-page {
+        font-size: 10px;
+        color: #777;
       }
     `;
 
+    // Build logo HTML
     const logoHtml = logoBase64
-      ? `<div class="hero-logo"><img src="${logoBase64}" alt="${companyName}" /></div>`
-      : `<div class="hero-logo">${brandLogoHtml(input)}</div>`;
-    const prospectLogoHtml = prospectLogoBase64
-      ? `<div class="hero-prospect-logo"><img src="${prospectLogoBase64}" alt="${prospect.companyName}" /></div>`
-      : '';
+      ? `<div class="fb-header-logo"><img src="${logoBase64}" alt="${companyName}" /></div>`
+      : `<div class="fb-header-logo-text">${companyName}</div>`;
 
-    const sectionsHtml = sections
-      .map((s) => {
-        const rendered = formatMarkdown(s.content);
-        return `<div class="section"><h2>${s.title}</h2>${rendered}</div>`;
-      })
-      .join('');
-
-    const body = `
-      <div class="hero">
-        ${logoHtml}
-        ${prospectLogoHtml}
-        <div class="hero-title">${contentType} for ${prospect.companyName}</div>
-        <div class="hero-subtitle">Prepared by ${companyName}${prospect.industry ? ` · ${prospect.industry}` : ''}</div>
+    const prospectMeta = `
+      <div class="fb-header-meta">
+        ${prospectLogoBase64 ? `<div class="fb-prospect-logo"><img src="${prospectLogoBase64}" alt="${prospect.companyName}" /></div>` : ''}
+        <div class="prospect-name">${prospect.companyName}</div>
+        <div>${prospect.industry ? prospect.industry + ' &middot; ' : ''}${dateStr}</div>
       </div>
-      <div class="content-wrapper">
-        ${sectionsHtml}
-      </div>
-      <div class="footer">${companyName} | ${dateStr} | Generated by ContentForg</div>
     `;
 
-    return wrapDocument({ title: `${contentType} — ${prospect.companyName}`, css, body, fonts: brandFonts(brand) });
+    // Build sections with alternating bands and stat detection
+    let sectionIndex = 0;
+    const sectionsHtml = sections.map((s, i) => {
+      const title = stripEmojis(s.title);
+      const content = stripEmojis(s.content);
+      const num = String(i + 1).padStart(2, '0');
+
+      if (isStatSection(title)) {
+        // Parse simple stat lines from content
+        const lines = content.split('\n').filter(l => l.trim());
+        const statItems: { value: string; label: string }[] = [];
+        const otherLines: string[] = [];
+        for (const line of lines) {
+          const pipeMatch = line.match(/^[*\-]?\s*\**(.+?)\**\s*[|:]\s*(.+)$/);
+          const boldMatch = line.match(/\*\*(.+?)\*\*\s*(.+)/);
+          if (pipeMatch) {
+            statItems.push({ value: pipeMatch[1].replace(/\*+/g, '').trim(), label: pipeMatch[2].replace(/\*+/g, '').trim() });
+          } else if (boldMatch) {
+            statItems.push({ value: boldMatch[1].trim(), label: boldMatch[2].trim() });
+          } else {
+            otherLines.push(line);
+          }
+        }
+
+        const statsGrid = statItems.length > 0 ? `
+          <div class="fb-stat-grid">
+            ${statItems.map(st => `
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">${st.value}</div>
+                <div class="fb-stat-label">${st.label}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '';
+
+        const otherContent = otherLines.length > 0
+          ? `<div class="fb-stat-content">${formatMarkdown(otherLines.join('\n'))}</div>`
+          : '';
+
+        return `
+          <div class="fb-stat-band">
+            <div class="fb-stat-band-inner">
+              <div class="fb-stat-band-title">${num} &mdash; ${title}</div>
+              ${statsGrid}
+              ${otherContent}
+            </div>
+          </div>
+        `;
+      }
+
+      // Normal section with alternating bands
+      const bandClass = sectionIndex % 2 === 0 ? 'fb-band-white' : 'fb-band-gray';
+      sectionIndex++;
+      const rendered = formatMarkdown(content);
+      return `
+        <div class="fb-band ${bandClass}">
+          <div class="fb-section">
+            <div class="fb-section-header">
+              <span class="fb-section-num">${num}</span>
+              <span class="fb-section-title">${title}</span>
+            </div>
+            ${rendered}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const body = `
+      <div class="fb-header">
+        <div class="fb-header-inner">
+          <div class="fb-header-top">
+            ${logoHtml}
+            ${prospectMeta}
+          </div>
+          <div class="fb-header-type">${titleLabel}</div>
+          <div class="fb-header-title">${titleLabel} for ${prospect.companyName}</div>
+          <div class="fb-header-subtitle">Prepared by ${companyName}${prospect.industry ? ' &middot; ' + prospect.industry : ''}${prospect.companySize ? ' &middot; ' + prospect.companySize : ''}</div>
+        </div>
+      </div>
+
+      ${sectionsHtml}
+
+      <div class="fb-footer">
+        <div class="fb-footer-inner">
+          <div>
+            <span class="fb-footer-company">${companyName}</span>
+            ${companyDescription ? ' &middot; ' + companyDescription : ''}
+          </div>
+          <div>${dateStr}</div>
+          <div class="fb-footer-page">Page 1</div>
+        </div>
+      </div>
+    `;
+
+    return wrapDocument({
+      title: `${titleLabel} - ${prospect.companyName} - ${companyName}`,
+      css,
+      body,
+      fonts: brandFonts(brand),
+    });
   },
 
   thumbnail(accentColor: string): string {
-    const darker = darken(accentColor, 0.35);
+    const darker = darken(accentColor, 0.25);
+    const lighter = lighten(accentColor, 0.94);
+    const textOn = contrastText(accentColor);
     return `
-    <div style="width:1000px;font-family:'Poppins',sans-serif;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-      <div style="height:180px;background:linear-gradient(135deg,${accentColor} 0%,${darker} 100%);position:relative;display:flex;align-items:flex-end;padding:24px 32px;">
-        <div style="color:#fff;font-size:22px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,0.3);">Document Title</div>
+    <div style="width:1000px;font-family:'Inter',sans-serif;background:#fff;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+      <div style="background:${accentColor};padding:28px 32px;color:${textOn};">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.7;margin-bottom:12px;">Proposal</div>
+        <div style="font-size:22px;font-weight:800;margin-bottom:4px;">Document Title</div>
+        <div style="font-size:12px;opacity:0.8;">Prepared by Company</div>
       </div>
-      <div style="padding:24px 32px;">
-        <div style="width:120px;height:3px;background:${accentColor};margin-bottom:10px;border-radius:2px;"></div>
+      <div style="padding:20px 32px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid ${accentColor};">
+          <span style="font-size:10px;font-weight:700;color:${accentColor};">01</span>
+          <span style="font-size:15px;font-weight:700;color:#1a1a1a;">Section Title</span>
+        </div>
         <div style="height:8px;background:#E8E8E8;border-radius:4px;margin-bottom:8px;width:90%;"></div>
         <div style="height:8px;background:#E8E8E8;border-radius:4px;margin-bottom:8px;width:75%;"></div>
-        <div style="height:8px;background:#E8E8E8;border-radius:4px;margin-bottom:16px;width:60%;"></div>
-        <div style="background:${lighten(accentColor, 0.92)};border-left:4px solid ${accentColor};padding:12px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;">
-          <div style="height:8px;background:#D0D0D0;border-radius:4px;width:70%;"></div>
+        <div style="height:8px;background:#E8E8E8;border-radius:4px;width:55%;"></div>
+      </div>
+      <div style="background:${accentColor};padding:16px 32px;display:flex;gap:16px;">
+        <div style="flex:1;background:rgba(255,255,255,0.12);padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:${textOn};">42%</div>
+          <div style="font-size:9px;color:${textOn};opacity:0.7;text-transform:uppercase;">Metric</div>
         </div>
-        <div style="height:8px;background:#E8E8E8;border-radius:4px;margin-bottom:8px;width:85%;"></div>
-        <div style="height:8px;background:#E8E8E8;border-radius:4px;width:50%;"></div>
+        <div style="flex:1;background:rgba(255,255,255,0.12);padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:${textOn};">3.2x</div>
+          <div style="font-size:9px;color:${textOn};opacity:0.7;text-transform:uppercase;">ROI</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,0.12);padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:${textOn};">98%</div>
+          <div style="font-size:9px;color:${textOn};opacity:0.7;text-transform:uppercase;">Score</div>
+        </div>
+      </div>
+      <div style="background:${lighter};padding:20px 32px;">
+        <div style="height:8px;background:#ddd;border-radius:4px;margin-bottom:8px;width:85%;"></div>
+        <div style="height:8px;background:#ddd;border-radius:4px;width:60%;"></div>
       </div>
     </div>`;
   },

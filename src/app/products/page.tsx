@@ -236,6 +236,10 @@ export default function ProductsPage() {
   const [matrixSortAsc, setMatrixSortAsc] = useState(true);
   const [matrixHoverCell, setMatrixHoverCell] = useState<{ productId: string; competitor: string } | null>(null);
 
+  // Competitive Landscape tab state
+  const [showInlineMatrix, setShowInlineMatrix] = useState(false);
+  const [inlineMatrixSort, setInlineMatrixSort] = useState<'asc' | 'desc' | null>(null);
+
   // Demo loading state
   const [loadingDemo, setLoadingDemo] = useState(false);
 
@@ -592,7 +596,7 @@ export default function ProductsPage() {
     { id: 'objections', label: 'Objections' },
     { id: 'proof', label: 'Proof Points' },
     { id: 'templates', label: 'Templates' },
-    { id: 'competitive', label: 'Competitive' },
+    { id: 'competitive', label: 'Competitive Landscape' },
   ];
 
   const ep = editingProduct; // shorthand
@@ -1254,159 +1258,396 @@ export default function ProductsPage() {
     const mappings = ep.competitorMappings || [];
 
     const winRateColor = (rate: number) => {
-      if (rate >= 70) return 'text-green-600';
-      if (rate >= 50) return 'text-yellow-600';
+      if (rate > 60) return 'text-green-600';
+      if (rate >= 40) return 'text-yellow-600';
       return 'text-red-600';
     };
 
     const winRateBg = (rate: number) => {
-      if (rate >= 70) return 'bg-green-500';
-      if (rate >= 50) return 'bg-yellow-500';
+      if (rate > 60) return 'bg-green-500';
+      if (rate >= 40) return 'bg-yellow-500';
       return 'bg-red-500';
     };
 
+    const winRateRowBg = (rate: number) => {
+      if (rate > 60) return 'bg-green-50 border-green-200';
+      if (rate >= 40) return 'bg-yellow-50 border-yellow-200';
+      return 'bg-red-50 border-red-200';
+    };
+
+    const showMatrix = showInlineMatrix;
+    const setShowMatrix = setShowInlineMatrix;
+    const matrixSort = inlineMatrixSort;
+    const setMatrixSort = setInlineMatrixSort;
+
+    const sortedMappings = [...mappings];
+    if (matrixSort) {
+      sortedMappings.sort((a, b) => matrixSort === 'asc' ? a.winRate - b.winRate : b.winRate - a.winRate);
+    }
+
     return (
       <div className="space-y-6">
-        <Section
-          title="Competitor Mappings"
-          action={
-            isAdmin ? (
-              <button
-                onClick={() => {
-                  const m: ProductCompetitorMapping = {
-                    id: uuidv4(),
-                    competitorName: '',
-                    theirEquivalentProduct: '',
-                    howWeWin: [],
-                    howTheyWin: [],
-                    talkTrack: '',
-                    winRate: 50,
-                  };
-                  updateEP({ competitorMappings: [...mappings, m] });
-                }}
-                className="text-sm flex items-center gap-1" style={{ color: 'var(--accent)' }}
-              >
-                <HiOutlinePlus /> Add Competitor
-              </button>
-            ) : undefined
-          }
-        >
-          {mappings.length === 0 && (
-            <p className="text-sm text-gray-400">No competitor mappings yet. Add competitors to track how this product stacks up.</p>
-          )}
-          {mappings.map((mapping, idx) => (
-            <div key={mapping.id} className="bg-gray-50 rounded-lg p-5 space-y-4 border border-gray-200">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Competitor {idx + 1}</span>
-                {isAdmin && (
-                  <button
-                    onClick={() => updateEP({ competitorMappings: mappings.filter((m) => m.id !== mapping.id) })}
-                    className="text-red-400 hover:text-red-600"
-                  >
-                    <HiOutlineTrash className="text-sm" />
-                  </button>
-                )}
-              </div>
+        {/* Toggle between card and matrix view */}
+        {mappings.length > 0 && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowMatrix(false)}
+              className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${!showMatrix ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              style={!showMatrix ? { backgroundColor: 'var(--accent)' } : undefined}
+            >
+              Card View
+            </button>
+            <button
+              onClick={() => setShowMatrix(true)}
+              className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${showMatrix ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              style={showMatrix ? { backgroundColor: 'var(--accent)' } : undefined}
+            >
+              Matrix View
+            </button>
+          </div>
+        )}
 
-              {/* Competitor name & their product */}
-              <div className="grid grid-cols-2 gap-4">
-                <Field
-                  label="Competitor Name"
-                  value={mapping.competitorName}
-                  onChange={(v) => {
-                    const updated = [...mappings];
-                    updated[idx] = { ...mapping, competitorName: v };
-                    updateEP({ competitorMappings: updated });
-                  }}
-                  disabled={disabled}
-                  placeholder="e.g. Salesforce"
-                />
-                <Field
-                  label="Their Equivalent Product"
-                  value={mapping.theirEquivalentProduct}
-                  onChange={(v) => {
-                    const updated = [...mappings];
-                    updated[idx] = { ...mapping, theirEquivalentProduct: v };
-                    updateEP({ competitorMappings: updated });
-                  }}
-                  disabled={disabled}
-                  placeholder="e.g. Sales Cloud"
-                />
-              </div>
+        {/* Matrix View */}
+        {showMatrix && mappings.length > 0 && (
+          <div className="border rounded-xl overflow-hidden" style={{ borderColor: 'var(--card-border)' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase px-4 py-3">Competitor</th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase px-4 py-3">Their Product</th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase px-4 py-3">Target ERP</th>
+                    <th
+                      className="text-left text-xs font-semibold text-gray-500 uppercase px-4 py-3 cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => {
+                        if (matrixSort === 'desc') setMatrixSort('asc');
+                        else setMatrixSort('desc');
+                      }}
+                    >
+                      <div className="flex items-center gap-1">
+                        Win Rate
+                        {matrixSort && <span className="text-xs" style={{ color: 'var(--accent)' }}>{matrixSort === 'asc' ? '\u25B2' : '\u25BC'}</span>}
+                      </div>
+                    </th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase px-4 py-3">Key Differentiators</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedMappings.map((mapping, rowIdx) => (
+                    <tr key={mapping.id} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                      <td className="text-sm font-medium text-gray-700 px-4 py-3">{mapping.competitorName || '-'}</td>
+                      <td className="text-sm text-gray-600 px-4 py-3">{mapping.theirEquivalentProduct || '-'}</td>
+                      <td className="text-sm text-gray-600 px-4 py-3">{mapping.targetErp || '-'}</td>
+                      <td className="px-4 py-3">
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${winRateRowBg(mapping.winRate)}`}>
+                          <span className={`text-sm font-bold ${winRateColor(mapping.winRate)}`}>{mapping.winRate}%</span>
+                        </div>
+                      </td>
+                      <td className="text-sm text-gray-600 px-4 py-3">
+                        {(mapping.keyDifferentiators || []).length > 0
+                          ? (mapping.keyDifferentiators || []).join(', ')
+                          : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
-              {/* How We Win */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">How We Win</label>
-                <StringList
-                  values={mapping.howWeWin}
-                  onChange={(v) => {
-                    const updated = [...mappings];
-                    updated[idx] = { ...mapping, howWeWin: v };
-                    updateEP({ competitorMappings: updated });
+        {/* Card View */}
+        {!showMatrix && (
+          <Section
+            title="Competitor Mappings"
+            action={
+              isAdmin ? (
+                <button
+                  onClick={() => {
+                    const m: ProductCompetitorMapping = {
+                      id: uuidv4(),
+                      competitorName: '',
+                      theirEquivalentProduct: '',
+                      howWeWin: [],
+                      howTheyWin: [],
+                      talkTrack: '',
+                      winRate: 50,
+                    };
+                    updateEP({ competitorMappings: [...mappings, m] });
                   }}
-                  disabled={disabled}
-                  placeholder="Add a win point"
-                />
-              </div>
-
-              {/* How They Win */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <label className="block text-sm font-medium text-gray-700">How They Win</label>
-                  <span className="text-[10px] bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded-full">Internal Only</span>
+                  className="text-sm flex items-center gap-1" style={{ color: 'var(--accent)' }}
+                >
+                  <HiOutlinePlus /> Add Competitor
+                </button>
+              ) : undefined
+            }
+          >
+            {mappings.length === 0 && (
+              <p className="text-sm text-gray-400">No competitor mappings yet. Add competitors to track how this product stacks up.</p>
+            )}
+            {mappings.map((mapping, idx) => (
+              <div key={mapping.id} className="bg-gray-50 rounded-lg p-5 space-y-4 border border-gray-200">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Competitor {idx + 1}</span>
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${winRateRowBg(mapping.winRate)}`}>
+                      <span className={`text-xs font-bold ${winRateColor(mapping.winRate)}`}>{mapping.winRate}% win rate</span>
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => updateEP({ competitorMappings: mappings.filter((m) => m.id !== mapping.id) })}
+                      className="text-red-400 hover:text-red-600"
+                    >
+                      <HiOutlineTrash className="text-sm" />
+                    </button>
+                  )}
                 </div>
-                <StringList
-                  values={mapping.howTheyWin}
-                  onChange={(v) => {
-                    const updated = [...mappings];
-                    updated[idx] = { ...mapping, howTheyWin: v };
-                    updateEP({ competitorMappings: updated });
-                  }}
-                  disabled={disabled}
-                  placeholder="Add their strength (honest assessment)"
-                />
-              </div>
 
-              {/* Talk Track */}
-              <TextArea
-                label="Recommended Talk Track"
-                value={mapping.talkTrack}
-                onChange={(v) => {
-                  const updated = [...mappings];
-                  updated[idx] = { ...mapping, talkTrack: v };
-                  updateEP({ competitorMappings: updated });
-                }}
-                rows={3}
-                disabled={disabled}
-              />
-
-              {/* Win Rate Slider */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Win Rate: <span className={`font-bold ${winRateColor(mapping.winRate)}`}>{mapping.winRate}%</span>
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={mapping.winRate}
-                    onChange={(e) => {
+                {/* Competitor name, their product, target ERP */}
+                <div className="grid grid-cols-3 gap-4">
+                  <Field
+                    label="Competitor Name"
+                    value={mapping.competitorName}
+                    onChange={(v) => {
                       const updated = [...mappings];
-                      updated[idx] = { ...mapping, winRate: parseInt(e.target.value) };
+                      updated[idx] = { ...mapping, competitorName: v };
                       updateEP({ competitorMappings: updated });
                     }}
                     disabled={disabled}
-                    className="flex-1 h-2 rounded-lg appearance-none cursor-pointer" style={{ accentColor: 'var(--accent)' }}
+                    placeholder="e.g. Salesforce"
                   />
-                  <div className={`w-10 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${winRateBg(mapping.winRate)}`}>
-                    {mapping.winRate}
+                  <Field
+                    label="Their Equivalent Product"
+                    value={mapping.theirEquivalentProduct}
+                    onChange={(v) => {
+                      const updated = [...mappings];
+                      updated[idx] = { ...mapping, theirEquivalentProduct: v };
+                      updateEP({ competitorMappings: updated });
+                    }}
+                    disabled={disabled}
+                    placeholder="e.g. Sales Cloud"
+                  />
+                  <Field
+                    label="Target ERP / Platform"
+                    value={mapping.targetErp || ''}
+                    onChange={(v) => {
+                      const updated = [...mappings];
+                      updated[idx] = { ...mapping, targetErp: v };
+                      updateEP({ competitorMappings: updated });
+                    }}
+                    disabled={disabled}
+                    placeholder="e.g. SAP, Oracle"
+                  />
+                </div>
+
+                {/* How We Win */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">How We Win</label>
+                  <StringList
+                    values={mapping.howWeWin}
+                    onChange={(v) => {
+                      const updated = [...mappings];
+                      updated[idx] = { ...mapping, howWeWin: v };
+                      updateEP({ competitorMappings: updated });
+                    }}
+                    disabled={disabled}
+                    placeholder="Add a win point"
+                  />
+                </div>
+
+                {/* How They Win */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className="block text-sm font-medium text-gray-700">How They Win</label>
+                    <span className="text-[10px] bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded-full">Internal Only</span>
+                  </div>
+                  <StringList
+                    values={mapping.howTheyWin}
+                    onChange={(v) => {
+                      const updated = [...mappings];
+                      updated[idx] = { ...mapping, howTheyWin: v };
+                      updateEP({ competitorMappings: updated });
+                    }}
+                    disabled={disabled}
+                    placeholder="Add their strength (honest assessment)"
+                  />
+                </div>
+
+                {/* Key Differentiators */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Key Differentiators</label>
+                  <StringList
+                    values={mapping.keyDifferentiators || []}
+                    onChange={(v) => {
+                      const updated = [...mappings];
+                      updated[idx] = { ...mapping, keyDifferentiators: v };
+                      updateEP({ competitorMappings: updated });
+                    }}
+                    disabled={disabled}
+                    placeholder="Add a differentiator vs this competitor"
+                  />
+                </div>
+
+                {/* Talk Track */}
+                <TextArea
+                  label="Recommended Talk Track"
+                  value={mapping.talkTrack}
+                  onChange={(v) => {
+                    const updated = [...mappings];
+                    updated[idx] = { ...mapping, talkTrack: v };
+                    updateEP({ competitorMappings: updated });
+                  }}
+                  rows={3}
+                  disabled={disabled}
+                />
+
+                {/* Landmine Questions */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Landmine Questions</label>
+                  <StringList
+                    values={mapping.landmineQuestions || []}
+                    onChange={(v) => {
+                      const updated = [...mappings];
+                      updated[idx] = { ...mapping, landmineQuestions: v };
+                      updateEP({ competitorMappings: updated });
+                    }}
+                    disabled={disabled}
+                    placeholder="Add a question to expose their weakness"
+                  />
+                </div>
+
+                {/* Objection Responses */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">Objection Responses</label>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          const updated = [...mappings];
+                          updated[idx] = {
+                            ...mapping,
+                            objectionResponses: [...(mapping.objectionResponses || []), { objection: '', response: '' }],
+                          };
+                          updateEP({ competitorMappings: updated });
+                        }}
+                        className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}
+                      >
+                        <HiOutlinePlus /> Add
+                      </button>
+                    )}
+                  </div>
+                  {(mapping.objectionResponses || []).length === 0 && (
+                    <p className="text-xs text-gray-400">No objection responses yet.</p>
+                  )}
+                  {(mapping.objectionResponses || []).map((or, orIdx) => (
+                    <div key={orIdx} className="grid grid-cols-2 gap-3 mb-2 items-start">
+                      <div>
+                        <input
+                          type="text"
+                          value={or.objection}
+                          onChange={(e) => {
+                            const updated = [...mappings];
+                            const ors = [...(mapping.objectionResponses || [])];
+                            ors[orIdx] = { ...or, objection: e.target.value };
+                            updated[idx] = { ...mapping, objectionResponses: ors };
+                            updateEP({ competitorMappings: updated });
+                          }}
+                          disabled={disabled}
+                          placeholder="When prospect says..."
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                          style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={or.response}
+                          onChange={(e) => {
+                            const updated = [...mappings];
+                            const ors = [...(mapping.objectionResponses || [])];
+                            ors[orIdx] = { ...or, response: e.target.value };
+                            updated[idx] = { ...mapping, objectionResponses: ors };
+                            updateEP({ competitorMappings: updated });
+                          }}
+                          disabled={disabled}
+                          placeholder="Respond with..."
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                          style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                        />
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              const updated = [...mappings];
+                              const ors = [...(mapping.objectionResponses || [])];
+                              ors.splice(orIdx, 1);
+                              updated[idx] = { ...mapping, objectionResponses: ors };
+                              updateEP({ competitorMappings: updated });
+                            }}
+                            className="text-red-400 hover:text-red-600 shrink-0"
+                          >
+                            <HiOutlineTrash className="text-sm" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pricing Comparison */}
+                <TextArea
+                  label="Pricing Comparison"
+                  value={mapping.pricingComparison || ''}
+                  onChange={(v) => {
+                    const updated = [...mappings];
+                    updated[idx] = { ...mapping, pricingComparison: v };
+                    updateEP({ competitorMappings: updated });
+                  }}
+                  rows={2}
+                  disabled={disabled}
+                />
+
+                {/* Recent Intel */}
+                <TextArea
+                  label="Recent Competitive Intelligence"
+                  value={mapping.recentIntel || ''}
+                  onChange={(v) => {
+                    const updated = [...mappings];
+                    updated[idx] = { ...mapping, recentIntel: v };
+                    updateEP({ competitorMappings: updated });
+                  }}
+                  rows={2}
+                  disabled={disabled}
+                />
+
+                {/* Win Rate Slider */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Win Rate: <span className={`font-bold ${winRateColor(mapping.winRate)}`}>{mapping.winRate}%</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={mapping.winRate}
+                      onChange={(e) => {
+                        const updated = [...mappings];
+                        updated[idx] = { ...mapping, winRate: parseInt(e.target.value) };
+                        updateEP({ competitorMappings: updated });
+                      }}
+                      disabled={disabled}
+                      className="flex-1 h-2 rounded-lg appearance-none cursor-pointer" style={{ accentColor: 'var(--accent)' }}
+                    />
+                    <div className={`w-10 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${winRateBg(mapping.winRate)}`}>
+                      {mapping.winRate}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </Section>
+            ))}
+          </Section>
+        )}
       </div>
     );
   };

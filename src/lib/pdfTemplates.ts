@@ -15,30 +15,81 @@ export interface PDFLogoOptions {
 }
 
 // ════════════════════════════════════════════════════════
-// SECTION ICONS — mapped by keyword matching
+// SECTION ICONS — professional SVG icons (mode-aware)
 // ════════════════════════════════════════════════════════
 
-function sectionIcon(title: string): string {
+type DocStyleMode = 'professional' | 'expressive';
+
+/** Small inline SVG icon for document sections — colored by accent */
+function svgIcon(shape: string, color: string): string {
+  const s = (d: string) => `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display:inline-block;vertical-align:middle"><${d}/></svg>`;
+  switch (shape) {
+    case 'circle':       return s(`circle cx="7" cy="7" r="5" fill="${color}"`);
+    case 'square':       return s(`rect x="2" y="2" width="10" height="10" rx="2" fill="${color}"`);
+    case 'diamond':      return s(`path d="M7 1L13 7L7 13L1 7Z" fill="${color}"`);
+    case 'triangle':     return s(`path d="M7 2L12.5 11H1.5Z" fill="${color}"`);
+    case 'triangle-out': return s(`path d="M7 2L12.5 11H1.5Z" stroke="${color}" stroke-width="1.5" fill="none"`);
+    case 'arrow-right':  return s(`path d="M2 7h8M8 4l3 3-3 3" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"`);
+    case 'bar':          return s(`rect x="1" y="6" width="12" height="2" rx="1" fill="${color}"`);
+    case 'check':        return s(`path d="M3 7.5L5.5 10L11 4" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"`);
+    case 'shield':       return s(`path d="M7 1.5L2 4v3.5C2 10.5 4.2 12.5 7 13c2.8-.5 5-2.5 5-5.5V4Z" stroke="${color}" stroke-width="1.3" fill="none"`);
+    case 'star':         return s(`path d="M7 1.5l1.7 3.5 3.8.5-2.8 2.7.7 3.8L7 10.3 3.6 12l.7-3.8L1.5 5.5l3.8-.5Z" fill="${color}"`);
+    case 'chart':        return s(`path d="M2 11V7h2v4H2Zm4 0V3h2v8H6Zm4 0V5h2v6h-2Z" fill="${color}"`);
+    case 'target':       return s(`circle cx="7" cy="7" r="5" stroke="${color}" stroke-width="1.2" fill="none"/><circle cx="7" cy="7" r="2.5" fill="${color}"`);
+    case 'bolt':         return s(`path d="M8 1.5L3.5 8H6.5L6 12.5L10.5 6H7.5Z" fill="${color}"`);
+    case 'users':        return s(`circle cx="5" cy="4.5" r="2" fill="${color}"/><circle cx="9.5" cy="4.5" r="1.5" fill="${color}" opacity="0.6"/><path d="M1 11c0-2.2 1.8-4 4-4s4 1.8 4 4" fill="${color}" opacity="0.5"`);
+    case 'building':     return s(`rect x="3" y="2" width="8" height="10" rx="1" stroke="${color}" stroke-width="1.2" fill="none"/><rect x="5" y="4" width="1.5" height="1.5" fill="${color}"/><rect x="7.5" y="4" width="1.5" height="1.5" fill="${color}"/><rect x="5" y="7" width="1.5" height="1.5" fill="${color}"/><rect x="7.5" y="7" width="1.5" height="1.5" fill="${color}"`);
+    case 'mail':         return s(`rect x="1.5" y="3" width="11" height="8" rx="1.5" stroke="${color}" stroke-width="1.2" fill="none"/><path d="M1.5 3L7 7.5L12.5 3" stroke="${color}" stroke-width="1.2" fill="none"`);
+    default:             return s(`circle cx="7" cy="7" r="4" fill="${color}"`);
+  }
+}
+
+function sectionIcon(title: string, accentColor: string = '#6366F1', mode: DocStyleMode = 'professional'): string {
   const t = title.toLowerCase();
-  if (t.includes('overview') || t.includes('executive') || t.includes('summary')) return '📋';
-  if (t.includes('challenge') || t.includes('problem') || t.includes('pain')) return '⚡';
-  if (t.includes('solution') || t.includes('approach') || t.includes('how it works')) return '🎯';
-  if (t.includes('benefit') || t.includes('outcome') || t.includes('result') || t.includes('roi')) return '📈';
-  if (t.includes('why') || t.includes('differ') || t.includes('strength') || t.includes('advantage')) return '🏆';
-  if (t.includes('competitor') || t.includes('vs') || t.includes('weakness') || t.includes('comparison')) return '⚔️';
-  if (t.includes('objection') || t.includes('response') || t.includes('handling')) return '🛡️';
-  if (t.includes('proof') || t.includes('case') || t.includes('customer') || t.includes('testimonial')) return '✅';
-  if (t.includes('next step') || t.includes('action') || t.includes('getting started') || t.includes('cta')) return '🚀';
-  if (t.includes('invest') || t.includes('pricing') || t.includes('cost')) return '💰';
-  if (t.includes('strategy') || t.includes('closing') || t.includes('recommend')) return '🧭';
-  if (t.includes('landmine') || t.includes('question')) return '💣';
-  if (t.includes('quick fact') || t.includes('at a glance')) return '📊';
-  if (t.includes('email') || t.includes('cold') || t.includes('open') || t.includes('break')) return '✉️';
-  if (t.includes('value') || t.includes('add')) return '💎';
-  if (t.includes('social') || t.includes('proof')) return '👥';
-  if (t.includes('who we are') || t.includes('about')) return '🏢';
-  if (t.includes('verdict')) return '⚖️';
-  return '📌';
+
+  // Expressive mode — tasteful unicode symbols (no cartoon emojis)
+  if (mode === 'expressive') {
+    if (t.includes('overview') || t.includes('executive') || t.includes('summary')) return '◈';
+    if (t.includes('challenge') || t.includes('problem') || t.includes('pain')) return '◆';
+    if (t.includes('solution') || t.includes('approach') || t.includes('how it works')) return '◉';
+    if (t.includes('benefit') || t.includes('outcome') || t.includes('result') || t.includes('roi')) return '▲';
+    if (t.includes('why') || t.includes('differ') || t.includes('strength') || t.includes('advantage')) return '★';
+    if (t.includes('competitor') || t.includes('vs') || t.includes('weakness') || t.includes('comparison')) return '⬥';
+    if (t.includes('objection') || t.includes('response') || t.includes('handling')) return '◇';
+    if (t.includes('proof') || t.includes('case') || t.includes('customer') || t.includes('testimonial')) return '✓';
+    if (t.includes('next step') || t.includes('action') || t.includes('getting started') || t.includes('cta')) return '→';
+    if (t.includes('invest') || t.includes('pricing') || t.includes('cost')) return '◆';
+    if (t.includes('strategy') || t.includes('closing') || t.includes('recommend')) return '◈';
+    if (t.includes('landmine') || t.includes('question')) return '▸';
+    if (t.includes('quick fact') || t.includes('at a glance')) return '■';
+    if (t.includes('email') || t.includes('cold') || t.includes('open') || t.includes('break')) return '▹';
+    if (t.includes('value') || t.includes('add')) return '◆';
+    if (t.includes('social') || t.includes('proof')) return '●';
+    if (t.includes('who we are') || t.includes('about')) return '■';
+    if (t.includes('verdict')) return '◈';
+    return '●';
+  }
+
+  // Professional mode — clean SVG icons in accent color
+  if (t.includes('overview') || t.includes('executive') || t.includes('summary')) return svgIcon('square', accentColor);
+  if (t.includes('challenge') || t.includes('problem') || t.includes('pain')) return svgIcon('bolt', accentColor);
+  if (t.includes('solution') || t.includes('approach') || t.includes('how it works')) return svgIcon('target', accentColor);
+  if (t.includes('benefit') || t.includes('outcome') || t.includes('result') || t.includes('roi')) return svgIcon('chart', accentColor);
+  if (t.includes('why') || t.includes('differ') || t.includes('strength') || t.includes('advantage')) return svgIcon('star', accentColor);
+  if (t.includes('competitor') || t.includes('vs') || t.includes('weakness') || t.includes('comparison')) return svgIcon('diamond', accentColor);
+  if (t.includes('objection') || t.includes('response') || t.includes('handling')) return svgIcon('shield', accentColor);
+  if (t.includes('proof') || t.includes('case') || t.includes('customer') || t.includes('testimonial')) return svgIcon('check', accentColor);
+  if (t.includes('next step') || t.includes('action') || t.includes('getting started') || t.includes('cta')) return svgIcon('arrow-right', accentColor);
+  if (t.includes('invest') || t.includes('pricing') || t.includes('cost')) return svgIcon('diamond', accentColor);
+  if (t.includes('strategy') || t.includes('closing') || t.includes('recommend')) return svgIcon('target', accentColor);
+  if (t.includes('landmine') || t.includes('question')) return svgIcon('triangle-out', accentColor);
+  if (t.includes('quick fact') || t.includes('at a glance')) return svgIcon('chart', accentColor);
+  if (t.includes('email') || t.includes('cold') || t.includes('open') || t.includes('break')) return svgIcon('mail', accentColor);
+  if (t.includes('value') || t.includes('add')) return svgIcon('star', accentColor);
+  if (t.includes('social') || t.includes('proof')) return svgIcon('users', accentColor);
+  if (t.includes('who we are') || t.includes('about')) return svgIcon('building', accentColor);
+  if (t.includes('verdict')) return svgIcon('square', accentColor);
+  return svgIcon('circle', accentColor);
 }
 
 // ════════════════════════════════════════════════════════
@@ -78,8 +129,8 @@ function extractStats(sections: GeneratedSection[]): StatCard[] {
   if (stats.length === 0) {
     stats.push(
       { value: String(sections.length), label: 'Key Sections' },
-      { value: '✓', label: 'Fully Customized' },
-      { value: '★', label: 'AI-Optimized' },
+      { value: '—', label: 'Fully Customized' },
+      { value: '—', label: 'AI-Optimized' },
     );
   }
 
@@ -2109,8 +2160,8 @@ function statCardsRow(stats: StatCard[]): string {
 // STANDARD SECTION
 // ════════════════════════════════════════════════════════
 
-function renderSection(section: GeneratedSection, isHighlight: boolean = false): string {
-  const icon = sectionIcon(section.title);
+function renderSection(section: GeneratedSection, isHighlight: boolean = false, accentColor: string = '#6366F1', styleMode: DocStyleMode = 'professional'): string {
+  const icon = sectionIcon(section.title, accentColor, styleMode);
   const content = formatContent(section.content);
 
   if (isHighlight) {
@@ -2141,7 +2192,7 @@ function renderSection(section: GeneratedSection, isHighlight: boolean = false):
 function ctaBox(kb: KnowledgeBase, prospect: ProspectInfo): string {
   return `
     <div class="cta-box">
-      <div class="cta-title">🚀 Ready to Get Started?</div>
+      <div class="cta-title">Ready to Get Started?</div>
       <div class="cta-text">
         We'd love to show <strong>${prospect.companyName}</strong> exactly how ${kb.companyName || 'we'} can help.
         ${kb.website ? `<br/>Visit us at <strong>${kb.website}</strong>` : ''}
@@ -2202,7 +2253,7 @@ function renderDefault(
       ${bodySections.map(s => renderSection(s, isHighlightSection(s.title))).join('')}
       ${ctaSections.length > 0 ? ctaSections.map(s => `
         <div class="cta-box">
-          <div class="cta-title">🚀 ${s.title}</div>
+          <div class="cta-title">${s.title}</div>
           <div class="cta-text">${formatContent(s.content)}</div>
         </div>
       `).join('') : ctaBox(kb, prospect)}
@@ -2238,7 +2289,7 @@ function renderCompetitiveAnalysis(
       ${compSection ? `
         <div class="section">
           <div class="section-header">
-            <div class="section-icon">⚔️</div>
+            <div class="section-icon">${svgIcon('diamond', brand.colors.accent)}</div>
             <div class="section-title">${compSection.title}</div>
           </div>
           ${compRows.length > 0 ? `
@@ -2246,16 +2297,16 @@ function renderCompetitiveAnalysis(
               <thead>
                 <tr>
                   <th style="width:30%">Capability</th>
-                  <th class="us" style="width:35%">✓ ${kb.companyName || 'Us'}</th>
-                  <th class="them" style="width:35%">✗ Competitor</th>
+                  <th class="us" style="width:35%">${kb.companyName || 'Us'}</th>
+                  <th class="them" style="width:35%">Competitor</th>
                 </tr>
               </thead>
               <tbody>
                 ${compRows.map(r => `
                   <tr>
                     <td><strong>${r.capability}</strong></td>
-                    <td><span class="check">✓</span> ${r.us}</td>
-                    <td><span class="cross">✗</span> ${r.them}</td>
+                    <td><span class="check">&#10003;</span> ${r.us}</td>
+                    <td><span class="cross">&#10007;</span> ${r.them}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -2266,7 +2317,7 @@ function renderCompetitiveAnalysis(
 
       ${strategySection ? `
         <div class="verdict-box">
-          <div class="verdict-title">⚖️ ${strategySection.title}</div>
+          <div class="verdict-title">${strategySection.title}</div>
           <div class="verdict-body">${formatContent(strategySection.content)}</div>
         </div>
       ` : ''}
@@ -2331,13 +2382,13 @@ function renderBattleCard(
         <div class="two-col">
           ${strengthsSection ? `
             <div class="col-card col-blue">
-              <div class="col-card-header">🏆 ${strengthsSection.title}</div>
+              <div class="col-card-header">${strengthsSection.title}</div>
               <div class="col-card-body">${formatContent(strengthsSection.content)}</div>
             </div>
           ` : ''}
           ${weaknessSection ? `
             <div class="col-card col-gray">
-              <div class="col-card-header">⚔️ ${weaknessSection.title}</div>
+              <div class="col-card-header">${weaknessSection.title}</div>
               <div class="col-card-body">${formatContent(weaknessSection.content)}</div>
             </div>
           ` : ''}
@@ -2347,7 +2398,7 @@ function renderBattleCard(
       ${objections.length > 0 ? `
         <div class="section">
           <div class="section-header">
-            <div class="section-icon">🛡️</div>
+            <div class="section-icon">${svgIcon('shield', brand.colors.accent)}</div>
             <div class="section-title">${objectionSection!.title}</div>
           </div>
           <table class="obj-table">
@@ -2432,7 +2483,7 @@ function renderEmailSequence(
               <div class="email-num">${i + 1}</div>
               <div class="email-meta">
                 <div class="email-label">${section.title}</div>
-                <div class="email-subject-box">📧 ${subject}</div>
+                <div class="email-subject-box">${subject}</div>
               </div>
             </div>
             <div class="email-card-body">${formatContent(bodyContent)}</div>

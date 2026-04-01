@@ -29,7 +29,7 @@ export default function DemoBanner() {
       }}
     >
       <span className="font-medium">
-        🎭 Demo Mode — You&apos;re exploring Apex Distribution Solutions. This is sample data.
+        Demo Mode — You&apos;re exploring Apex Distribution Solutions. This is sample data.
       </span>
       <button
         onClick={handleClearDemo}

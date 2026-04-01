@@ -1,7 +1,9 @@
 // ════════════════════════════════════════════════════════
 // Style 29 — Comparison Matrix
-// Feature comparison grid — color-coded cells, summary
-// wins, G2-style comparison page feel
+// Feature comparison / competitive matrix. The definitive
+// competitive document with check/cross/partial CSS shapes,
+// category groupings, winner highlights, color coding,
+// sidebar notes, and summary scores.
 // ════════════════════════════════════════════════════════
 
 import type { DocumentStyle, StyleInput } from './types';
@@ -15,6 +17,10 @@ import {
   lighten,
   darken,
   contrastText,
+  hexToRgb,
+  buildOnePagerDocument,
+  professionalSymbolCSS,
+  stripEmojis,
 } from './shared';
 
 // ── Comparison data extraction ──────────────────────────
@@ -22,16 +28,18 @@ import {
 interface ComparisonRow {
   feature: string;
   values: ('yes' | 'no' | 'partial')[];
+  category?: string;
 }
 
 function extractComparisonData(
   sections: { title: string; content: string }[],
   companyName: string,
-): { columns: string[]; rows: ComparisonRow[]; wins: string[] } {
+): { columns: string[]; rows: ComparisonRow[]; wins: string[]; categories: string[] } {
   const allContent = sections.map(s => s.content).join('\n');
   const columns: string[] = [companyName];
   const rows: ComparisonRow[] = [];
   const wins: string[] = [];
+  const categories: string[] = [];
 
   // Try to extract competitor names from content
   const compRe = /(?:vs\.?|versus|compared to|competitor[s]?:?)\s*([A-Z][\w\s&]+)/gi;
@@ -46,7 +54,7 @@ function extractComparisonData(
   }
   if (columns.length < 2) columns.push('Competitor A', 'Competitor B');
 
-  // Extract feature rows from bullet points or table rows
+  // Extract feature rows from bullet points
   const featureRe = /[-*•]\s+(.+)/g;
   let fm: RegExpExecArray | null;
   const features: string[] = [];
@@ -57,37 +65,44 @@ function extractComparisonData(
     }
   }
 
-  // If no features found, use section titles
   if (features.length < 3) {
     sections.forEach(s => features.push(s.title));
   }
 
-  // Generate comparison values (first column biased positive)
+  // Use section titles as categories
+  sections.forEach(s => categories.push(s.title));
+
+  // Generate comparison values
   for (const feat of features.slice(0, 10)) {
+    const sectionIdx = Math.floor((features.indexOf(feat) / features.length) * sections.length);
+    const category = sections[sectionIdx]?.title || '';
     const values: ('yes' | 'no' | 'partial')[] = columns.map((_, ci) => {
-      if (ci === 0) return 'yes'; // Our company
+      if (ci === 0) return 'yes';
       const hash = (feat.length * 7 + ci * 13) % 10;
       if (hash < 4) return 'no';
       if (hash < 6) return 'partial';
       return 'yes';
     });
-    rows.push({ feature: feat, values });
+    rows.push({ feature: feat, values, category });
   }
 
-  // Generate wins
   const yesCount = rows.filter(r => r.values[0] === 'yes').length;
-  wins.push(`${companyName} leads in ${yesCount} of ${rows.length} evaluated criteria`);
+  wins.push(`Leads in ${yesCount} of ${rows.length} evaluated criteria`);
   if (rows.length > 3) {
     wins.push(`Key differentiator: ${rows[0]?.feature || 'comprehensive solution'}`);
   }
 
-  return { columns, rows, wins };
+  return { columns, rows, wins, categories };
 }
 
 // ── Render ──────────────────────────────────────────────────
 
 function render(input: StyleInput): string {
   const brand = resolveBrand(input);
+  const accent = brand.accent || brand.primary;
+
+  if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
+
   const { sections, contentType, prospect, companyName, date } = input;
   const dateStr =
     date ||
@@ -99,270 +114,547 @@ function render(input: StyleInput): string {
 
   const { columns, rows, wins } = extractComparisonData(sections, companyName);
 
-  const matrixHeaderHtml = columns
-    .map(
-      (c, i) =>
-        `<th class="${i === 0 ? 'col-ours' : ''}">${c}</th>`,
-    )
-    .join('');
-
-  const matrixRowsHtml = rows
-    .map(
-      r => `<tr>
-      <td class="feature-name">${r.feature}</td>
-      ${r.values
-        .map(
-          (v, vi) =>
-            `<td class="cell-${v} ${vi === 0 ? 'col-ours' : ''}">${
-              v === 'yes' ? '&#10003;' : v === 'no' ? '&#10007;' : '~'
-            }</td>`,
-        )
-        .join('')}
-    </tr>`,
-    )
-    .join('');
-
-  const winsHtml = wins
-    .map(w => `<div class="win-item">&#10003; ${w}</div>`)
-    .join('');
-
-  // Compute per-column scores for winner row
+  // Compute per-column scores
   const colScores = columns.map((_, ci) =>
     rows.reduce((sum, r) => sum + (r.values[ci] === 'yes' ? 2 : r.values[ci] === 'partial' ? 1 : 0), 0),
   );
+  const maxPossible = rows.length * 2;
   const maxScore = Math.max(...colScores);
-  const winnerFooterHtml = columns
-    .map((_, ci) => {
-      const score = colScores[ci];
-      const isWinner = score === maxScore;
-      return `<td class="${isWinner ? 'winner-cell' : ''}">${
-        isWinner ? '<span class="winner-badge">Winner</span>' : `${score}/${rows.length * 2}`
-      }</td>`;
+
+  // Group rows by category for section backgrounds
+  let lastCategory = '';
+
+  // Matrix header
+  const matrixHeaderHtml = columns
+    .map((c, i) => `<th class="${i === 0 ? 'cm-col-ours' : ''}">${stripEmojis(c)}</th>`)
+    .join('');
+
+  // Matrix rows with category groupings
+  const matrixRowsHtml = rows
+    .map((r, ri) => {
+      const isNewCategory = r.category && r.category !== lastCategory;
+      lastCategory = r.category || '';
+      const isOurWin = r.values[0] === 'yes' && r.values.slice(1).some(v => v !== 'yes');
+      const categoryRow = isNewCategory
+        ? `<tr class="cm-category-row"><td colspan="${columns.length + 1}" class="cm-category-cell">${stripEmojis(r.category || '')}</td></tr>`
+        : '';
+
+      return `${categoryRow}<tr class="${isOurWin ? 'cm-winner-row' : ''} ${ri % 2 === 0 ? 'cm-row-even' : ''}">
+        <td class="cm-feature-name">${stripEmojis(r.feature)}</td>
+        ${r.values
+          .map((v, vi) => {
+            const cellClass = vi === 0 ? 'cm-col-ours' : '';
+            if (v === 'yes') return `<td class="cm-cell-yes ${cellClass}"><span class="cm-icon-check"></span></td>`;
+            if (v === 'no') return `<td class="cm-cell-no ${cellClass}"><span class="cm-icon-cross"></span></td>`;
+            return `<td class="cm-cell-partial ${cellClass}"><span class="cm-icon-partial"></span></td>`;
+          })
+          .join('')}
+      </tr>`;
     })
     .join('');
 
-  const sectionsHtml = sections
-    .map(
-      s => `
-      <div class="cm-section">
-        <h2 class="cm-section-title">${s.title}</h2>
-        <div class="cm-body">${formatMarkdown(s.content)}</div>
-      </div>`,
-    )
+  // Score footer row
+  const scoreFooterHtml = columns
+    .map((c, ci) => {
+      const score = colScores[ci];
+      const pct = Math.round((score / maxPossible) * 100);
+      const isWinner = score === maxScore;
+      return `<td class="${isWinner ? 'cm-winner-score' : 'cm-score-cell'} ${ci === 0 ? 'cm-col-ours' : ''}">
+        <div class="cm-score-value">${pct}%</div>
+        ${isWinner ? '<div class="cm-winner-badge">Leader</div>' : `<div class="cm-score-fraction">${score}/${maxPossible}</div>`}
+      </td>`;
+    })
     .join('');
 
+  // Wins summary
+  const winsHtml = wins
+    .map(w => `<div class="cm-win-item"><span class="cm-icon-check cm-win-check"></span> ${stripEmojis(w)}</div>`)
+    .join('');
+
+  // Sections as sidebar notes
+  const sectionsHtml = sections
+    .map(s => `
+      <div class="cm-detail-section">
+        <h3 class="cm-detail-title">${stripEmojis(s.title)}</h3>
+        <div class="cm-detail-body">${formatMarkdown(stripEmojis(s.content))}</div>
+      </div>`)
+    .join('');
+
+  const rgb = hexToRgb(accent);
   const css = `
     ${brandCSSVars(brand)}
+    ${professionalSymbolCSS(accent)}
+
+    @page {
+      size: letter landscape;
+      margin: 0.5in 0.6in;
+    }
 
     body {
       font-family: var(--brand-font-secondary);
       color: var(--brand-text);
-      background: #f9fafb;
+      background: #ffffff;
       line-height: 1.6;
       font-size: var(--brand-font-body-size);
+      -webkit-font-smoothing: antialiased;
     }
-    .page { max-width: 920px; margin: 0 auto; padding: 48px 40px; }
 
-    /* ── Header ── */
+    .cm-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    /* ── Professional header ── */
     .cm-header {
-      margin-bottom: 40px;
-      padding-bottom: 28px;
-      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 36px;
+      background: ${brand.primary};
+      color: ${contrastText(brand.primary)};
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 28px;
     }
-    .cm-header-logo { margin-bottom: 20px; }
-    .cm-header h1 {
+    .cm-header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .cm-header-logo img { height: 32px; filter: brightness(0) invert(1); }
+    .cm-header-logo span { color: ${contrastText(brand.primary)}; }
+    .cm-header-divider {
+      width: 1px;
+      height: 32px;
+      background: rgba(255,255,255,0.25);
+    }
+    .cm-header-info { }
+    .cm-header-title {
       font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h1-size);
+      font-size: 20px;
       font-weight: 700;
-      color: #111;
-      margin-bottom: 6px;
+      letter-spacing: -0.01em;
     }
-    .cm-header-sub { font-size: 14px; color: #777; }
+    .cm-header-sub {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .cm-header-right {
+      text-align: right;
+    }
+    .cm-header-prospect {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .cm-header-date {
+      font-size: 12px;
+      opacity: 0.85;
+    }
 
-    /* ── VS Banner ── */
-    .vs-banner {
+    .cm-body-wrap { padding: 0 8px; }
+
+    /* ── Participants banner ── */
+    .cm-participants {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      margin: 20px 0 28px;
-      padding: 20px 28px;
-      background: linear-gradient(135deg, ${lighten(brand.primary, 0.92)}, ${lighten(brand.accent, 0.92)});
-      border-radius: 12px;
-      border: 1px solid ${lighten(brand.primary, 0.82)};
+      gap: 20px;
+      padding: 18px 28px;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, ${lighten(accent, 0.94)}, ${lighten(brand.primary, 0.94)});
+      border: 1px solid ${lighten(accent, 0.82)};
+      border-radius: 10px;
     }
-    .vs-entity {
+    .cm-participant {
       font-family: var(--brand-font-primary);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
-      color: ${darken(brand.primary, 0.15)};
+      color: ${darken(brand.primary, 0.1)};
     }
-    .vs-badge {
-      display: inline-flex;
+    .cm-vs-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: ${accent};
+      color: ${contrastText(accent)};
+      display: flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--brand-primary);
-      color: ${contrastText(brand.primary)};
       font-weight: 800;
-      font-size: 14px;
+      font-size: 12px;
       letter-spacing: 0.04em;
       flex-shrink: 0;
     }
 
-    /* ── Matrix table ── */
-    .matrix-wrap {
-      background: #fff;
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 28px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      overflow-x: auto;
+    /* ── Visual section break ── */
+    .cm-section-break {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 32px 0 20px;
     }
-    .matrix {
+    .cm-section-break-line {
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+    .cm-section-break-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: ${accent};
+      white-space: nowrap;
+    }
+
+    /* ── Comparison matrix table ── */
+    .cm-matrix-wrap {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .cm-matrix {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
     }
-    .matrix thead th {
-      padding: 14px 16px;
+
+    /* Header row */
+    .cm-matrix thead th {
+      padding: 14px 18px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       text-align: center;
-      background: #f3f4f6;
-      border-bottom: 2px solid #e0e0e0;
-      color: #555;
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+      color: #6b7280;
     }
-    .matrix thead th:first-child {
+    .cm-matrix thead th:first-child {
       text-align: left;
       text-transform: none;
       letter-spacing: 0;
-      font-size: 14px;
-      color: #111;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
     }
-    .matrix thead th.col-ours {
-      background: ${lighten(brand.primary, 0.88)};
-      color: var(--brand-primary);
+    .cm-matrix thead th.cm-col-ours {
+      background: ${lighten(accent, 0.9)};
+      color: ${darken(accent, 0.15)};
+      border-bottom-color: ${accent};
     }
-    .matrix tbody td {
-      padding: 12px 16px;
+
+    /* Category grouping rows */
+    .cm-category-row { }
+    .cm-category-cell {
+      padding: 10px 18px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: ${accent};
+      background: ${lighten(accent, 0.96)};
+      border-bottom: 1px solid ${lighten(accent, 0.85)};
+    }
+
+    /* Body rows */
+    .cm-matrix tbody td {
+      padding: 12px 18px;
       text-align: center;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 18px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
     }
-    .matrix tbody td.feature-name {
-      text-align: left;
+    .cm-feature-name {
+      text-align: left !important;
       font-size: 14px;
-      color: #333;
+      font-weight: 500;
+      color: #374151;
+    }
+    .cm-row-even td { background: #fafbfc; }
+    .cm-row-even td.cm-col-ours { background: ${lighten(accent, 0.96)}; }
+
+    /* Our column highlight */
+    td.cm-col-ours {
+      background: ${lighten(accent, 0.97)};
+    }
+
+    /* Winner row highlight */
+    .cm-winner-row td {
+      background: ${lighten(accent, 0.95)} !important;
+    }
+    .cm-winner-row td.cm-feature-name {
+      font-weight: 600;
+    }
+
+    /* ── CSS-only check/cross/partial indicators ── */
+    .cm-icon-check {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #dcfce7;
+      position: relative;
+    }
+    .cm-icon-check::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 7px;
+      width: 5px;
+      height: 10px;
+      border: solid #16a34a;
+      border-width: 0 2.5px 2.5px 0;
+      transform: rotate(45deg);
+    }
+    .cm-icon-cross {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fef2f2;
+      position: relative;
+    }
+    .cm-icon-cross::before,
+    .cm-icon-cross::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 2.5px;
+      background: #dc2626;
+      border-radius: 1px;
+    }
+    .cm-icon-cross::before { transform: translate(-50%, -50%) rotate(45deg); }
+    .cm-icon-cross::after { transform: translate(-50%, -50%) rotate(-45deg); }
+    .cm-icon-partial {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fef9c3;
+      position: relative;
+    }
+    .cm-icon-partial::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 2.5px;
+      background: #ca8a04;
+      border-radius: 1px;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Cell color coding */
+    .cm-cell-yes { color: #16a34a; }
+    .cm-cell-no { color: #dc2626; }
+    .cm-cell-partial { color: #ca8a04; }
+
+    /* ── Score footer row ── */
+    .cm-matrix tfoot td {
+      padding: 16px 18px;
+      text-align: center;
+      border-top: 2px solid #e5e7eb;
+      background: #f9fafb;
+      vertical-align: middle;
+    }
+    .cm-matrix tfoot td:first-child {
+      text-align: left;
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+    }
+    .cm-score-value {
+      font-family: var(--brand-font-primary);
+      font-size: 20px;
+      font-weight: 800;
+      color: #374151;
+      line-height: 1;
+    }
+    .cm-score-fraction {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+    .cm-winner-score {
+      background: ${lighten(accent, 0.9)} !important;
+    }
+    .cm-winner-score .cm-score-value {
+      color: ${accent};
+    }
+    .cm-winner-badge {
+      display: inline-block;
+      background: ${accent};
+      color: ${contrastText(accent)};
+      padding: 2px 12px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 4px;
+    }
+
+    /* ── Legend row ── */
+    .cm-legend {
+      display: flex;
+      gap: 24px;
+      padding: 14px 20px;
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+    .cm-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cm-legend-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Summary wins box ── */
+    .cm-wins {
+      background: ${lighten(accent, 0.95)};
+      border: 1px solid ${lighten(accent, 0.82)};
+      border-left: 4px solid ${accent};
+      border-radius: 0 10px 10px 0;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .cm-wins-title {
+      font-family: var(--brand-font-primary);
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: ${accent};
+      margin-bottom: 12px;
+    }
+    .cm-win-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #374151;
+      margin-bottom: 8px;
       font-weight: 500;
     }
-    .matrix tbody td.col-ours {
-      background: ${lighten(brand.primary, 0.96)};
-    }
-    .cell-yes { color: #16a34a; font-weight: 700; }
-    .cell-no { color: #dc2626; font-weight: 700; }
-    .cell-partial { color: #d97706; font-weight: 700; }
-
-    /* ── Winner row ── */
-    .matrix tfoot td {
-      padding: 12px 16px;
-      text-align: center;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      border-top: 2px solid #e0e0e0;
-      background: #f9fafb;
-      color: #888;
-    }
-    .matrix tfoot td.winner-cell {
-      background: ${lighten(brand.primary, 0.88)};
-      color: var(--brand-primary);
-    }
-    .winner-badge {
-      display: inline-block;
-      background: var(--brand-primary);
-      color: ${contrastText(brand.primary)};
-      padding: 2px 10px;
-      border-radius: 10px;
-      font-size: 10px;
-      letter-spacing: 0.06em;
+    .cm-win-check {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
 
-    /* ── Summary wins ── */
-    .wins-box {
-      background: ${lighten(brand.primary, 0.94)};
-      border-left: 4px solid var(--brand-primary);
-      border-radius: 8px;
-      padding: 20px 24px;
+    /* ── Detail sections for context ── */
+    .cm-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
       margin-bottom: 32px;
     }
-    .wins-title {
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--brand-primary);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .win-item {
-      font-size: 14px;
-      color: #16a34a;
-      margin-bottom: 6px;
-    }
-
-    /* ── Content sections ── */
-    .cm-section {
-      background: #fff;
+    .cm-detail-section {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
       border-radius: 10px;
-      padding: 24px 28px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      padding: 24px;
+      break-inside: avoid;
     }
-    .cm-section-title {
+    .cm-detail-title {
       font-family: var(--brand-font-primary);
-      font-size: var(--brand-font-h2-size);
-      font-weight: 600;
-      color: #111;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1f2937;
       margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 2px solid var(--brand-primary);
+      border-bottom: 2px solid ${lighten(accent, 0.7)};
     }
-    .cm-body { color: #444; }
-    .cm-body h1, .cm-body h2, .cm-body h3, .cm-body h4 { color: #111; margin: 14px 0 8px; }
-    .cm-body ul, .cm-body ol { padding-left: 22px; margin: 10px 0; }
-    .cm-body li { margin-bottom: 5px; }
-    .cm-body table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
-    .cm-body th { background: ${lighten(brand.primary, 0.92)}; font-weight: 600; padding: 10px 12px; border-bottom: 2px solid var(--brand-primary); text-align: left; }
-    .cm-body td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-    .cm-body hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
-    .cm-body strong { font-weight: 600; }
-    .cm-body em { font-style: italic; }
-
-    /* ── Legend ── */
-    .matrix-legend {
-      display: flex;
-      gap: 20px;
+    .cm-detail-body {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+    .cm-detail-body h1, .cm-detail-body h2, .cm-detail-body h3, .cm-detail-body h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 12px 0 6px;
+    }
+    .cm-detail-body ul, .cm-detail-body ol { padding-left: 18px; margin: 8px 0; }
+    .cm-detail-body li { margin-bottom: 4px; }
+    .cm-detail-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
       font-size: 12px;
-      color: #777;
-      margin-top: 10px;
-      padding: 0 8px;
     }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .legend-icon { font-size: 14px; }
+    .cm-detail-body th {
+      background: ${lighten(brand.primary, 0.93)};
+      font-weight: 600;
+      padding: 8px 10px;
+      border-bottom: 2px solid ${lighten(accent, 0.6)};
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cm-detail-body td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .cm-detail-body hr { border: none; border-top: 1px solid #f3f4f6; margin: 12px 0; }
+    .cm-detail-body strong { font-weight: 600; color: #1f2937; }
+    .cm-detail-body p { margin-bottom: 8px; }
 
     /* ── Footer ── */
     .cm-footer {
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 36px;
+      background: ${brand.primary};
+      color: ${contrastText(brand.primary)};
+      border-radius: 12px 12px 0 0;
+      margin-top: 36px;
       font-size: 11px;
-      color: #999;
-      border-top: 1px solid #e0e0e0;
-      padding-top: 24px;
-      margin-top: 32px;
+    }
+    .cm-footer-left { }
+    .cm-footer-company {
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+    .cm-footer-center {
+      text-align: center;
+      font-size: 10px;
+      opacity: 0.8;
+      max-width: 340px;
+      line-height: 1.4;
+    }
+    .cm-footer-right {
+      text-align: right;
+    }
+    .cm-footer-date { opacity: 0.85; }
+    .cm-footer-page {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    @media print {
+      .cm-header, .cm-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cm-matrix-wrap { break-inside: avoid; }
+      .cm-detail-section { break-inside: avoid; }
     }
   `;
 
@@ -371,59 +663,95 @@ function render(input: StyleInput): string {
     .replace(/\b\w/g, c => c.toUpperCase());
 
   const body = `
-    <div class="page">
+    <div class="cm-page">
       <div class="cm-header">
-        <div class="cm-header-logo">${brandLogoHtml(input)}</div>
-        <h1>${title}</h1>
-        <div class="cm-header-sub">Comparison prepared for ${prospect.companyName} &middot; ${dateStr}</div>
+        <div class="cm-header-left">
+          <div class="cm-header-logo">${brandLogoHtml(input, 'height:30px;')}</div>
+          <div class="cm-header-divider"></div>
+          <div class="cm-header-info">
+            <div class="cm-header-title">Competitive Comparison</div>
+            <div class="cm-header-sub">${title}</div>
+          </div>
+        </div>
+        <div class="cm-header-right">
+          <div class="cm-header-prospect">${prospect.companyName}</div>
+          <div class="cm-header-date">${dateStr}</div>
+        </div>
       </div>
 
-      <div class="vs-banner">
-        <span class="vs-entity">${companyName}</span>
-        <span class="vs-badge">VS</span>
-        <span class="vs-entity">${prospect.companyName}</span>
-      </div>
+      <div class="cm-body-wrap">
+        <div class="cm-participants">
+          <span class="cm-participant">${companyName}</span>
+          <span class="cm-vs-badge">VS</span>
+          ${columns.slice(1).map(c => `<span class="cm-participant">${stripEmojis(c)}</span>`).join('<span class="cm-vs-badge" style="width:24px;height:24px;font-size:9px;">VS</span>')}
+        </div>
 
-      <div class="matrix-wrap">
-        <table class="matrix">
-          <thead>
-            <tr>
-              <th>Feature</th>
-              ${matrixHeaderHtml}
-            </tr>
-          </thead>
-          <tbody>
-            ${matrixRowsHtml}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td style="text-align:left;">Score</td>
-              ${winnerFooterHtml}
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <div class="matrix-legend">
-        <div class="legend-item"><span class="legend-icon cell-yes">&#10003;</span> Supported</div>
-        <div class="legend-item"><span class="legend-icon cell-partial">~</span> Partial</div>
-        <div class="legend-item"><span class="legend-icon cell-no">&#10007;</span> Not supported</div>
-      </div>
+        <div class="cm-section-break">
+          <div class="cm-section-break-line"></div>
+          <div class="cm-section-break-label">Feature Comparison</div>
+          <div class="cm-section-break-line"></div>
+        </div>
 
-      <div class="wins-box">
-        <div class="wins-title">Key Wins</div>
-        ${winsHtml}
-      </div>
+        <div class="cm-matrix-wrap">
+          <table class="cm-matrix">
+            <thead>
+              <tr>
+                <th>Capability</th>
+                ${matrixHeaderHtml}
+              </tr>
+            </thead>
+            <tbody>
+              ${matrixRowsHtml}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>Overall Score</td>
+                ${scoreFooterHtml}
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
-      ${sectionsHtml}
+        <div class="cm-legend">
+          <div class="cm-legend-item"><span class="cm-icon-check cm-legend-icon"></span> Full Support</div>
+          <div class="cm-legend-item"><span class="cm-icon-partial cm-legend-icon"></span> Partial Support</div>
+          <div class="cm-legend-item"><span class="cm-icon-cross cm-legend-icon"></span> Not Supported</div>
+        </div>
+
+        <div class="cm-wins">
+          <div class="cm-wins-title">${companyName} Advantages</div>
+          ${winsHtml}
+        </div>
+
+        <div class="cm-section-break">
+          <div class="cm-section-break-line"></div>
+          <div class="cm-section-break-label">Detailed Analysis</div>
+          <div class="cm-section-break-line"></div>
+        </div>
+
+        <div class="cm-details-grid">
+          ${sectionsHtml}
+        </div>
+      </div>
 
       <div class="cm-footer">
-        ${companyName} | ${dateStr} | Generated by ContentForge
+        <div class="cm-footer-left">
+          <div class="cm-footer-company">${companyName}</div>
+          <div>${input.companyDescription || ''}</div>
+        </div>
+        <div class="cm-footer-center">
+          Information believed accurate as of ${dateStr}. Competitive data sourced from publicly available information and may not reflect the latest product updates.
+        </div>
+        <div class="cm-footer-right">
+          <div class="cm-footer-date">${dateStr}</div>
+          <div class="cm-footer-page">Page 1</div>
+        </div>
       </div>
     </div>
   `;
 
   return wrapDocument({
-    title: `${title} — ${prospect.companyName}`,
+    title: `Competitive Comparison — ${prospect.companyName}`,
     css,
     body,
     fonts: brandFonts(brand),
