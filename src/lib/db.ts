@@ -51,6 +51,7 @@ export async function getKnowledgeBase(companyId = 'default'): Promise<Knowledge
 
 export async function saveKnowledgeBase(companyId = 'default', kb: KnowledgeBase): Promise<void> {
   try {
+    await ensureCompany(companyId);
     const { error } = await sb()
       .from('knowledge_base')
       .upsert(
