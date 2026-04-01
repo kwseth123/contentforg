@@ -305,7 +305,7 @@ export default function DiscoveryCallPage() {
       const res = await fetch('/api/discovery-call/history');
       if (res.ok) {
         const data = await res.json();
-        setHistory(data.entries || []);
+        setHistory(Array.isArray(data) ? data : data.entries || []);
       }
     } catch {
       // API may not exist yet -- silent
