@@ -73,6 +73,7 @@ export interface BrandGuidelines {
     tagline: string;
   };
   documentStyle: DocumentStyle;
+  documentStyleMode?: 'professional' | 'expressive';
 }
 
 export const DEFAULT_BRAND_GUIDELINES: BrandGuidelines = {
@@ -196,6 +197,7 @@ export type ContentType =
   | 'stakeholder-map'
   | 'qbr-review-deck'
   | 'win-loss-analysis'
+  | 'why-we-win'
   // ── Email & Outreach ──
   | 'outbound-email-sequence'
   | 'post-demo-followup'
@@ -243,6 +245,7 @@ export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   'stakeholder-map': 'Stakeholder Map',
   'qbr-review-deck': 'QBR / Business Review Deck',
   'win-loss-analysis': 'Win/Loss Analysis',
+  'why-we-win': 'Why We Win One-Pager',
   // Email & Outreach
   'outbound-email-sequence': 'Outbound Email Sequence',
   'post-demo-followup': 'Post-Demo Follow Up Email',
@@ -295,7 +298,7 @@ export const CONTENT_CATEGORIES: Record<ContentCategory, {
       'battle-card', 'competitive-analysis', 'discovery-call-prep',
       'objection-handling-guide', 'cold-call-script', 'voicemail-script',
       'champion-enablement-kit', 'mutual-action-plan', 'stakeholder-map',
-      'qbr-review-deck', 'win-loss-analysis',
+      'qbr-review-deck', 'win-loss-analysis', 'why-we-win',
     ],
   },
   'email-outreach': {
@@ -372,6 +375,12 @@ export interface ProductCompetitorMapping {
   howTheyWin: string[]; // honest internal assessment
   talkTrack: string; // recommended talk track for this matchup
   winRate: number; // 0-100 percentage, manually entered
+  targetErp?: string;           // ERP/platform they target
+  pricingComparison?: string;   // pricing comparison notes
+  keyDifferentiators?: string[]; // specific differentiators vs this competitor
+  landmineQuestions?: string[];  // questions to expose their weaknesses
+  objectionResponses?: { objection: string; response: string }[];  // when prospect mentions them
+  recentIntel?: string;          // recent competitive intelligence
 }
 
 export interface ProductProfile {
@@ -523,7 +532,7 @@ export const PERSONA_CONFIGS: PersonaConfig[] = [
     id: 'cfo',
     label: 'CFO / Finance',
     title: 'Chief Financial Officer',
-    icon: '\u{1F4B0}',
+    icon: '💵',
     cares: ['ROI', 'cost reduction', 'payback period', 'risk mitigation', 'total cost of ownership'],
     languageStyle: 'Use financial language. Lead with numbers and ROI. Frame everything as investment vs. return. Quantify risk and savings precisely.',
     metricsToHighlight: ['ROI percentage', 'payback period', 'annual savings', 'cost per unit reduction', 'total cost of ownership'],
@@ -533,7 +542,7 @@ export const PERSONA_CONFIGS: PersonaConfig[] = [
     id: 'ceo',
     label: 'CEO / Executive',
     title: 'Chief Executive Officer',
-    icon: '\u{1F454}',
+    icon: '📊',
     cares: ['strategic impact', 'competitive advantage', 'growth', 'market position', 'board-level outcomes'],
     languageStyle: 'Use strategic, high-level language. Focus on competitive advantage and market position. Be concise \u2014 executives scan, they don\'t read. Lead with the punchline.',
     metricsToHighlight: ['market share impact', 'competitive advantage', 'revenue growth', 'strategic alignment', 'time to value'],
@@ -543,7 +552,7 @@ export const PERSONA_CONFIGS: PersonaConfig[] = [
     id: 'vp-ops',
     label: 'VP of Operations',
     title: 'VP of Operations',
-    icon: '\u2699\uFE0F',
+    icon: '⚙️',
     cares: ['efficiency', 'process improvement', 'team adoption', 'throughput', 'quality metrics'],
     languageStyle: 'Use operational language. Focus on process improvement, efficiency gains, and team impact. Include before/after comparisons. Be specific about workflows.',
     metricsToHighlight: ['efficiency gain', 'throughput increase', 'error reduction', 'time savings per process', 'adoption timeline'],
@@ -553,7 +562,7 @@ export const PERSONA_CONFIGS: PersonaConfig[] = [
     id: 'it-director',
     label: 'IT Director',
     title: 'IT Director',
-    icon: '\u{1F5A5}\uFE0F',
+    icon: '🖥️',
     cares: ['integration', 'security', 'implementation complexity', 'support', 'technical architecture'],
     languageStyle: 'Use technical language. Address integration details, security compliance, and architecture. Include API specs, data flow, and implementation requirements. Be precise and detailed.',
     metricsToHighlight: ['uptime SLA', 'integration points', 'implementation timeline', 'security certifications', 'API response time'],
@@ -563,7 +572,7 @@ export const PERSONA_CONFIGS: PersonaConfig[] = [
     id: 'end-user',
     label: 'End User / Staff',
     title: 'End User',
-    icon: '\u{1F464}',
+    icon: '👤',
     cares: ['ease of use', 'time savings', 'daily workflow impact', 'learning curve', 'mobile access'],
     languageStyle: 'Use simple, plain language. No jargon. Focus on daily workflow improvements and time savings. Show how it makes their specific job easier. Be relatable and practical.',
     metricsToHighlight: ['time saved per day', 'clicks reduced', 'training time', 'mobile accessibility', 'user satisfaction'],
@@ -573,7 +582,7 @@ export const PERSONA_CONFIGS: PersonaConfig[] = [
     id: 'procurement',
     label: 'Procurement',
     title: 'Procurement Manager',
-    icon: '\u{1F4CB}',
+    icon: '📋',
     cares: ['pricing', 'contract terms', 'vendor stability', 'references', 'compliance', 'SLAs'],
     languageStyle: 'Use business-formal language. Focus on vendor credentials, pricing structure, contract flexibility, and risk mitigation. Include references and compliance certifications. Be thorough on terms.',
     metricsToHighlight: ['pricing tiers', 'contract flexibility', 'vendor references', 'compliance certifications', 'SLA guarantees'],
