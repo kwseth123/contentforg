@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import fs from 'fs';
-import path from 'path';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
+import { getHistory } from '@/lib/history';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -14,9 +10,7 @@ export async function GET() {
   // Read history
   let history: { generatedBy: string; generatedAt: string; scores?: { overall: number } }[] = [];
   try {
-    if (fs.existsSync(HISTORY_FILE)) {
-      history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
-    }
+    history = await getHistory() as typeof history;
   } catch { history = []; }
 
   // Filter to this week

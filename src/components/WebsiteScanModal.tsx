@@ -128,6 +128,8 @@ export default function WebsiteScanModal({
       const decoder = new TextDecoder();
       let buffer = '';
 
+      let gotResult = false;
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -149,6 +151,7 @@ export default function WebsiteScanModal({
               setTotalPages(event.total);
               setProgress(Math.round((event.current / event.total) * 100));
             } else if (event.type === 'result') {
+              gotResult = true;
               setExtractedData(event.data);
               // Pre-check all items
               const products: Record<number, boolean> = {};
@@ -171,11 +174,18 @@ export default function WebsiteScanModal({
             } else if (event.type === 'error') {
               setError(event.message);
               setPhase('input');
+              return; // Stop reading
             }
           } catch {
             // Skip unparseable lines
           }
         }
+      }
+
+      // If the stream ended without a result or error, show a fallback error
+      if (!gotResult) {
+        setError('Scan ended unexpectedly. Please try again.');
+        setPhase('input');
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;

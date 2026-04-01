@@ -6,14 +6,14 @@ import { getProducts, upsertProduct, deleteProduct, incrementProductContentCount
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  return NextResponse.json(getProducts());
+  return NextResponse.json(await getProducts());
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const product = await req.json();
-  upsertProduct(product);
+  await upsertProduct(product);
   return NextResponse.json({ success: true });
 }
 
@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const product = await req.json();
-  upsertProduct(product);
+  await upsertProduct(product);
   return NextResponse.json({ success: true });
 }
 
@@ -29,7 +29,7 @@ export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await req.json();
-  deleteProduct(id);
+  await deleteProduct(id);
   return NextResponse.json({ success: true });
 }
 
@@ -38,6 +38,6 @@ export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await req.json();
-  incrementProductContentCount(id);
+  await incrementProductContentCount(id);
   return NextResponse.json({ success: true });
 }

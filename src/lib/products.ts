@@ -1,54 +1,26 @@
-import fs from 'fs';
-import path from 'path';
 import { ProductProfile } from './types';
+import * as db from './db';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
-
-export function getProducts(): ProductProfile[] {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(PRODUCTS_FILE)) {
-    fs.writeFileSync(PRODUCTS_FILE, JSON.stringify([], null, 2));
-    return [];
-  }
-  const raw = fs.readFileSync(PRODUCTS_FILE, 'utf-8');
-  return JSON.parse(raw);
+export async function getProducts(): Promise<ProductProfile[]> {
+  return db.getProducts();
 }
 
-export function saveProducts(products: ProductProfile[]): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2));
+export async function saveProducts(products: ProductProfile[]): Promise<void> {
+  return db.saveProducts('default', products);
 }
 
-export function getProduct(id: string): ProductProfile | undefined {
-  return getProducts().find((p) => p.id === id);
+export async function getProduct(id: string): Promise<ProductProfile | undefined> {
+  return db.getProduct('default', id);
 }
 
-export function upsertProduct(product: ProductProfile): void {
-  const products = getProducts();
-  const idx = products.findIndex((p) => p.id === product.id);
-  if (idx >= 0) {
-    products[idx] = { ...product, lastUpdated: new Date().toISOString() };
-  } else {
-    products.push({ ...product, lastUpdated: new Date().toISOString() });
-  }
-  saveProducts(products);
+export async function upsertProduct(product: ProductProfile): Promise<void> {
+  return db.upsertProduct('default', product);
 }
 
-export function deleteProduct(id: string): void {
-  const products = getProducts().filter((p) => p.id !== id);
-  saveProducts(products);
+export async function deleteProduct(id: string): Promise<void> {
+  return db.deleteProduct('default', id);
 }
 
-export function incrementProductContentCount(id: string): void {
-  const products = getProducts();
-  const idx = products.findIndex((p) => p.id === id);
-  if (idx >= 0) {
-    products[idx].contentGeneratedCount = (products[idx].contentGeneratedCount || 0) + 1;
-    saveProducts(products);
-  }
+export async function incrementProductContentCount(id: string): Promise<void> {
+  return db.incrementProductContentCount('default', id);
 }

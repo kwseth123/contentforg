@@ -15,6 +15,7 @@ import {
   HiOutlineCalculator,
   HiOutlineCube,
   HiOutlinePaintBrush,
+  HiOutlineTableCells,
 } from 'react-icons/hi2';
 import Logo from '@/components/Logo';
 
@@ -29,6 +30,7 @@ const WORKSPACE_NAV = [
 const SALES_TOOLS_NAV = [
   { href: '/products', label: 'Products', icon: HiOutlineCube },
   { href: '/roi-calculator', label: 'ROI Calculator', icon: HiOutlineCalculator },
+  { href: '/feature-matrix', label: 'Feature Matrix', icon: HiOutlineTableCells },
 ];
 
 const SETTINGS_NAV_ADMIN = [

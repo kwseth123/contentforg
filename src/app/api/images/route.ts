@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { sections, contentType, prospect } = await req.json();
-  const kb = getKnowledgeBase();
+  const kb = await getKnowledgeBase();
   const accentColor = kb.brandGuidelines?.colors?.accent || '#6366F1';
 
   // Step 1: Ask Claude for image suggestions

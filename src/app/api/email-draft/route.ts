@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { contentType, prospectName, contentPreview } = await req.json();
-  const kb = getKnowledgeBase();
+  const kb = await getKnowledgeBase();
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',

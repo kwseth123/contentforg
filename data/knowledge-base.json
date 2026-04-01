@@ -1,14 +1,50 @@
 {
-  "companyName": "firmament",
+  "companyName": "Endpoint Automation Solutions",
   "tagline": "&quot;Learn more about Firmament, our mission, vision, and the team dedicated to driving your success.&quot;",
-  "website": "https://firmament.com/",
+  "website": "https://endpointas.com",
   "aboutUs": "We sell a client management and compliance platform for independent financial advisors and RIAs. It automates client onboarding, compliance reporting, and portfolio reviews so advisors can focus on growing relationships instead of pushing paper.",
   "products": [
     {
       "id": "1",
-      "name": "Main Product",
+      "name": "Endpoint for Acuamtica",
       "description": "We sell a client management and compliance platform for independent financial advisors and RIAs. It automates client onboarding, compliance reporting, and portfolio reviews so advisors can focus on growing relationships instead of pushing paper.",
       "keyFeatures": [],
+      "pricing": ""
+    },
+    {
+      "id": "443266c4-eec9-4a98-8b05-7044b9666acd",
+      "name": "Endpoint Mobile Sales",
+      "description": "Mobile app that gives sales teams everything they need in the field — real-time inventory, order entry, and payment collection — all synced to your ERP.",
+      "keyFeatures": [
+        "Real-time inventory visibility",
+        "Offline order entry",
+        "Instant payment collection",
+        "Proof of delivery capture",
+        "ERP integration"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "e6e94fb2-0f7c-41b4-a4e1-4540a2ce9f52",
+      "name": "Endpoint Warehouse",
+      "description": "Revolutionize warehouse management with comprehensive automation tools.",
+      "keyFeatures": [
+        "Barcode scanning",
+        "Pick, pack, and ship automation",
+        "Real-time inventory tracking",
+        "Shipping label generation"
+      ],
+      "pricing": ""
+    },
+    {
+      "id": "2608beb3-c914-43f2-9df3-70c07dbe16f8",
+      "name": "Endpoint Manufacturing",
+      "description": "Take control of your manufacturing operations with enhanced production efficiency tools.",
+      "keyFeatures": [
+        "Work order management",
+        "Production control",
+        "Manufacturing efficiency optimization"
+      ],
       "pricing": ""
     }
   ],
@@ -22,7 +58,8 @@
       "Medical Devices",
       "Energy",
       "E-Commerce",
-      "Distribution"
+      "Distribution",
+      "Warehousing"
     ],
     "companySize": "Revenue: $10M – $250M",
     "personas": [
@@ -37,7 +74,11 @@
       "Manufacturing operations teams",
       "Procurement teams",
       "Sales teams",
-      "Warehouse Operators"
+      "Warehouse Operators",
+      "Manufacturing Operations",
+      "IT Directors",
+      "Controllers",
+      "CFOs"
     ]
   },
   "competitors": [
@@ -103,10 +144,15 @@
       "id": "92a72503-0318-4386-9263-2c7bbddb1c69",
       "title": "Manufacturing Automation Implementation",
       "content": "Small manufacturing company added automation and control to warehousing process without disrupting existing processes, taking gradual steps toward advanced functionality."
+    },
+    {
+      "id": "9481dec5-0d38-4e9e-a943-f7d904bb0dc2",
+      "title": "Parman Energy - Warehouse Implementation",
+      "content": "Parman Energy implemented Endpoint Warehouse to find out the variance of products they can ship to customers. The solution was easy to use and integrate into their ERP system, with exceptional customer service and support team providing help ASAP when needed."
     }
   ],
   "uploadedDocuments": [],
-  "logoPath": "data:image/png;base64,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",
+  "logoPath": "/uploads/logo.svg",
   "brandGuidelines": {
     "colors": {
       "primary": "#E42226",

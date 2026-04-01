@@ -156,26 +156,28 @@ function extractInternalLinks(html: string, baseUrl: string): string[] {
     return aP - bP;
   });
 
-  // Cap at 8 pages to keep scan fast
-  return sorted.slice(0, 8);
+  // Cap at 4 pages to keep scan fast
+  return sorted.slice(0, 4);
 }
 
 // ═══════════════════════════════════════════════
 // Fetch a page with timeout
 // ═══════════════════════════════════════════════
 
-async function fetchPage(url: string, timeoutMs = 8000): Promise<string> {
+async function fetchPage(url: string, timeoutMs = 6000): Promise<string> {
   try {
     const controller = new AbortController();
+    // Timeout covers the ENTIRE operation (connect + body download)
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const res = await fetch(url, {
       headers: { 'User-Agent': USER_AGENT },
       signal: controller.signal,
       redirect: 'follow',
     });
+    if (!res.ok) { clearTimeout(timeout); return ''; }
+    const text = await res.text();
     clearTimeout(timeout);
-    if (!res.ok) return '';
-    return await res.text();
+    return text;
   } catch {
     return '';
   }
@@ -242,52 +244,78 @@ async function handleSimpleScan(rawUrl: string): Promise<NextResponse> {
 // Deep scan mode (KB rescan) — SSE streaming
 // ═══════════════════════════════════════════════
 
-async function handleDeepScan(rawUrl: string, mode: string): Promise<Response> {
+async function handleDeepScan(rawUrl: string, _mode: string): Promise<Response> {
   const url = normalizeUrl(rawUrl);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false;
       const send = (data: Record<string, unknown>) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          // Stream already closed by client
+          closed = true;
+        }
       };
+
+      const finish = () => {
+        if (!closed) {
+          closed = true;
+          try { controller.close(); } catch { /* already closed */ }
+        }
+      };
+
+      // Global safety timeout — never let the scan run longer than 90 seconds
+      const globalTimeout = setTimeout(() => {
+        send({ type: 'error', message: 'Scan timed out. Try again or enter information manually.' });
+        finish();
+      }, 90000);
 
       try {
         // Step 1: Fetch homepage
-        send({ type: 'progress', page: 'Fetching homepage...', current: 1, total: 5 });
-        const homepageHtml = await fetchPage(url);
+        send({ type: 'progress', page: 'Fetching homepage...', current: 1, total: 4 });
+        const homepageHtml = await fetchPage(url, 8000);
 
         if (!homepageHtml) {
           send({ type: 'error', message: 'Could not fetch website. Check the URL and try again.' });
-          controller.close();
+          clearTimeout(globalTimeout);
+          finish();
           return;
         }
 
-        // Step 2: Find internal pages to crawl
-        send({ type: 'progress', page: 'Finding pages to scan...', current: 1, total: 5 });
+        // Step 2: Find internal pages and crawl them IN PARALLEL
+        send({ type: 'progress', page: 'Scanning website pages...', current: 2, total: 4 });
         const internalLinks = extractInternalLinks(homepageHtml, url);
-        const totalPages = 1 + Math.min(internalLinks.length, 6);
+        const pagesToCrawl = internalLinks.slice(0, 4);
 
-        // Step 3: Crawl internal pages
         const pageTexts: { url: string; text: string }[] = [
           { url, text: htmlToText(homepageHtml).slice(0, 8000) },
         ];
 
-        const pagesToCrawl = internalLinks.slice(0, 6);
-        for (let i = 0; i < pagesToCrawl.length; i++) {
-          const pageUrl = pagesToCrawl[i];
-          const pageName = new URL(pageUrl).pathname.replace(/^\//, '') || 'page';
-          send({ type: 'progress', page: `Scanning ${pageName}...`, current: i + 2, total: totalPages + 1 });
+        if (pagesToCrawl.length > 0) {
+          // Crawl all pages in parallel instead of sequentially
+          const results = await Promise.allSettled(
+            pagesToCrawl.map(async (pageUrl) => {
+              const html = await fetchPage(pageUrl, 5000);
+              return html ? { url: pageUrl, text: htmlToText(html).slice(0, 5000) } : null;
+            })
+          );
 
-          const pageHtml = await fetchPage(pageUrl, 6000);
-          if (pageHtml) {
-            pageTexts.push({ url: pageUrl, text: htmlToText(pageHtml).slice(0, 6000) });
+          for (const result of results) {
+            if (result.status === 'fulfilled' && result.value) {
+              pageTexts.push(result.value);
+            }
           }
         }
 
-        // Step 4: Send all text to Claude for extraction
-        send({ type: 'progress', page: 'Analyzing content with AI...', current: totalPages, total: totalPages + 1 });
+        if (closed) { clearTimeout(globalTimeout); return; }
 
+        send({ type: 'progress', page: `Found ${pageTexts.length} pages. Analyzing with AI...`, current: 3, total: 4 });
+
+        // Step 3: Send to Claude with its own timeout
         const combinedContent = pageTexts
           .map(p => `=== PAGE: ${p.url} ===\n${p.text}`)
           .join('\n\n');
@@ -333,13 +361,31 @@ async function handleDeepScan(rawUrl: string, mode: string): Promise<Response> {
 IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no explanation.
 
 Website content:
-${combinedContent.slice(0, 50000)}`;
+${combinedContent.slice(0, 40000)}`;
 
-        const aiResponse = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
-          messages: [{ role: 'user', content: extractionPrompt }],
-        });
+        // Send keepalive events during AI processing so the client knows we're alive
+        const keepaliveInterval = setInterval(() => {
+          send({ type: 'progress', page: 'Still analyzing...', current: 3, total: 4 });
+        }, 5000);
+
+        let aiResponse;
+        try {
+          // Race the AI call against a 60-second timeout
+          aiResponse = await Promise.race([
+            anthropic.messages.create({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 4096,
+              messages: [{ role: 'user', content: extractionPrompt }],
+            }),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('AI analysis timed out')), 60000)
+            ),
+          ]);
+        } finally {
+          clearInterval(keepaliveInterval);
+        }
+
+        if (closed) { clearTimeout(globalTimeout); return; }
 
         const aiText = aiResponse.content
           .filter((b): b is Anthropic.TextBlock => b.type === 'text')
@@ -349,11 +395,9 @@ ${combinedContent.slice(0, 50000)}`;
         // Parse AI response
         let extractedData;
         try {
-          // Try to extract JSON from the response (handle code blocks)
           const jsonMatch = aiText.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, aiText];
           extractedData = JSON.parse(jsonMatch[1] || aiText);
         } catch {
-          // Try harder — find first { to last }
           const start = aiText.indexOf('{');
           const end = aiText.lastIndexOf('}');
           if (start !== -1 && end !== -1) {
@@ -361,18 +405,20 @@ ${combinedContent.slice(0, 50000)}`;
               extractedData = JSON.parse(aiText.slice(start, end + 1));
             } catch {
               send({ type: 'error', message: 'AI analysis returned invalid data. Please try again.' });
-              controller.close();
+              clearTimeout(globalTimeout);
+              finish();
               return;
             }
           } else {
             send({ type: 'error', message: 'AI analysis returned invalid data. Please try again.' });
-            controller.close();
+            clearTimeout(globalTimeout);
+            finish();
             return;
           }
         }
 
-        // Step 5: Done
-        send({ type: 'progress', page: 'Scan complete!', current: totalPages + 1, total: totalPages + 1 });
+        // Step 4: Done!
+        send({ type: 'progress', page: 'Scan complete!', current: 4, total: 4 });
         send({ type: 'result', data: extractedData });
 
       } catch (err) {
@@ -380,15 +426,17 @@ ${combinedContent.slice(0, 50000)}`;
         send({ type: 'error', message: err instanceof Error ? err.message : 'Scan failed unexpectedly.' });
       }
 
-      controller.close();
+      clearTimeout(globalTimeout);
+      finish();
     },
   });
 
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
     },
   });
 }

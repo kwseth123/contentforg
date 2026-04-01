@@ -6,14 +6,14 @@ import { getLibrary, addLibraryItem, deleteLibraryItem, togglePinLibraryItem } f
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  return NextResponse.json(getLibrary());
+  return NextResponse.json(await getLibrary());
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const item = await req.json();
-  addLibraryItem(item);
+  await addLibraryItem(item);
   return NextResponse.json({ success: true });
 }
 
@@ -23,7 +23,7 @@ export async function DELETE(req: NextRequest) {
   const role = (session.user as Record<string, unknown>).role;
   if (role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const { id } = await req.json();
-  deleteLibraryItem(id);
+  await deleteLibraryItem(id);
   return NextResponse.json({ success: true });
 }
 
@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest) {
   if (role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const { id, action } = await req.json();
   if (action === 'toggle-pin') {
-    togglePinLibraryItem(id);
+    await togglePinLibraryItem(id);
   }
   return NextResponse.json({ success: true });
 }

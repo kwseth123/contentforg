@@ -3,46 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { saveKnowledgeBase } from '@/lib/knowledgeBase';
 import { saveProducts } from '@/lib/products';
+import * as db from '@/lib/db';
 import {
   DEMO_COMPANY_CARDS,
   loadDemoCompany,
 } from '@/lib/demoData';
-import fs from 'fs';
-import path from 'path';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const SETTINGS_FILE = path.join(DATA_DIR, 'app-settings.json');
-const KB_BACKUP_FILE = path.join(DATA_DIR, 'knowledge-base.backup.json');
-const PRODUCTS_BACKUP_FILE = path.join(DATA_DIR, 'products.backup.json');
-const KB_FILE = path.join(DATA_DIR, 'knowledge-base.json');
-const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
-interface AppSettingsData {
-  demoMode?: boolean;
-  demoCompanyId?: string;
-  [key: string]: unknown;
-}
-
-function getSettings(): AppSettingsData {
-  ensureDataDir();
-  if (!fs.existsSync(SETTINGS_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
-  } catch {
-    return {};
-  }
-}
-
-function saveSettings(settings: AppSettingsData) {
-  ensureDataDir();
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
-}
 
 // GET — returns list of demo company cards
 export async function GET() {
@@ -51,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const settings = getSettings();
+  const settings = await db.getAppSettings();
 
   return NextResponse.json({
     companies: DEMO_COMPANY_CARDS,
@@ -84,28 +49,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Demo company "${companyId}" not found` }, { status: 404 });
   }
 
-  ensureDataDir();
-
-  // Back up current KB and products (only if not already in demo mode)
-  const currentSettings = getSettings();
-  if (!currentSettings.demoMode) {
-    if (fs.existsSync(KB_FILE)) {
-      fs.copyFileSync(KB_FILE, KB_BACKUP_FILE);
-    }
-    if (fs.existsSync(PRODUCTS_FILE)) {
-      fs.copyFileSync(PRODUCTS_FILE, PRODUCTS_BACKUP_FILE);
-    }
-  }
-
   // Write the demo company KB
-  saveKnowledgeBase(demoCompany.knowledgeBase);
+  await saveKnowledgeBase(demoCompany.knowledgeBase);
 
   // Write the demo company products
-  saveProducts(demoCompany.products);
+  await saveProducts(demoCompany.products);
 
-  // Set demo mode flag in app-settings.json
-  const settings = getSettings();
-  saveSettings({
+  // Set demo mode flag in app settings
+  const settings = await db.getAppSettings();
+  await db.saveAppSettings('default', {
     ...settings,
     demoMode: true,
     demoCompanyId: companyId,
@@ -119,7 +71,7 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// DELETE — clear demo mode, restore backup if it exists
+// DELETE — clear demo mode, restore to empty defaults
 export async function DELETE() {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -131,47 +83,34 @@ export async function DELETE() {
     return NextResponse.json({ error: 'Admin only' }, { status: 403 });
   }
 
-  ensureDataDir();
+  // Reset to empty KB
+  await saveKnowledgeBase({
+    companyName: '',
+    tagline: '',
+    website: '',
+    aboutUs: '',
+    products: [],
+    differentiators: '',
+    icp: { industries: [], companySize: '', personas: [] },
+    competitors: [],
+    brandVoice: { tone: '', wordsToUse: [], wordsToAvoid: [] },
+    caseStudies: [],
+    uploadedDocuments: [],
+    logoPath: '',
+  });
 
-  // Restore backup KB if one exists
-  if (fs.existsSync(KB_BACKUP_FILE)) {
-    fs.copyFileSync(KB_BACKUP_FILE, KB_FILE);
-    fs.unlinkSync(KB_BACKUP_FILE);
-  } else {
-    // No backup — reset to empty KB
-    saveKnowledgeBase({
-      companyName: '',
-      tagline: '',
-      website: '',
-      aboutUs: '',
-      products: [],
-      differentiators: '',
-      icp: { industries: [], companySize: '', personas: [] },
-      competitors: [],
-      brandVoice: { tone: '', wordsToUse: [], wordsToAvoid: [] },
-      caseStudies: [],
-      uploadedDocuments: [],
-      logoPath: '',
-    });
-  }
-
-  // Restore backup products if one exists
-  if (fs.existsSync(PRODUCTS_BACKUP_FILE)) {
-    fs.copyFileSync(PRODUCTS_BACKUP_FILE, PRODUCTS_FILE);
-    fs.unlinkSync(PRODUCTS_BACKUP_FILE);
-  } else {
-    saveProducts([]);
-  }
+  // Reset products
+  await saveProducts([]);
 
   // Clear demo mode flag from settings
-  const settings = getSettings();
+  const settings = await db.getAppSettings();
   delete settings.demoMode;
   delete settings.demoCompanyId;
-  saveSettings(settings);
+  await db.saveAppSettings('default', settings);
 
   return NextResponse.json({
     success: true,
     demoMode: false,
-    restored: fs.existsSync(KB_BACKUP_FILE) ? 'backup' : 'empty',
+    restored: 'empty',
   });
 }

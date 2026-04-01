@@ -5,7 +5,7 @@ import { getTheme, saveTheme } from '@/lib/themeStorage';
 import { ThemeConfig } from '@/lib/theme';
 
 export async function GET() {
-  const theme = getTheme();
+  const theme = await getTheme();
   return NextResponse.json(theme);
 }
 
@@ -20,6 +20,6 @@ export async function PUT(req: NextRequest) {
   }
 
   const theme: ThemeConfig = await req.json();
-  saveTheme(theme);
+  await saveTheme(theme);
   return NextResponse.json({ ok: true });
 }

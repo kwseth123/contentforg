@@ -5,6 +5,7 @@ import { getKnowledgeBase } from '@/lib/knowledgeBase';
 import { generatePDFHtml } from '@/lib/pdfTemplates';
 import { getStyle } from '@/lib/documentStyles/registry';
 import type { StyleInput, BrandVars } from '@/lib/documentStyles/types';
+import * as db from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { sections, contentType, prospect, prospectLogoBase64, prospectColor, styleOverride, styleId, persona, visualSections } = await req.json();
-  const kb = getKnowledgeBase();
+  const kb = await getKnowledgeBase();
 
   // Apply document style override if provided
   if (styleOverride && ['modern', 'corporate', 'bold', 'minimal'].includes(styleOverride)) {
@@ -92,13 +93,15 @@ export async function POST(req: NextRequest) {
   const { resolveBrandGuidelines } = await import('@/lib/brandDefaults');
   const brandGuidelines = resolveBrandGuidelines(kb);
 
-  let primaryLogoBase64 = '';
-  let secondaryLogoBase64 = '';
+  // Try Supabase logos first, then fall back to file-based
+  let primaryLogoBase64 = await db.getLogo('default', 'primary');
+  let secondaryLogoBase64 = await db.getLogo('default', 'secondary');
 
-  if (brandGuidelines.logos.primaryPath) {
+  // Fallback to file-based logos if Supabase has none
+  if (!primaryLogoBase64 && brandGuidelines.logos.primaryPath) {
     primaryLogoBase64 = await convertLogoToBase64(brandGuidelines.logos.primaryPath);
   }
-  if (brandGuidelines.logos.secondaryPath) {
+  if (!secondaryLogoBase64 && brandGuidelines.logos.secondaryPath) {
     secondaryLogoBase64 = await convertLogoToBase64(brandGuidelines.logos.secondaryPath);
   }
 

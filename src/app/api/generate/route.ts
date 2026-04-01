@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     let kb;
     try {
-      kb = getKnowledgeBase();
+      kb = await getKnowledgeBase();
     } catch (e) {
       console.error('[generate] Failed to load knowledge base:', e);
       return new Response(

@@ -10,9 +10,9 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const history = getHistory();
-  const library = getLibrary();
-  const kb = getKnowledgeBase();
+  const history = await getHistory();
+  const library = await getLibrary();
+  const kb = await getKnowledgeBase();
   const settings = kb.settings || DEFAULT_SETTINGS;
 
   // Stats: this month

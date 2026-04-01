@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { sections, contentType, prospect } = await req.json();
-  const kb = getKnowledgeBase();
+  const kb = await getKnowledgeBase();
   const brand = resolveBrandGuidelines(kb);
 
   // Map Google Fonts to system fonts for PPTX

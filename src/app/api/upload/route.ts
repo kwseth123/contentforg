@@ -3,8 +3,17 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { parseFile } from '@/lib/fileParser';
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
+import * as db from '@/lib/db';
+
+const MIME_MAP: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+};
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -25,14 +34,15 @@ export async function POST(req: NextRequest) {
 
   // ── Logo uploads (primary and secondary) ──
   if (purpose === 'logo' || purpose === 'logo-secondary') {
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-    const ext = file.name.split('.').pop();
-    const filename = purpose === 'logo-secondary' ? `logo-secondary.${ext}` : `logo.${ext}`;
-    const logoPath = `/uploads/${filename}`;
-    fs.writeFileSync(path.join(process.cwd(), 'public', logoPath), buffer);
+    const ext = '.' + (file.name.split('.').pop() || 'png').toLowerCase();
+    const mime = MIME_MAP[ext] || 'image/png';
+    const dataUrl = `data:${mime};base64,${buffer.toString('base64')}`;
+    const logoType = purpose === 'logo-secondary' ? 'secondary' : 'primary';
+
+    await db.saveLogo('default', logoType, dataUrl);
+
+    // Return a logoPath that the KB can reference
+    const logoPath = dataUrl;
     return NextResponse.json({ logoPath });
   }
 

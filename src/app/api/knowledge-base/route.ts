@@ -8,7 +8,7 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const kb = getKnowledgeBase();
+  const kb = await getKnowledgeBase();
   return NextResponse.json(kb);
 }
 
@@ -18,6 +18,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const kb = await req.json();
-  saveKnowledgeBase(kb);
+  await saveKnowledgeBase(kb);
   return NextResponse.json({ success: true });
 }
