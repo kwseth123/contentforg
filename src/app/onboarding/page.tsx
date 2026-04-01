@@ -870,7 +870,7 @@ This document should make the user think: I could send this right now.`;
           <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                Watch ContentForge create your first document
+                Watch ContentForg create your first document
               </h1>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Using everything you just told us

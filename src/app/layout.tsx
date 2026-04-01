@@ -12,6 +12,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ContentForg — B2B Sales Content Engine",
   description: "Generate polished, on-brand sales content powered by AI",
+  icons: {
+    icon: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'ContentForg — AI Sales Content for B2B Teams',
+    description: 'Generate on-brand battle cards, one-pagers, and competitive analyses in 60 seconds. Built for sales teams who can\'t wait on marketing.',
+  },
 };
 
 export default function RootLayout({

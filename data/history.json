@@ -2221,5 +2221,178 @@
       "voiceMode": "direct",
       "sequenceIndex": 0
     }
+  },
+  {
+    "id": "cb1a7f46-d4f2-4de8-bb86-cbd7a7fe5d2c",
+    "contentType": "battle-card",
+    "prospect": {
+      "companyName": "Kraft Tools",
+      "industry": "Manufacturing",
+      "companySize": "100 - 500",
+      "techStack": "Acumatica ",
+      "painPoints": "Slow manual process, no multi-bin today, nothing abrcoded. Losing orders ",
+      "website": "krafttool.com"
+    },
+    "additionalContext": "Battle card vs [competitor] for a manufacturer",
+    "toneLevel": 35,
+    "sections": [
+      {
+        "id": "e2481f5e-09d3-4c68-9f8f-da46bab36b8e",
+        "title": "Strategic Impact Statement",
+        "content": "**Kraft Tools can leapfrog competitors by implementing a modern warehouse automation platform that transforms manual processes into streamlined operations while their competitors struggle with legacy systems.** This isn't just about fixing current inefficiencies—it's about positioning Kraft Tools as the agile manufacturer that can scale rapidly without operational bottlenecks. The strategic advantage comes from moving first while competitors remain trapped in manual workflows that limit their growth potential."
+      },
+      {
+        "id": "58b399d3-8ffd-4b70-90bf-79e373da10f2",
+        "title": "Competitive Positioning",
+        "content": "**Market Position Matrix: Innovation Speed vs. Implementation Complexity**\n\n- **Top-Right (Us): High Innovation + Low Complexity** — Endpoint delivers cutting-edge automation with embedded ERP integration that requires minimal disruption\n- **Bottom-Right: Traditional WMS Players** — Complex implementations, lengthy deployments, high customization requirements\n- **Top-Left: Point Solutions** — Fast to deploy but limited scope, creating integration headaches\n- **Bottom-Left: Legacy Systems** — Slow innovation cycles, complex architectures, extensive customization needs\n\nEndpoint occupies the strategic sweet spot: advanced capabilities with simplified deployment through our native Acumatica integration."
+      },
+      {
+        "id": "94f07a4d-e524-43ab-b0f0-405cba264bf1",
+        "title": "Three Big Outcomes",
+        "content": "The strategic transformation Kraft Tools will achieve through warehouse automation:"
+      },
+      {
+        "id": "7001987f-9162-48d1-96f5-749d0e7365da",
+        "title": "12-Month Vision",
+        "content": "**Kraft Tools in 12 months operates as the responsive manufacturer competitors can't match.** Orders that previously took days to process now complete in hours with 99.5% accuracy. Multi-bin inventory management provides real-time visibility across all SKUs, enabling just-in-time manufacturing that reduces carrying costs by 20-30%. The barcode-driven warehouse eliminates lost orders entirely, while automated compliance reporting frees management to focus on strategic growth initiatives. Most importantly, Kraft Tools can accept larger orders and tighter delivery windows that competitors must decline, directly translating operational excellence into market share gains and premium pricing power."
+      },
+      {
+        "id": "46a561e7-5649-48a4-9cd4-3227f0276bfe",
+        "title": "Next Step",
+        "content": "**Schedule a 90-minute executive briefing within the next two weeks to review Kraft Tools' specific operational requirements and demonstrate how Endpoint's Acumatica-native platform can deliver measurable results within 60 days.** This session will include a customized ROI analysis based on your current order volumes and processing times, plus a detailed implementation timeline that minimizes disruption while maximizing speed to value."
+      }
+    ],
+    "generatedAt": "2026-04-01T04:49:41.008Z",
+    "generatedBy": "Admin User",
+    "scores": {
+      "clarity": 8,
+      "differentiation": 7,
+      "proof": 4,
+      "callToAction": 8,
+      "overall": 7,
+      "tips": {
+        "clarity": "",
+        "differentiation": "",
+        "proof": "Add specific customer success stories, concrete metrics from implementations, or third-party validation to strengthen credibility.",
+        "callToAction": ""
+      }
+    },
+    "grades": {
+      "relevance": {
+        "score": 8,
+        "suggestion": "Good job calling out Kraft Tools by name throughout and focusing on manufacturing-specific challenges like just-in-time operations. The multi-bin inventory management detail shows you understand their business."
+      },
+      "clarity": {
+        "score": 7,
+        "suggestion": "The Market Position Matrix concept works well and the structure is scannable. The 12-month vision section paints a clear picture of the transformation."
+      },
+      "differentiation": {
+        "score": 6,
+        "suggestion": "The 'High Innovation + Low Complexity' positioning is solid, but the competitive comparison stays too high-level. Add a specific capability that competitors can't match, like your Acumatica integration speed."
+      },
+      "proof": {
+        "score": 4,
+        "suggestion": "The document promises '99.5% accuracy' and '20-30% reduction in carrying costs' but provides no customer examples or case studies. Add one specific customer story with actual results to make these claims credible."
+      },
+      "callToAction": {
+        "score": 8,
+        "suggestion": "Excellent specificity with the '90-minute executive briefing within two weeks' and the promise of customized ROI analysis. This creates urgency and clear value for the meeting."
+      },
+      "personaFit": {
+        "score": 7,
+        "suggestion": "The focus on operational excellence, market share gains, and premium pricing power hits the right notes for a manufacturing executive. The strategic framing around competitive advantage works well for this audience."
+      },
+      "overallGrade": "B",
+      "summary": "Strong relevance and call to action, but needs specific proof points and customer examples to support the bold claims about accuracy and cost reduction."
+    }
+  },
+  {
+    "id": "84c213ed-99eb-44ff-b04d-de4812554c9e",
+    "contentType": "battle-card",
+    "prospect": {
+      "companyName": "Kraft Tools",
+      "industry": "Manufacturing",
+      "companySize": "100 - 500",
+      "techStack": "Acumatica ",
+      "painPoints": "Slow manual process, no multi-bin today, nothing abrcoded. Losing orders ",
+      "website": "krafttool.com"
+    },
+    "additionalContext": "Battle card vs [competitor] for a manufacturer",
+    "toneLevel": 35,
+    "sections": [
+      {
+        "id": "3f7a286e-f90c-4525-8d8c-b64a997280f5",
+        "title": "Strategic Impact Statement",
+        "content": "**Kraft Tools can eliminate order fulfillment bottlenecks and capture 15-20% more revenue within 12 months by automating their warehouse operations.**\n\nTheir current manual processes and lack of barcoding are creating a competitive disadvantage in a market where delivery speed determines customer retention. This automation initiative positions Kraft Tools as the responsive partner their customers demand while building scalable infrastructure for aggressive growth plans."
+      },
+      {
+        "id": "15dcdf2d-04ce-4ebd-85c9-2c80eab08021",
+        "title": "Competitive Positioning",
+        "content": "**Innovation Speed vs. Implementation Complexity Matrix**\n\nIn the warehouse automation space, solutions fall across two critical dimensions: how quickly they deliver new capabilities and how complex they are to implement.\n\n- **Top-Right Quadrant (Us):** Endpoint delivers rapid innovation with embedded ERP integration that eliminates implementation complexity\n- **Bottom-Right:** Traditional WMS providers offer innovation but require months of complex integration\n- **Top-Left:** Basic inventory modules move fast but lack sophisticated automation capabilities\n- **Bottom-Left:** Legacy systems that are both slow to innovate and complex to change\n\nKraft Tools needs a solution that can scale with their growth ambitions without the typical 6-12 month implementation nightmare."
+      },
+      {
+        "id": "1fa95e84-8613-4674-a17c-ce1738c874cc",
+        "title": "Three Big Outcomes",
+        "content": "The strategic outcomes that matter most for Kraft Tools' growth trajectory and market position."
+      },
+      {
+        "id": "3b7eba85-8a70-47a4-a227-eedc36688c8a",
+        "title": "12-Month Vision",
+        "content": "**Kraft Tools operates as the most responsive supplier in their market segment.**\n\nOrders flow seamlessly from Acumatica through automated pick workflows with barcode scanning at every step. Inventory accuracy sits at 99.5%, eliminating the stockouts that previously cost deals. The warehouse team processes 40% more orders per day without additional headcount.\n\nCustomers recognize Kraft Tools as the reliable partner who delivers on time, every time. Sales teams confidently promise delivery dates knowing the warehouse operations can execute flawlessly. The company captures market share from competitors still struggling with manual processes and frequent shipping delays.\n\nMost importantly, Kraft Tools has built scalable infrastructure that supports their next phase of growth without operational bottlenecks constraining expansion plans."
+      },
+      {
+        "id": "65ab0285-7aff-409b-beae-02081181d633",
+        "title": "Next Step",
+        "content": "**Schedule a 45-minute executive briefing within the next two weeks to review Kraft Tools' specific automation roadmap and see the Acumatica integration in action.**\n\nThis briefing will demonstrate exactly how Endpoint eliminates the manual bottlenecks currently constraining growth and provide a clear 90-day implementation timeline tailored to Kraft Tools' operational requirements."
+      }
+    ],
+    "generatedAt": "2026-04-01T04:50:42.260Z",
+    "generatedBy": "Admin User",
+    "scores": {
+      "clarity": 9,
+      "differentiation": 8,
+      "proof": 4,
+      "callToAction": 8,
+      "overall": 7,
+      "tips": {
+        "clarity": "",
+        "differentiation": "",
+        "proof": "Add specific customer case studies, implementation metrics, or third-party validation to support your claims.",
+        "callToAction": ""
+      }
+    },
+    "grades": {
+      "relevance": {
+        "score": 9,
+        "suggestion": "Excellent job calling out Kraft Tools' specific pain points - manual processes, lack of barcoding, and order fulfillment bottlenecks. The reference to their 'aggressive growth plans' shows you understand their strategic context."
+      },
+      "clarity": {
+        "score": 8,
+        "suggestion": "The Innovation Speed vs. Implementation Complexity Matrix is a clever framework that makes competitive positioning easy to grasp. The quadrant approach works well for this technical audience."
+      },
+      "differentiation": {
+        "score": 7,
+        "suggestion": "The competitive positioning matrix effectively positions you in the top-right quadrant against traditional WMS providers. The 'embedded ERP integration' angle is your key differentiator - keep emphasizing that."
+      },
+      "proof": {
+        "score": 4,
+        "suggestion": "The document lacks specific customer metrics or case studies. Add a concrete example: 'Like Regional Manufacturing who achieved 99.5% inventory accuracy and processed 40% more orders in 6 months' with actual company results."
+      },
+      "callToAction": {
+        "score": 8,
+        "suggestion": "The 45-minute executive briefing with specific timeline ('within the next two weeks') and clear agenda is strong. The promise of showing 'Acumatica integration in action' makes it compelling for this prospect."
+      },
+      "personaFit": {
+        "score": 8,
+        "suggestion": "The language hits the right notes for manufacturing operations leaders - focusing on scalable infrastructure, competitive advantage, and revenue capture. The 12-month vision section particularly resonates with this persona."
+      },
+      "overallGrade": "B+",
+      "summary": "Strong relevance and persona targeting with effective competitive positioning, but needs concrete proof points and customer metrics to build credibility with this manufacturing prospect."
+    },
+    "variationSeed": {
+      "hookStyle": "bold-claim",
+      "voiceMode": "confident",
+      "sequenceIndex": 1
+    }
   }
 ]

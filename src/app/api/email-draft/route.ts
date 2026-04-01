@@ -43,7 +43,7 @@ Respond ONLY with valid JSON:
   } catch {
     return NextResponse.json({
       subject: `${contentType.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} for ${prospectName}`,
-      body: `Hi,\n\nPlease find attached the ${contentType.replace(/-/g, ' ')} we prepared for ${prospectName}. I'd love to schedule a brief call to walk through the key points.\n\nBest regards`,
+      body: `Hi,\n\nPlease find attached the ${contentType.replace(/-/g, ' ')} we prepared for ${prospectName}. I'd love to schedule a brief call to walk through the key points.\n\nBest regards\n\n—\nContentForg — AI Sales Content Engine`,
     });
   }
 }
