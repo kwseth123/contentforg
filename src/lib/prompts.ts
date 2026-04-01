@@ -1,5 +1,23 @@
 import { ContentType, KnowledgeBase, ProspectInfo, ProductProfile, PersonaConfig } from './types';
 
+export const CONTENT_RICHNESS_RULES = `
+
+═══ CONTENT QUALITY RULES (APPLY TO EVERY DOCUMENT) ═══
+
+SPECIFICITY: Use the prospect's company name at least 3 times throughout the document — not just in the header. Reference their specific industry at least twice using industry-specific terminology. Never write generic statements that could apply to any company — every sentence should feel written specifically for this prospect.
+
+CLAIM STRENGTH: Every benefit statement must include either a specific metric, a timeframe, or a comparison. Never write "improve efficiency" — write "reduce pick times by 40% in the first 30 days." If no specific metric exists in the knowledge base, use a credible industry range and note it as "typical" or "industry benchmark."
+
+FORWARD MOMENTUM: Every section must end with a statement that pulls the reader toward the next section or toward action. No section should feel like a dead end. Use transitional language that creates urgency.
+
+PROOF: Every document must include at least one specific customer reference, result, or analogy — even if framed as "companies like yours typically..." Pull from the knowledge base customer wins. If none exist, use industry benchmark language like "organizations in [industry] typically see..."
+
+VOICE: Write like a confident sales professional who knows this industry deeply — not like a marketing brochure. Short punchy sentences. Active voice. No passive constructions. No corporate jargon. No "leverage," "synergy," "holistic," or "cutting-edge."
+
+SURPRISE: Include one unexpected insight, stat, or angle that the prospect probably hasn't heard before. This is the sentence that makes them forward the document to their boss.
+
+`;
+
 export function buildSystemPrompt(kb: KnowledgeBase, product?: ProductProfile): string {
   let prompt = `You are ContentForg, an expert B2B sales content generator for ${kb.companyName || 'the company'}.
 
@@ -99,7 +117,7 @@ When generating document content, always choose the best visual format for each 
 NEVER render important data as plain bullet points when a more visual format exists.
 Vary the visual treatment across sections — no two consecutive sections should use the same format.`;
 
-  return prompt;
+  return prompt + CONTENT_RICHNESS_RULES;
 }
 
 function toneInstruction(toneLevel: number): string {

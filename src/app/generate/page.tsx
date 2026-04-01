@@ -30,6 +30,7 @@ import {
   VisualSection,
 } from '@/lib/types';
 import { detectContentType, DOCUMENT_STYLE_OPTIONS, STYLE_WRITING_INSTRUCTIONS } from '@/lib/brandDefaults';
+import { generateVariationSeed, getFixedSeed, VariationSeed, getHookLabel, getVoiceLabel } from '@/lib/variation';
 import { buildPersonaContext } from '@/lib/prompts';
 import {
   HiOutlineSparkles,
@@ -52,6 +53,9 @@ import {
   HiOutlineGlobeAlt,
 } from 'react-icons/hi2';
 import VoiceButton from '@/components/VoiceButton';
+import { calculateReadingTime } from '@/lib/readingTime';
+import { useProspectMemory } from '@/hooks/useProspectMemory';
+import { generateShareableHtml } from '@/lib/shareableHtml';
 
 // ── Competitor Research Types ──
 interface CompetitorResearchData {
@@ -297,6 +301,14 @@ function GeneratePage() {
   const [visualSections, setVisualSections] = useState<VisualSection[] | null>(null);
   const [planningPhase, setPlanningPhase] = useState<'idle' | 'planning' | 'rendering' | 'done'>('idle');
 
+  // ── Content Variation Engine State ──
+  const [variationOn, setVariationOn] = useState(false);
+  const [currentSeed, setCurrentSeed] = useState<VariationSeed | null>(null);
+
+  // ── Image Generation State ──
+  const [imagesOn, setImagesOn] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<{id:string;url:string;thumbUrl:string;alt:string;credit?:string;placement:string;sectionIndex:number;isSvg:boolean}[]>([]);
+
   // ── Product-Competitor Mapping State ──
   const [matchedCompetitorMapping, setMatchedCompetitorMapping] = useState<{ product: ProductProfile; mapping: ProductCompetitorMapping } | null>(null);
 
@@ -313,6 +325,11 @@ function GeneratePage() {
   const [pickerBestMatch, setPickerBestMatch] = useState<ProductProfile | null>(null);
   const pickerTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingGenerateRef = useRef(false);
+  const autoGenerateTriggeredRef = useRef(false);
+
+  // ── Prospect Memory ──
+  const { findProspect } = useProspectMemory();
+  const [prospectSuggestion, setProspectSuggestion] = useState<{companyName:string;items:{contentTypeLabel:string}[]}|null>(null);
 
   // Derived: active (non-sunset) products
   const activeProducts = allProducts.filter(p => p.status !== 'sunset');
@@ -381,6 +398,56 @@ function GeneratePage() {
     if (tone) setToneLevel(Number(tone));
   }, [searchParams]);
 
+  // ── Auto-Generate ("Feeling Lucky") from ?autoGenerate=true ──
+  useEffect(() => {
+    if (autoGenerateTriggeredRef.current) return;
+    if (searchParams.get('autoGenerate') !== 'true') return;
+    if (status !== 'authenticated') return;
+
+    autoGenerateTriggeredRef.current = true;
+
+    // Remove the query param from the URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('autoGenerate');
+    router.replace(url.pathname + url.search, { scroll: false });
+
+    // Check KB data and auto-trigger generation
+    const autoGen = async () => {
+      try {
+        const res = await fetch('/api/knowledge-base');
+        if (!res.ok) return;
+        const kb = await res.json();
+
+        // Need at least a company name in KB to have enough context
+        const hasEnoughData = !!(kb.companyName || kb.companyDescription);
+        if (!hasEnoughData) return;
+
+        // Pick a random content type for "Feeling Lucky"
+        const allTypes = Object.keys(CONTENT_TYPE_LABELS) as ContentType[];
+        const luckyType = allTypes[Math.floor(Math.random() * allTypes.length)];
+        setContentType(luckyType);
+        setActiveCategory(findCategoryForType(luckyType));
+
+        // Set a generic prospect so validation passes
+        setProspect(prev => ({
+          ...prev,
+          companyName: prev.companyName || 'Sample Prospect',
+        }));
+        setAdditionalContext(prev =>
+          prev || `Auto-generated ${CONTENT_TYPE_LABELS[luckyType]} using knowledge base context`
+        );
+
+        // Trigger generation on next tick so state settles
+        setTimeout(() => {
+          generate();
+        }, 0);
+      } catch { /* skip */ }
+    };
+
+    autoGen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, status]);
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
@@ -391,6 +458,16 @@ function GeneratePage() {
       rightPanelRef.current.scrollTop = rightPanelRef.current.scrollHeight;
     }
   }, [rawStream, generating]);
+
+  // Prospect memory effect
+  useEffect(() => {
+    if (prospect.companyName.trim().length >= 3) {
+      const memory = findProspect(prospect.companyName);
+      setProspectSuggestion(memory);
+    } else {
+      setProspectSuggestion(null);
+    }
+  }, [prospect.companyName, findProspect]);
 
   // Sticky bar scroll shadow state
   const [stickyScrolled, setStickyScrolled] = useState(false);
@@ -728,6 +805,7 @@ function GeneratePage() {
       generatedBy: session?.user?.name || 'Unknown',
       scores: contentScores || undefined,
       grades: contentGrades || undefined,
+      variationSeed: currentSeed || undefined,
     };
     await fetch('/api/history', {
       method: 'POST',
@@ -853,6 +931,18 @@ Use this real prospect data to make the content highly specific and relevant.`;
 
     await checkBrandCompliance(parsed);
 
+    // Fetch images if toggle is on
+    if (imagesOn && parsed.length > 0) {
+      fetch('/api/images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sections: parsed, contentType, prospect }),
+      })
+        .then(res => res.ok ? res.json() : { images: [] })
+        .then(data => setGeneratedImages(data.images || []))
+        .catch(() => setGeneratedImages([]));
+    }
+
     if (resolvedProduct) {
       try {
         await fetch('/api/products', {
@@ -878,11 +968,15 @@ Use this real prospect data to make the content highly specific and relevant.`;
       const resolvedProduct = allProducts.find(p => p.id === selectedProductId) || null;
       const finalAdditionalContext = buildFinalContext(resolvedProduct);
 
+      // Generate variation seed
+      const seed = variationOn ? generateVariationSeed() : getFixedSeed();
+      setCurrentSeed(seed);
+
       // Try visual mode first
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType, prospect, additionalContext: finalAdditionalContext, toneLevel, sessionDocuments, visualMode: true }),
+        body: JSON.stringify({ contentType, prospect, additionalContext: finalAdditionalContext, toneLevel, sessionDocuments, visualMode: true, variationSeed: seed }),
       });
 
       if (!res.ok) {
@@ -1121,6 +1215,14 @@ Use this real prospect data to make the content highly specific and relevant.`;
   };
 
   const exportPDF = async () => {
+    // Quality gate
+    const overallScore = grades?.overallGrade ? parseInt(grades.overallGrade) : (scores?.overall || 10);
+    if (overallScore < 6) {
+      const proceed = window.confirm(
+        `This document scored ${overallScore}/10. Strengthen it before sending?\n\nClick OK to export anyway, or Cancel to go back and improve.`
+      );
+      if (!proceed) return;
+    }
     const res = await fetch('/api/export/pdf', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1839,6 +1941,25 @@ Use this real prospect data to make the content highly specific and relevant.`;
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent" />
                 </div>
               ))}
+              {prospectSuggestion && (
+                <div
+                  className="mt-1 text-xs px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
+                  onClick={() => {
+                    setProspect(prev => ({
+                      ...prev,
+                      companyName: prospectSuggestion.companyName,
+                      industry: (prospectSuggestion as any).latestIndustry || prev.industry,
+                      companySize: (prospectSuggestion as any).latestCompanySize || prev.companySize,
+                      techStack: (prospectSuggestion as any).latestTechStack || prev.techStack,
+                      painPoints: (prospectSuggestion as any).latestPainPoints || prev.painPoints,
+                    }));
+                    setProspectSuggestion(null);
+                  }}
+                >
+                  Previously generated for <strong>{prospectSuggestion.companyName}</strong>: {prospectSuggestion.items.map(i => i.contentTypeLabel).slice(0, 3).join(', ')}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Main Pain Points</label>
                 <textarea value={prospect.painPoints}
@@ -1982,18 +2103,22 @@ Use this real prospect data to make the content highly specific and relevant.`;
                     </span>
                   )}
                 </label>
-                <VoiceButton
-                  size="sm"
-                  onTranscript={(text) => {
-                    setAdditionalContext((prev) => prev ? prev + ' ' + text : text);
-                    setVoiceDictated(true);
-                  }}
-                />
               </div>
-              <textarea value={additionalContext}
-                onChange={(e) => setAdditionalContext(e.target.value)}
-                rows={4} placeholder="Paste call notes, competitor URL, prospect's about page... or use the microphone"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent resize-y" />
+              <div className="relative">
+                <textarea value={additionalContext}
+                  onChange={(e) => setAdditionalContext(e.target.value)}
+                  rows={4} placeholder="Paste call notes, competitor URL, prospect's about page... or use the microphone"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 pr-12 text-sm focus:outline-none focus:ring-2 ring-accent resize-y" />
+                <div className="absolute top-2 right-2 z-10">
+                  <VoiceButton
+                    size="sm"
+                    onTranscript={(text) => {
+                      setAdditionalContext((prev) => prev ? prev + ' ' + text : text);
+                      setVoiceDictated(true);
+                    }}
+                  />
+                </div>
+              </div>
 
               {/* Natural language detection chip */}
               {detectedType && (
@@ -2111,6 +2236,36 @@ Use this real prospect data to make the content highly specific and relevant.`;
                   );
                 })}
               </div>
+            </div>
+
+            {/* Variation Toggle */}
+            <div className="flex items-center gap-3 py-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={variationOn}
+                    onChange={(e) => setVariationOn(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-9 h-5 rounded-full transition-colors ${variationOn ? '' : 'bg-gray-300'}`} style={variationOn ? { backgroundColor: 'var(--accent)' } : {}}>
+                    <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform mt-0.5 ${variationOn ? 'translate-x-4.5 ml-[18px]' : 'ml-0.5'}`} />
+                  </div>
+                </div>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Unique Style</span>
+              </label>
+              {variationOn && (
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Each generation will have a unique voice and structure</span>
+              )}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative">
+                  <input type="checkbox" checked={imagesOn} onChange={(e) => setImagesOn(e.target.checked)} className="sr-only" />
+                  <div className={`w-9 h-5 rounded-full transition-colors ${imagesOn ? '' : 'bg-gray-300'}`} style={imagesOn ? { backgroundColor: 'var(--accent)' } : {}}>
+                    <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform mt-0.5 ${imagesOn ? 'ml-[18px]' : 'ml-0.5'}`} />
+                  </div>
+                </div>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Include Images</span>
+              </label>
             </div>
 
             {/* Persona Selector */}
@@ -2345,6 +2500,67 @@ Use this real prospect data to make the content highly specific and relevant.`;
                   <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors hover:border-gray-300">
                     <HiOutlineBookOpen /> Share to Library
                   </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const themeRes = await fetch('/api/theme');
+                        const themeData = await themeRes.json();
+                        const res = await fetch('/api/share', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ sections, contentType, prospect, logoBase64: themeData.logoBase64 }),
+                        });
+                        const data = await res.json();
+                        if (data.url) {
+                          navigator.clipboard.writeText(window.location.origin + data.url);
+                          toast.success('Share link copied!');
+                        }
+                      } catch { toast.error('Failed to create share link'); }
+                    }}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors hover:border-gray-300"
+                  >
+                    Share Link
+                  </button>
+                  <button
+                    onClick={() => {
+                      const html = generateShareableHtml(sections, contentType, prospect.companyName, prospect.industry);
+                      const blob = new Blob([html], { type: 'text/html' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${contentType}-${prospect.companyName || 'document'}.html`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success('HTML exported');
+                    }}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors hover:border-gray-300"
+                  >
+                    Export HTML
+                  </button>
+                  {variationOn && sections.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const newSeed = generateVariationSeed();
+                        setCurrentSeed(newSeed);
+                        executeGeneration();
+                      }}
+                      className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors hover:border-gray-300"
+                    >
+                      <HiOutlineArrowPath className="text-sm" /> Different Style
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Variation Seed Display */}
+              {currentSeed && variationOn && sections.length > 0 && !generating && (
+                <div className="flex items-center gap-3 text-xs py-2 px-4 rounded-lg mb-4" style={{ backgroundColor: 'var(--accent-light)' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Style:</span>
+                  <span className="font-medium" style={{ color: 'var(--accent)' }}>{getHookLabel(currentSeed.hookStyle)}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>&middot;</span>
+                  <span className="font-medium" style={{ color: 'var(--accent)' }}>{getVoiceLabel(currentSeed.voiceMode)}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>&middot;</span>
+                  <span className="font-medium" style={{ color: 'var(--accent)' }}>Seq {currentSeed.sequenceIndex + 1}</span>
                 </div>
               )}
 
@@ -2422,29 +2638,35 @@ Use this real prospect data to make the content highly specific and relevant.`;
                         const barClr = gradeItem.score >= 7 ? '#16a34a' : gradeItem.score >= 5 ? '#f59e0b' : '#dc2626';
                         return (
                           <div key={key}>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-sm font-medium text-gray-700">{label}</span>
-                              <div className="flex items-center gap-2">
-                                {prevItem && prevItem.score !== gradeItem.score && (
-                                  <span className="text-xs text-green-600 font-medium">{prevItem.score} &rarr; {gradeItem.score} &#10003;</span>
+                            <div className="flex items-start justify-between py-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</span>
+                                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${gradeItem.score >= 7 ? 'bg-green-50 text-green-600' : gradeItem.score >= 5 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'}`}>
+                                    {gradeItem.score}/10
+                                  </span>
+                                  {prevItem && prevItem.score !== gradeItem.score && (
+                                    <span className="text-xs text-green-600 font-medium">{prevItem.score} &rarr; {gradeItem.score} &#10003;</span>
+                                  )}
+                                </div>
+                                {gradeItem.suggestion && (
+                                  <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>{gradeItem.suggestion}</p>
                                 )}
-                                <span className="text-sm font-bold px-2 py-0.5 rounded" style={{ color: barClr, backgroundColor: gradeItem.score >= 7 ? '#f0fdf4' : gradeItem.score >= 5 ? '#fffbeb' : '#fef2f2' }}>
-                                  {gradeItem.score}/10
-                                </span>
                               </div>
-                            </div>
-                            <div className="w-full bg-gray-100 rounded-full h-2.5">
-                              <div className="h-2.5 rounded-full transition-all duration-700 ease-out" style={{ width: `${gradeItem.score * 10}%`, backgroundColor: barClr }} />
-                            </div>
-                            {gradeItem.suggestion && gradeItem.score < 7 && (
-                              <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                                <HiOutlineExclamationTriangle className="text-amber-500 flex-shrink-0 mt-0.5 text-sm" />
-                                <p className="text-xs text-amber-800 flex-1">{gradeItem.suggestion}</p>
-                                <button onClick={() => applyGradeFix(key, gradeItem.suggestion!)} disabled={fixingDimension === key || optimizingAll} className="text-xs font-semibold btn-accent rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50 flex-shrink-0 flex items-center gap-1.5">
-                                  {fixingDimension === key ? (<><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Fixing...</>) : 'Apply Fix'}
+                              {gradeItem.score < 7 && gradeItem.suggestion && (
+                                <button
+                                  onClick={() => applyGradeFix(key, gradeItem.suggestion!)}
+                                  disabled={fixingDimension === key || optimizingAll}
+                                  className="text-xs font-medium px-2 py-1 rounded-lg ml-3 flex-shrink-0 disabled:opacity-50 flex items-center gap-1.5 transition-colors"
+                                  style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
+                                >
+                                  {fixingDimension === key ? (<><div className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" /> Fixing...</>) : 'Fix This'}
                                 </button>
-                              </div>
-                            )}
+                              )}
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2 mt-1">
+                              <div className="h-2 rounded-full transition-all duration-700 ease-out" style={{ width: `${gradeItem.score * 10}%`, backgroundColor: barClr }} />
+                            </div>
                           </div>
                         );
                       })}
@@ -2581,6 +2803,33 @@ Use this real prospect data to make the content highly specific and relevant.`;
                   );
                 })}
               </div>
+
+              {/* Image Thumbnails */}
+              {generatedImages.length > 0 && (
+                <div className="flex flex-wrap gap-3 py-3 px-4 border-t" style={{ borderColor: 'var(--card-border)' }}>
+                  {generatedImages.map((img) => (
+                    <div key={img.id} className="relative group">
+                      <img src={img.thumbUrl || img.url} alt={img.alt} className="w-24 h-16 object-cover rounded-lg border" style={{ borderColor: 'var(--card-border)' }} />
+                      <button
+                        onClick={() => setGeneratedImages(prev => prev.filter(i => i.id !== img.id))}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >&times;</button>
+                      {img.credit && <p className="text-[9px] mt-0.5 truncate w-24" style={{ color: 'var(--text-muted)' }}>{img.credit}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Reading Time Badge */}
+              {sections.length > 0 && (() => {
+                const allText = sections.map(s => s.content).join(' ');
+                const { words, minutes } = calculateReadingTime(allText);
+                return (
+                  <div className="text-xs py-1.5 px-4" style={{ color: 'var(--text-muted)' }}>
+                    {words.toLocaleString()} words &middot; {minutes} min read
+                  </div>
+                );
+              })()}
 
               {/* LinkedIn Character Count Display */}
               {sections.length > 0 && !generating && contentType.startsWith('linkedin-') && (

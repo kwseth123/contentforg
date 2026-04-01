@@ -138,6 +138,11 @@ export default function HistoryPage() {
                           </span>
                         )}
                         {expirationBadge(item.generatedAt)}
+                        {item.variationSeed && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>
+                            {item.variationSeed.hookStyle} · {item.variationSeed.voiceMode}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
                         {new Date(item.generatedAt).toLocaleDateString()} at {new Date(item.generatedAt).toLocaleTimeString()} &bull; by {item.generatedBy}
@@ -157,6 +162,24 @@ export default function HistoryPage() {
                       </button>
                       <button onClick={() => useAsTemplate(item)}
                         className="p-1.5 border rounded-lg transition-colors" style={{ color: 'var(--text-secondary)', borderColor: 'var(--card-border)' }} title="Use as template">
+                        <HiOutlineDocumentDuplicate />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const params = new URLSearchParams({
+                            contentType: item.contentType,
+                            industry: item.prospect.industry,
+                            companySize: item.prospect.companySize,
+                            techStack: item.prospect.techStack,
+                            painPoints: item.prospect.painPoints,
+                          });
+                          router.push(`/generate?${params.toString()}`);
+                          toast.success('Duplicated — update the prospect name');
+                        }}
+                        className="p-1.5 border rounded-lg transition-colors"
+                        style={{ color: 'var(--text-secondary)', borderColor: 'var(--card-border)' }}
+                        title="Duplicate for new prospect"
+                      >
                         <HiOutlineDocumentDuplicate />
                       </button>
                     </div>

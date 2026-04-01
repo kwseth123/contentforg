@@ -9,7 +9,7 @@ export default function WelcomeModal() {
   const [loading, setLoading] = useState(false);
 
   const handleSetup = () => {
-    router.push('/admin');
+    router.push('/onboarding');
   };
 
   const handleDemo = async () => {

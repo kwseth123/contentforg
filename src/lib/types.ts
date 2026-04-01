@@ -679,6 +679,11 @@ export interface HistoryItem {
   scores?: ContentScores;
   brandCompliance?: BrandComplianceResult;
   grades?: ContentGrades;
+  variationSeed?: {
+    hookStyle: string;
+    voiceMode: string;
+    sequenceIndex: number;
+  };
 }
 
 // ── Content Scoring ──

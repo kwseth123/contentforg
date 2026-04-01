@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { sections, sectionIndex, suggestion, contentType, prospect } = await req.json();
+  const { sections, sectionIndex, suggestion, contentType, prospect, dimension } = await req.json();
 
   if (sectionIndex < 0 || sectionIndex >= sections.length) {
     return NextResponse.json({ error: 'Invalid section index' }, { status: 400 });
@@ -19,7 +19,11 @@ export async function POST(req: NextRequest) {
 
   const section = sections[sectionIndex];
 
-  const prompt = `You are an expert B2B sales content editor. You must rewrite a specific section of a ${contentType} document.
+  const dimensionContext = dimension
+    ? `\nYou are specifically fixing the "${dimension}" dimension of this content. Focus your rewrite on improving that quality above all else.`
+    : '';
+
+  const prompt = `You are an expert B2B sales content editor acting as a senior sales manager coaching a rep on their document. You must rewrite a specific section of a ${contentType} document.${dimensionContext}
 
 Target prospect: ${prospect.companyName} in ${prospect.industry}
 
@@ -28,10 +32,10 @@ The section to improve is titled "${section.title}".
 Current content:
 ${section.content}
 
-Improvement required:
+Coaching instruction (treat this as a direct instruction from a sales manager):
 ${suggestion}
 
-Rewrite ONLY this section's content, applying the improvement. Keep the same general structure and length, but make it stronger based on the suggestion. Return ONLY the improved content text, nothing else — no title, no explanation, no markdown headers.`;
+Rewrite ONLY this section's content, applying the coaching instruction precisely. Keep the same general structure and length, but make it stronger based on the specific coaching tip. The rewrite should directly address every point in the coaching instruction. Return ONLY the improved content text, nothing else — no title, no explanation, no markdown headers.`;
 
   try {
     const response = await anthropic.messages.create({

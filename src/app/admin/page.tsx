@@ -49,6 +49,10 @@ export default function AdminPage() {
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [scanMode, setScanMode] = useState<'full' | 'rescan'>('full');
 
+  // ── App Settings State ──
+  const [unsplashKey, setUnsplashKey] = useState('');
+  const [savingAppSettings, setSavingAppSettings] = useState(false);
+
   // ── Voice Note State ──
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceExtracting, setVoiceExtracting] = useState(false);
@@ -78,6 +82,18 @@ export default function AdminPage() {
     if (status === 'authenticated') loadKB();
   }, [status, loadKB]);
 
+  // Load app settings (Unsplash key, etc.)
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/settings')
+        .then((res) => (res.ok ? res.json() : {}))
+        .then((data: { unsplashKey?: string }) => {
+          if (data.unsplashKey) setUnsplashKey(data.unsplashKey);
+        })
+        .catch(() => {});
+    }
+  }, [status]);
+
   // Initialize brandGuidelines if missing
   const getBrandGuidelines = useCallback((): BrandGuidelines => {
     return kb?.brandGuidelines ?? { ...DEFAULT_BRAND_GUIDELINES };
@@ -104,6 +120,22 @@ export default function AdminPage() {
     setSaving(false);
     if (res.ok) toast.success('Knowledge base saved!');
     else toast.error('Failed to save');
+  };
+
+  const saveAppSettings = async () => {
+    setSavingAppSettings(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unsplashKey }),
+      });
+      if (res.ok) toast.success('App settings saved!');
+      else toast.error('Failed to save app settings');
+    } catch {
+      toast.error('Failed to save app settings');
+    }
+    setSavingAppSettings(false);
   };
 
   // ── Voice Note Functions ──
@@ -1095,6 +1127,7 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'settings' && (
+            <div className="space-y-6">
             <Section title="Content Expiration Settings">
               <p className="text-sm text-gray-500 mb-2">Configure when content items get flagged as outdated.</p>
               <Field
@@ -1114,6 +1147,46 @@ export default function AdminPage() {
                 </p>
               </div>
             </Section>
+
+            <Section title="App Settings">
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+                  Unsplash Access Key
+                </label>
+                <input
+                  type="password"
+                  value={unsplashKey}
+                  onChange={(e) => setUnsplashKey(e.target.value)}
+                  placeholder="Enter your Unsplash Access Key"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                  style={{ borderColor: 'var(--card-border)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                />
+              </div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 5%, transparent)' }}>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  Enables AI-suggested images from Unsplash during content generation. Get a free key at{' '}
+                  <a
+                    href="https://unsplash.com/developers"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--accent)' }}
+                    className="underline"
+                  >
+                    unsplash.com/developers
+                  </a>
+                </p>
+              </div>
+              <div>
+                <button
+                  onClick={saveAppSettings}
+                  disabled={savingAppSettings}
+                  className="btn-accent font-medium px-4 py-2 rounded-lg transition-colors text-sm inline-flex items-center gap-2"
+                >
+                  {savingAppSettings ? 'Saving...' : 'Save App Settings'}
+                </button>
+              </div>
+            </Section>
+            </div>
           )}
 
           {activeTab === 'documents' && (

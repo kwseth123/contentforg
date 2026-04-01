@@ -20,6 +20,7 @@ import {
   ProductProfile,
 } from '@/lib/types';
 import { detectContentType } from '@/lib/brandDefaults';
+import { useKBCompletion } from '@/hooks/useKBCompletion';
 import {
   HiOutlineSparkles,
   HiOutlineDocumentText,
@@ -78,6 +79,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [products, setProducts] = useState<ProductProfile[]>([]);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<{name:string;generations:number;avgScore:number|null}[]>([]);
+  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const kbCompletion = useKBCompletion();
 
   // ── Inline prompt engine state ──
   const [promptText, setPromptText] = useState('');
@@ -118,6 +123,7 @@ export default function DashboardPage() {
         .then((res) => (res.ok ? res.json() : []))
         .then((data) => setProducts(data))
         .catch(() => setProducts([]));
+      fetch('/api/leaderboard').then(r => r.ok ? r.json() : []).then(setLeaderboard).catch(() => {});
     }
   }, [status, loadDashboard]);
 
@@ -364,10 +370,45 @@ export default function DashboardPage() {
               return firstName ? `${greeting}, ${firstName}` : greeting;
             })()}
           </h1>
-          <button onClick={() => router.push('/generate')} className="btn-accent text-sm font-medium px-4 py-1.5 rounded-lg flex items-center gap-1.5">
-            <HiOutlineSparkles /> Generate
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const types = ['solution-one-pager', 'battle-card', 'executive-summary', 'cold-call-script', 'outbound-email-sequence'] as ContentType[];
+                const randomType = types[Math.floor(Math.random() * types.length)];
+                const recentProspect = data?.recentHistory?.[0]?.prospect?.companyName || 'Prospect';
+                toast.success(`Generating ${CONTENT_TYPE_LABELS[randomType]} for ${recentProspect}`);
+                router.push(`/generate?contentType=${randomType}&prospectName=${encodeURIComponent(recentProspect)}&autoGenerate=true`);
+              }}
+              className="btn-secondary px-3 py-1.5 text-sm"
+            >
+              Feeling Lucky
+            </button>
+            <button onClick={() => router.push('/generate')} className="btn-accent text-sm font-medium px-4 py-1.5 rounded-lg flex items-center gap-1.5">
+              <HiOutlineSparkles /> Generate
+            </button>
+          </div>
         </div>
+
+        {kbCompletion.percentage < 50 && !bannerDismissed && (
+          <div className="mx-8 mt-4 rounded-xl p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)' }}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Your AI needs more data to generate great content
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                Complete your Knowledge Base setup in 5 minutes to unlock better results
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => router.push('/admin')} className="btn-accent px-3 py-1.5 text-sm">
+                Quick Setup
+              </button>
+              <button onClick={() => setBannerDismissed(true)} className="text-sm p-1 rounded" style={{ color: 'var(--text-muted)' }}>
+                <HiOutlineXMark />
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="p-8 space-y-6 max-w-6xl">
           {/* ── Prompt Engine ── */}
@@ -482,7 +523,7 @@ export default function DashboardPage() {
 
           {/* ── Inline Generation Result ── */}
           {showResult && (
-            <div ref={resultRef} className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+            <div ref={resultRef} className="card rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center justify-between px-6 py-4 border-b" style={{ backgroundColor: 'var(--content-bg)' }}>
                 <div className="flex items-center gap-2">
                   <HiOutlineDocumentText style={{ color: 'var(--accent)' }} />
@@ -603,10 +644,10 @@ export default function DashboardPage() {
 
           {/* ── Needs Attention ── */}
           {needsAttention.length > 0 && (
-            <div className="border border-amber-200 rounded-xl p-5" style={{ backgroundColor: 'var(--card-bg)' }}>
+            <div className="card border border-amber-200 rounded-xl p-5" style={{ backgroundColor: 'var(--card-bg)' }}>
               <div className="flex items-center gap-2 mb-4">
                 <HiOutlineExclamationTriangle className="text-amber-500 text-lg" />
-                <h2 className="text-base font-semibold text-gray-900">Needs Attention</h2>
+                <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Needs Attention</h2>
                 <span className="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">{needsAttention.length} items</span>
               </div>
               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -661,40 +702,36 @@ export default function DashboardPage() {
 
           {/* ── Recent History ── */}
           {data && data.recentHistory.length > 0 && (
-            <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <HiOutlineClock style={{ color: 'var(--text-secondary)' }} />
-                  <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Recent Generations</h2>
-                </div>
-                <button onClick={() => router.push('/history')} className="text-sm" style={{ color: 'var(--accent)' }}>
+            <div className="card rounded-xl" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Recent Generations</h2>
+                <button onClick={() => router.push('/history')} className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
                   View all
                 </button>
               </div>
-              <div className="space-y-2">
+              <div className="divide-y" style={{ borderColor: 'var(--card-border)' }}>
                 {data.recentHistory.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">{item.prospect.companyName}</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>{CONTENT_TYPE_LABELS[item.contentType]}</span>
-                          {item.scores && (
-                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full text-white ${
-                              item.scores.overall >= 8 ? 'bg-green-500' : item.scores.overall >= 5 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}>{item.scores.overall}/10</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-400 mt-0.5">{new Date(item.generatedAt).toLocaleDateString()} &bull; {item.generatedBy}</p>
+                  <div key={item.id} className="flex items-center justify-between py-3 px-5 transition-colors hover:bg-gray-50/50">
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{item.prospect.companyName}</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{CONTENT_TYPE_LABELS[item.contentType]}</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>&bull;</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(item.generatedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 ml-2">
+                    <div className="flex items-center gap-2 ml-4">
+                      {item.scores && (
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full text-white ${
+                          item.scores.overall >= 8 ? 'bg-green-500' : item.scores.overall >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}>{item.scores.overall}/10</span>
+                      )}
                       <button onClick={() => router.push('/history')}
-                        className="p-1" style={{ color: 'var(--text-secondary)' }} title="View">
+                        className="p-1" style={{ color: 'var(--text-muted)' }} title="View">
                         <HiOutlineEye />
                       </button>
                       <button onClick={() => useAsTemplate(item)}
-                        className="p-1" style={{ color: 'var(--text-secondary)' }} title="Use as template">
+                        className="p-1" style={{ color: 'var(--text-muted)' }} title="Use as template">
                         <HiOutlineDocumentDuplicate />
                       </button>
                     </div>
@@ -704,8 +741,38 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {/* ── Leaderboard ── */}
+          {role === 'admin' && leaderboard.length > 0 && (
+            <div className="card">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>This Week</h2>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Rep Activity</span>
+              </div>
+              <div className="divide-y" style={{ borderColor: 'var(--card-border)' }}>
+                {leaderboard.map((rep, i) => (
+                  <div key={rep.name} className="flex items-center justify-between py-2.5">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold w-5 text-center" style={{ color: i === 0 ? 'var(--accent)' : 'var(--text-muted)' }}>
+                        {i + 1}
+                      </span>
+                      <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{rep.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{rep.generations} generated</span>
+                      {rep.avgScore !== null && (
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${rep.avgScore >= 7 ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                          {rep.avgScore}/10
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── Product Activity ── */}
-          <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+          <div className="card rounded-xl p-5" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <HiOutlineCube style={{ color: 'var(--accent)' }} />

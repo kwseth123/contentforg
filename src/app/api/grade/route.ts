@@ -33,17 +33,24 @@ ${fullContent}
 
 For each dimension, provide:
 1. A score from 1-10
-2. A specific, actionable suggestion if the score is under 7. Not generic advice — reference the actual content and suggest a specific improvement.
+2. A specific coaching tip that reads like a senior sales manager reviewing the document. Not generic advice — reference the actual content and suggest a specific improvement.
+
+For each dimension, provide a specific coaching tip that reads like a senior sales manager reviewing the document. Examples:
+- Relevance: "This document mentions the prospect's industry but not their specific company challenges. Add their company name and a pain point specific to their operation."
+- Proof: "No customer metrics or results are referenced. Add one specific customer win with a number to make this credible."
+- Differentiation: "The why-us section lists features not outcomes. Rewrite each point as a result the prospect will experience."
+
+IMPORTANT: Coaching tips must be specific and actionable — never generic. Reference what is actually in the document. If a dimension scores 7+, the tip should say what's working well.
 
 Return JSON:
 {
   "grades": {
-    "relevance": { "score": 8, "suggestion": null },
+    "relevance": { "score": 8, "suggestion": "Good job tying the intro to their industry. The mention of warehouse automation challenges is spot-on for this prospect." },
     "clarity": { "score": 6, "suggestion": "The 'Solution Overview' section uses too much jargon. Replace 'leverage synergistic capabilities' with a plain description of what the integration actually does." },
-    "differentiation": { "score": 7, "suggestion": null },
+    "differentiation": { "score": 7, "suggestion": "The competitive comparison section effectively highlights your speed advantage. Keep that — it's your strongest differentiator here." },
     "proof": { "score": 5, "suggestion": "Add the 342% ROI metric from the Midwest Fastener case study to the 'Why Choose Us' section — it's your strongest proof point for manufacturing prospects." },
     "callToAction": { "score": 4, "suggestion": "The closing section says 'reach out anytime' which is weak. Replace with a specific next step: 'Schedule a 30-minute warehouse walkthrough this week' with a calendar link." },
-    "personaFit": { "score": 7, "suggestion": null }
+    "personaFit": { "score": 7, "suggestion": "Language and metrics are well-suited for the operations leader audience. The ROI framing in the opening paragraph hits the right note." }
   },
   "overallGrade": "B+",
   "summary": "Strong on relevance and differentiation but needs more specific proof points and a clearer call to action."

@@ -5,6 +5,7 @@ import { getKnowledgeBase } from '@/lib/knowledgeBase';
 import { buildSystemPrompt, buildUserPrompt, buildSectionRegeneratePrompt } from '@/lib/prompts';
 import Anthropic from '@anthropic-ai/sdk';
 import { ContentType, ProspectInfo, VisualSection } from '@/lib/types';
+import { VariationSeed, buildVariationInstructions } from '@/lib/variation';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
       regenerateSection,
       originalSectionContent,
       visualMode,
+      variationSeed,
     } = body as {
       contentType: ContentType;
       prospect: ProspectInfo;
@@ -84,6 +86,7 @@ export async function POST(req: NextRequest) {
       regenerateSection?: string;
       originalSectionContent?: string;
       visualMode?: boolean;
+      variationSeed?: VariationSeed;
     };
 
     if (!contentType || !prospect) {
@@ -105,7 +108,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const systemPrompt = buildSystemPrompt(kb);
+    let systemPrompt = buildSystemPrompt(kb);
+
+    if (variationSeed) {
+      systemPrompt += buildVariationInstructions(variationSeed);
+    }
 
     let userPrompt: string;
     if (regenerateSection && originalSectionContent) {
