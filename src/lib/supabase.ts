@@ -4,8 +4,12 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 let _admin: SupabaseClient | null = null;
 let _client: SupabaseClient | null = null;
 
+// NEXT_PUBLIC_ vars can fail on some Vercel deployments if not present at build time.
+// The Supabase project URL is a public value so a hardcoded fallback is safe.
+const SUPABASE_URL_FALLBACK = 'https://eaiaqmssqaugibjxbrte.supabase.co';
+
 function getUrl(): string {
-  return process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  return process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || SUPABASE_URL_FALLBACK;
 }
 
 function getServiceKey(): string {
