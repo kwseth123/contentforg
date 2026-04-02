@@ -464,14 +464,16 @@ export async function ensureDefaultUsers(): Promise<void> {
 
     const defaultUsers = [
       {
-        id: '1',
+        id: 'seed-admin',
+        company_id: 'default',
         email: 'admin',
         password_hash: bcrypt.hashSync('admin123', 10),
         role: 'admin',
         name: 'Admin User',
       },
       {
-        id: '2',
+        id: 'seed-rep',
+        company_id: 'default',
         email: 'rep',
         password_hash: bcrypt.hashSync('rep123', 10),
         role: 'rep',
