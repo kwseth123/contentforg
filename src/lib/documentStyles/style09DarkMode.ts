@@ -48,7 +48,8 @@ function render(input: StyleInput): string {
   const accentDim = `rgba(${r},${g},${b},0.15)`;
   const contentTypeLabel = stripEmojis(contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
 
-  const sectionsHtml = sections.map((s, i) => {
+  const validSections = sections.filter(s => s.content && s.content.trim().length > 0);
+  const sectionsHtml = validSections.map((s, i) => {
     const cleanTitle = stripEmojis(s.title);
     const cleanContent = stripEmojis(s.content);
     return `
@@ -97,10 +98,13 @@ function render(input: StyleInput): string {
       font-size: var(--brand-font-body-size);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .page {
-      max-width: 880px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -243,6 +247,7 @@ function render(input: StyleInput): string {
       margin-bottom: 36px;
       padding-bottom: 36px;
       border-bottom: 1px solid #1a1a1a;
+      page-break-inside: avoid;
     }
     .section:last-of-type {
       border-bottom: none;
@@ -403,6 +408,7 @@ function render(input: StyleInput): string {
       font-size: 11px;
       color: #555;
       letter-spacing: 0.03em;
+      margin-top: auto;
     }
     .footer-left {
       display: flex;

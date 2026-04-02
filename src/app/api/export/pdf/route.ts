@@ -24,7 +24,6 @@ async function convertLogoToBase64(logoPath: string): Promise<string> {
     if (!logoPath) return '';
     if (logoPath.startsWith('data:')) return logoPath;
 
-    // Strip any URL prefix — we only need the path portion
     let cleanPath = logoPath;
     try {
       const url = new URL(logoPath);
@@ -33,71 +32,61 @@ async function convertLogoToBase64(logoPath: string): Promise<string> {
       // Not a URL, use as-is
     }
 
-    // Ensure leading slash is handled — path.join with /uploads/logo.png
-    // on Windows can produce wrong results if cleanPath starts with /
     if (cleanPath.startsWith('/')) {
       cleanPath = cleanPath.slice(1);
     }
 
     const filePath = path.join(process.cwd(), 'public', cleanPath);
-    console.log('[PDF Logo Debug] Logo path from KB:', logoPath);
-    console.log('[PDF Logo Debug] Resolved file path:', filePath);
-    console.log('[PDF Logo Debug] File exists:', fs.existsSync(filePath));
 
     if (!fs.existsSync(filePath)) {
-      console.log('[PDF Logo Debug] File NOT found at resolved path');
       return '';
     }
 
     const ext = path.extname(filePath).toLowerCase();
     const mime = MIME_MAP[ext];
-    if (!mime) {
-      console.log('[PDF Logo Debug] Unsupported extension:', ext);
-      return '';
-    }
+    if (!mime) return '';
 
     const data = fs.readFileSync(filePath);
-    const base64Str = `data:${mime};base64,${data.toString('base64')}`;
-    console.log('[PDF Logo Debug] Base64 conversion succeeded, first 50 chars:', base64Str.slice(0, 50));
-    return base64Str;
-  } catch (err) {
-    console.error('[PDF Logo Debug] Error converting logo:', err);
+    return `data:${mime};base64,${data.toString('base64')}`;
+  } catch {
     return '';
   }
 }
 
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+// ── Build the full HTML for a document ──
+async function buildDocumentHtml(req: NextRequest, body: Record<string, unknown>): Promise<{ html: string; fileName: string }> {
+  const { sections, contentType, prospect, prospectLogoBase64, prospectColor, styleOverride, styleId, persona, visualSections } = body as {
+    sections: { id?: string; title: string; content: string }[];
+    contentType: string;
+    prospect: { companyName: string; industry?: string; companySize?: string };
+    prospectLogoBase64?: string;
+    prospectColor?: string;
+    styleOverride?: string;
+    styleId?: string;
+    persona?: string;
+    visualSections?: unknown;
+  };
 
-  const { sections, contentType, prospect, prospectLogoBase64, prospectColor, styleOverride, styleId, persona, visualSections } = await req.json();
   const kb = await getKnowledgeBase();
 
-  // Apply document style override if provided
   if (styleOverride && ['modern', 'corporate', 'bold', 'minimal'].includes(styleOverride)) {
     if (!kb.brandGuidelines) {
       const { DEFAULT_BRAND_GUIDELINES } = await import('@/lib/types');
       kb.brandGuidelines = { ...DEFAULT_BRAND_GUIDELINES };
     }
-    kb.brandGuidelines = { ...kb.brandGuidelines, documentStyle: styleOverride };
+    kb.brandGuidelines = { ...kb.brandGuidelines, documentStyle: styleOverride as any };
   }
 
-  // Build absolute base URL so logo images resolve in the print window
   const proto = req.headers.get('x-forwarded-proto') || 'http';
   const host = req.headers.get('host') || 'localhost:3000';
   const baseUrl = `${proto}://${host}`;
 
-  // Convert company logos to base64 for reliable print rendering
   const { resolveBrandGuidelines } = await import('@/lib/brandDefaults');
   const brandGuidelines = resolveBrandGuidelines(kb);
 
-  // Try Supabase logos first, then fall back to file-based
   let primaryLogoBase64 = await db.getLogo('default', 'primary');
   let secondaryLogoBase64 = await db.getLogo('default', 'secondary');
 
-  // Fallback to file-based logos if Supabase has none
   if (!primaryLogoBase64 && brandGuidelines.logos.primaryPath) {
     primaryLogoBase64 = await convertLogoToBase64(brandGuidelines.logos.primaryPath);
   }
@@ -105,11 +94,12 @@ export async function POST(req: NextRequest) {
     secondaryLogoBase64 = await convertLogoToBase64(brandGuidelines.logos.secondaryPath);
   }
 
+  const fileName = `${contentType}-${prospect.companyName || 'document'}`.replace(/[^a-zA-Z0-9-_]/g, '_');
+
   // ── Route through Document Style renderer when styleId is provided ──
   if (styleId) {
     const docStyle = getStyle(styleId);
     if (docStyle) {
-      // Build BrandVars from KB brand guidelines
       const ptToPx = (pt: number) => Math.round(pt * 1.333);
       const brandVars: BrandVars = {
         primary: brandGuidelines.colors?.primary || kb.brandColor || '#1e293b',
@@ -128,7 +118,7 @@ export async function POST(req: NextRequest) {
       };
 
       const styleInput: StyleInput = {
-        sections: sections.map((s: { id?: string; title: string; content: string }, i: number) => ({
+        sections: sections.map((s, i) => ({
           id: s.id || `section-${i}`,
           title: s.title,
           content: s.content,
@@ -142,34 +132,104 @@ export async function POST(req: NextRequest) {
         companyName: kb.companyName || 'Company',
         companyDescription: kb.tagline || kb.aboutUs || '',
         logoBase64: primaryLogoBase64 || undefined,
-        prospectLogoBase64: prospectLogoBase64 || undefined,
+        prospectLogoBase64: (prospectLogoBase64 as string) || undefined,
         accentColor: kb.brandColor || brandGuidelines.colors?.primary || '#6366F1',
         date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
         brand: brandVars,
       };
 
-      const html = docStyle.render(styleInput);
-      return new Response(html, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Content-Disposition': `inline; filename="${contentType}-${prospect.companyName}.html"`,
-        },
-      });
+      return { html: docStyle.render(styleInput), fileName };
     }
   }
 
   // ── Fallback: legacy pdfTemplates renderer ──
-  const html = generatePDFHtml(sections, contentType, prospect, kb, baseUrl, {
+  const html = generatePDFHtml(sections as any, contentType as any, prospect as any, kb, baseUrl, {
     logoBase64: primaryLogoBase64,
     secondaryLogoBase64,
-    prospectLogoBase64: prospectLogoBase64 || '',
-    prospectColor: prospectColor || '',
-  }, persona || undefined, visualSections || undefined);
+    prospectLogoBase64: (prospectLogoBase64 as string) || '',
+    prospectColor: (prospectColor as string) || '',
+  }, persona as string | undefined, visualSections as any);
 
-  return new Response(html, {
-    headers: {
-      'Content-Type': 'text/html',
-      'Content-Disposition': `inline; filename="${contentType}-${prospect.companyName}.html"`,
-    },
+  return { html, fileName };
+}
+
+// ── Send HTML to Browserless.io for PDF generation ──
+async function renderPdfWithBrowserless(html: string): Promise<ArrayBuffer> {
+  const apiKey = process.env.BROWSERLESS_API_KEY;
+  if (!apiKey) {
+    throw new Error('BROWSERLESS_API_KEY is not configured');
+  }
+
+  const res = await fetch(`https://chrome.browserless.io/pdf?token=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      html,
+      options: {
+        format: 'Letter',
+        printBackground: true,
+        margin: { top: '0', right: '0', bottom: '0', left: '0' },
+        preferCSSPageSize: true,
+      },
+      gotoOptions: {
+        waitUntil: 'networkidle0',
+        timeout: 30000,
+      },
+    }),
   });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => 'Unknown error');
+    console.error('[PDF Browserless] Error:', res.status, errText);
+    throw new Error(`Browserless PDF generation failed: ${res.status}`);
+  }
+
+  return res.arrayBuffer();
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const returnHtml = body.returnHtml === true;
+
+  const { html, fileName } = await buildDocumentHtml(req, body);
+
+  // If client requests HTML (for preview), return HTML
+  if (returnHtml) {
+    return new Response(html, {
+      headers: {
+        'Content-Type': 'text/html',
+        'Content-Disposition': `inline; filename="${fileName}.html"`,
+      },
+    });
+  }
+
+  // Otherwise, generate a real PDF via Browserless
+  try {
+    const pdfBuffer = await renderPdfWithBrowserless(html);
+
+    return new Response(pdfBuffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${fileName}.pdf"`,
+        'Content-Length': String(pdfBuffer.byteLength),
+      },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'PDF generation failed';
+    console.error('[PDF Export]', message);
+
+    // Fallback: return HTML if Browserless fails
+    return new Response(html, {
+      headers: {
+        'Content-Type': 'text/html',
+        'Content-Disposition': `inline; filename="${fileName}.html"`,
+        'X-PDF-Fallback': 'true',
+      },
+    });
+  }
 }

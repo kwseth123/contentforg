@@ -81,7 +81,8 @@ function render(input: StyleInput): string {
 
   if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
 
-  const { sections, contentType, prospect, companyName, date } = input;
+  const { sections: rawSections, contentType, prospect, companyName, date } = input;
+  const sections = rawSections.filter(s => s.title?.trim() || s.content?.trim());
   const dateStr =
     date ||
     new Date().toLocaleDateString('en-US', {
@@ -257,7 +258,7 @@ function render(input: StyleInput): string {
     }
 
     .sc-page {
-      max-width: 900px;
+      width: 100%; max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -471,6 +472,7 @@ function render(input: StyleInput): string {
       border-radius: 10px;
       padding: 24px;
       break-inside: avoid;
+      page-break-inside: avoid;
     }
     .sc-kpi-header {
       display: flex;
@@ -576,6 +578,7 @@ function render(input: StyleInput): string {
       font-size: 13px;
       color: #4b5563;
       line-height: 1.6;
+      overflow-wrap: break-word;
     }
     .sc-kpi-body h1, .sc-kpi-body h2, .sc-kpi-body h3, .sc-kpi-body h4 {
       font-size: 14px;
@@ -666,8 +669,8 @@ function render(input: StyleInput): string {
 
     @media print {
       .sc-header, .sc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .sc-kpi-card { break-inside: avoid; }
-      .sc-rag-table { break-inside: avoid; }
+      .sc-kpi-card { break-inside: avoid; page-break-inside: avoid; }
+      .sc-rag-table { break-inside: avoid; page-break-inside: avoid; }
     }
   `;
 

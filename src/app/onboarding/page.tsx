@@ -364,6 +364,8 @@ This document should make the user think: I could send this right now.`;
       });
 
       if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        console.error('[onboarding] Generate failed:', res.status, errText);
         setGenerationError(true);
         setGenerating(false);
         return;
@@ -392,11 +394,18 @@ This document should make the user think: I could send this right now.`;
                   if (parsed.text) {
                     fullText += parsed.text;
                     setGeneratedContent(fullText);
+                  } else if (parsed.error) {
+                    console.error('[onboarding] Stream error:', parsed.error);
+                    setGenerationError(true);
                   }
                 } catch { /* skip */ }
               }
             }
           }
+        }
+        if (!fullText) {
+          console.error('[onboarding] Stream completed but no content received');
+          setGenerationError(true);
         }
       } else {
         // JSON response (visual mode)

@@ -66,7 +66,7 @@ function render(input: StyleInput): string {
     ...s,
     title: stripEmojis(s.title),
     content: stripEmojis(s.content),
-  }));
+  })).filter(s => s.content && s.content.trim().length > 0);
   const stats = extractStats(cleanSections);
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const accent = brand.accent || brand.primary;
@@ -92,14 +92,20 @@ function render(input: StyleInput): string {
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .page {
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       min-height: 11in;
       margin: 0 auto;
       padding: 80px 72px 60px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
 
     /* ── Header ── */
@@ -178,11 +184,14 @@ function render(input: StyleInput): string {
     /* ── Stats row ── */
     .stats-row {
       display: flex;
+      flex-wrap: nowrap;
       gap: 64px;
       margin-bottom: 56px;
       padding-bottom: 48px;
     }
     .stat-item {
+      flex: 1;
+      min-width: 0;
       text-align: left;
     }
     .stat-item .stat-value {
@@ -204,6 +213,7 @@ function render(input: StyleInput): string {
     /* ── Sections ── */
     .section {
       margin-bottom: 56px;
+      page-break-inside: avoid;
     }
     .section-label {
       font-size: 10px;
@@ -357,6 +367,9 @@ function render(input: StyleInput): string {
       .page {
         padding: 60px 72px 48px;
       }
+      .section {
+        page-break-inside: avoid;
+      }
       .doc-footer {
         position: fixed;
         bottom: 40px;
@@ -406,7 +419,7 @@ function render(input: StyleInput): string {
       </div>` : ''}
 
       <!-- Sections -->
-      ${cleanSections.map(s => `
+      ${cleanSections.filter(s => s.content && s.content.trim().length > 0).map(s => `
       <div class="section">
         <div class="section-label">${s.title}</div>
         <div class="section-content">${formatMarkdown(s.content)}</div>

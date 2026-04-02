@@ -42,8 +42,10 @@ function render(input: StyleInput): string {
   const glow = `rgba(${r},${g},${b}`;
   const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  const filteredSections = sections.filter(s => s.title.trim() || s.content.trim());
+
   // Sections as glassmorphic cards
-  const sectionsHtml = sections.map((s, i) => `
+  const sectionsHtml = filteredSections.map((s, i) => `
     <div class="na-card">
       <div class="na-card-index">${String(i + 1).padStart(2, '0')}</div>
       <h2 class="na-card-title">${stripEmojis(s.title)}</h2>
@@ -73,6 +75,7 @@ function render(input: StyleInput): string {
     }
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .na-card { page-break-inside: avoid; }
     }
 
     body {
@@ -83,10 +86,13 @@ function render(input: StyleInput): string {
       font-size: var(--brand-font-body-size);
       margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .na-page {
-      max-width: 920px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -107,7 +113,8 @@ function render(input: StyleInput): string {
       box-shadow: 0 0 20px ${glow},0.6), 0 0 60px ${glow},0.3);
     }
     .na-header-inner {
-      max-width: 880px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
     .na-header-top {
@@ -175,13 +182,13 @@ function render(input: StyleInput): string {
       display: flex;
       gap: 20px;
       padding: 40px 64px;
-      max-width: 920px;
+      max-width: 816px;
       margin: 0 auto;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
     .na-stat {
       flex: 1;
-      min-width: 140px;
+      min-width: 0;
       background: rgba(255,255,255,0.03);
       border: 1px solid ${glow},0.25);
       padding: 28px 24px;
@@ -209,7 +216,7 @@ function render(input: StyleInput): string {
 
     /* ── Glassmorphic section cards ── */
     .na-cards-area {
-      max-width: 920px;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0 64px 48px;
     }
@@ -219,6 +226,7 @@ function render(input: StyleInput): string {
       border-left: 3px solid ${accent};
       padding: 40px 44px;
       margin-bottom: 24px;
+      page-break-inside: avoid;
       position: relative;
       box-shadow: 0 4px 32px rgba(0,0,0,0.3), 0 0 16px ${glow},0.04);
       backdrop-filter: blur(8px);
@@ -329,7 +337,8 @@ function render(input: StyleInput): string {
       box-shadow: 0 0 12px ${glow},0.4), 0 0 32px ${glow},0.15);
     }
     .na-footer-inner {
-      max-width: 880px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       display: flex;
       align-items: center;

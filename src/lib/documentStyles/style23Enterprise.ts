@@ -94,7 +94,8 @@ function render(input: StyleInput): string {
   const headerTextColor = contrastText(brand.primary);
   const { r: pr, g: pg, b: pb } = hexToRgb(brand.primary);
 
-  const sectionsHtml = input.sections.map((s, i) => {
+  const filteredSections = input.sections.filter(s => s.title.trim() || s.content.trim());
+  const sectionsHtml = filteredSections.map((s, i) => {
     const cleanContent = stripEmojis(s.content);
     const cleanTitle = stripEmojis(s.title);
     const iconClass = getIconClass(cleanTitle);
@@ -147,7 +148,7 @@ function render(input: StyleInput): string {
     @media print {
       body { margin: 0; background: #fff; }
       .page { padding: 0; max-width: none; }
-      .card { break-inside: avoid; box-shadow: none; }
+      .card { break-inside: avoid; page-break-inside: avoid; box-shadow: none; }
     }
 
     body {
@@ -160,9 +161,11 @@ function render(input: StyleInput): string {
     }
 
     .page {
-      max-width: 960px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
+      overflow-wrap: break-word;
     }
 
     /* ── Gradient Header ── */
@@ -280,6 +283,7 @@ function render(input: StyleInput): string {
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
       border-top: 3px solid var(--card-accent, ${brand.primary});
+      page-break-inside: avoid;
     }
     .card-header {
       display: flex;
@@ -417,6 +421,7 @@ function render(input: StyleInput): string {
     /* ── Card Body ── */
     .card-body {
       padding: 22px 28px;
+      overflow-wrap: break-word;
     }
     .card-body p { margin-bottom: 10px; }
     .card-body h1, .card-body h2, .card-body h3, .card-body h4 {
@@ -507,12 +512,10 @@ function render(input: StyleInput): string {
     /* ── Tables (enterprise) ── */
     .card-body table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+      border-collapse: collapse;
       margin: 16px 0;
       font-size: 13px;
       border: 1px solid #e5e7eb;
-      border-radius: 8px;
       overflow: hidden;
     }
     .card-body th {
@@ -541,6 +544,7 @@ function render(input: StyleInput): string {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-top: auto;
     }
     .footer-left {
       font-size: 11px;

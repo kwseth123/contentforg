@@ -67,7 +67,8 @@ function render(input: StyleInput): string {
 
   if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
 
-  const { sections, contentType, prospect, companyName, date } = input;
+  const { sections: rawSections, contentType, prospect, companyName, date } = input;
+  const sections = rawSections.filter(s => s.title?.trim() || s.content?.trim());
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const stats = extractStats(sections);
   const rgb = hexToRgb(accent);
@@ -137,7 +138,7 @@ function render(input: StyleInput): string {
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .st-chapter { break-inside: avoid; }
+      .st-chapter { break-inside: avoid; page-break-inside: avoid; }
     }
 
     body {
@@ -153,7 +154,7 @@ function render(input: StyleInput): string {
 
     /* ── Wrapper ── */
     .st-wrapper {
-      max-width: 820px;
+      width: 100%; max-width: 816px;
       margin: 0 auto;
     }
 
@@ -239,6 +240,7 @@ function render(input: StyleInput): string {
       padding: 48px 60px;
       background: #ffffff;
       transition: background 0.3s;
+      page-break-inside: avoid;
     }
     .st-chapter-alt {
       background: ${lightBg};
@@ -279,6 +281,7 @@ function render(input: StyleInput): string {
     .st-chapter-body {
       color: #444;
       line-height: 1.85;
+      overflow-wrap: break-word;
     }
     .st-chapter-body p { margin-bottom: 16px; }
     .st-chapter-body h1, .st-chapter-body h2,
@@ -368,11 +371,13 @@ function render(input: StyleInput): string {
     /* ── Inline stats ── */
     .st-inline-stats {
       display: flex;
+      flex-wrap: nowrap;
       gap: 20px;
       margin: 32px 0;
     }
     .st-inline-stat {
       flex: 1;
+      min-width: 0;
       background: #ffffff;
       border: 1px solid ${lighten(accent, 0.8)};
       border-radius: 10px;

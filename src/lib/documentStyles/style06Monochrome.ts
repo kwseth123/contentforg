@@ -64,6 +64,7 @@ const style06Monochrome: DocumentStyle = {
       }
       @media print {
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .mono-section { page-break-inside: avoid; }
       }
 
       body {
@@ -74,13 +75,17 @@ const style06Monochrome: DocumentStyle = {
         font-size: 15px;
         margin: 0;
         padding: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
 
       /* ── Masthead / Header ── */
       .mono-masthead {
-        max-width: 780px;
+        width: 100%;
+        max-width: 816px;
         margin: 0 auto;
         padding: 40px 48px 0;
+        box-sizing: border-box;
       }
       .mono-logo-bar {
         display: flex;
@@ -172,15 +177,18 @@ const style06Monochrome: DocumentStyle = {
 
       /* ── Wrapper ── */
       .mono-wrapper {
-        max-width: 780px;
+        width: 100%;
+        max-width: 816px;
         margin: 0 auto;
         padding: 0 48px;
+        box-sizing: border-box;
       }
 
       /* ── Sections ── */
       .mono-section {
         padding: 32px 0;
         border-bottom: 1px solid #dddddd;
+        page-break-inside: avoid;
       }
       .mono-section:last-child { border-bottom: none; }
 
@@ -261,11 +269,11 @@ const style06Monochrome: DocumentStyle = {
         display: flex;
         gap: 24px;
         margin: 20px 0;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
       .mono-stat-item {
         flex: 1;
-        min-width: 120px;
+        min-width: 0;
         padding: 20px 16px;
         border: 1px solid #cccccc;
         text-align: center;
@@ -318,9 +326,11 @@ const style06Monochrome: DocumentStyle = {
 
       /* ── Footer ── */
       .mono-footer {
-        max-width: 780px;
+        width: 100%;
+        max-width: 816px;
         margin: 0 auto;
         padding: 24px 48px 40px;
+        box-sizing: border-box;
         border-top: 1px solid #cccccc;
       }
       .mono-footer-inner {
@@ -347,7 +357,8 @@ const style06Monochrome: DocumentStyle = {
       : '';
 
     // Build sections
-    const sectionsHtml = sections.map((s, i) => {
+    const filteredSections = sections.filter(s => s.content && s.content.trim().length > 0);
+    const sectionsHtml = filteredSections.map((s, i) => {
       const title = stripEmojis(s.title);
       const content = stripEmojis(s.content);
 

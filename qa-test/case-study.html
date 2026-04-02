@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Study — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0.7in 0.85in;
+      @bottom-center {
+        content: counter(page);
+        font-family: 'Nunito', sans-serif;
+        font-size: 9px;
+        color: #bbb;
+      }
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .st-chapter { break-inside: avoid; page-break-inside: avoid; }
+    }
+
+    body {
+      font-family: 'Nunito', 'Quicksand', sans-serif;
+      color: #334155;
+      background: #ffffff;
+      line-height: 1.8;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Wrapper ── */
+    .st-wrapper {
+      width: 100%; max-width: 816px;
+      margin: 0 auto;
+    }
+
+    /* ── Hero header ── */
+    .st-hero {
+      background: linear-gradient(135deg, #4F46E5 0%, #3f38b7 100%);
+      color: #FFFFFF;
+      padding: 64px 60px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+    .st-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .st-hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-logo img { height: 32px; filter: brightness(10); }
+    .st-hero-meta {
+      text-align: right;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .st-hero-prospect {
+      font-weight: 700;
+      font-size: 13px;
+      opacity: 1;
+    }
+    .st-hero-overline {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 47px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-subtitle {
+      font-size: 17px;
+      line-height: 1.6;
+      opacity: 0.85;
+      max-width: 540px;
+      position: relative;
+      z-index: 1;
+    }
+    .st-hero-byline {
+      margin-top: 24px;
+      font-size: 12px;
+      opacity: 0.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Photography placeholder ── */
+    .st-photo-band {
+      height: 6px;
+      background: linear-gradient(to right, #4F46E5, #847eed, #4F46E5);
+    }
+
+    /* ── Chapters ── */
+    .st-chapter {
+      padding: 48px 60px;
+      background: #ffffff;
+      transition: background 0.3s;
+      page-break-inside: avoid;
+    }
+    .st-chapter-alt {
+      background: #f8f8fe;
+    }
+    .st-chapter-inner {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .st-chapter-marker {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .st-chapter-line {
+      flex: 1;
+      height: 1px;
+      background: #cac8f7;
+    }
+    .st-chapter-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #4F46E5;
+      white-space: nowrap;
+    }
+    .st-chapter-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.25;
+      margin-bottom: 20px;
+    }
+
+    /* ── Chapter body ── */
+    .st-chapter-body {
+      color: #444;
+      line-height: 1.85;
+      overflow-wrap: break-word;
+    }
+    .st-chapter-body p { margin-bottom: 16px; }
+    .st-chapter-body h1, .st-chapter-body h2,
+    .st-chapter-body h3, .st-chapter-body h4 {
+      font-family: 'Nunito', sans-serif;
+      color: #1a1a1a;
+      margin: 24px 0 12px;
+    }
+    .st-chapter-body h1 { font-size: 22px; font-weight: 700; }
+    .st-chapter-body h2 { font-size: 18px; font-weight: 700; }
+    .st-chapter-body h3 { font-size: 16px; font-weight: 600; }
+    .st-chapter-body ul, .st-chapter-body ol {
+      padding-left: 24px;
+      margin: 14px 0;
+    }
+    .st-chapter-body li {
+      margin-bottom: 8px;
+      line-height: 1.7;
+    }
+    .st-chapter-body strong { font-weight: 700; color: #1a1a1a; }
+    .st-chapter-body em { font-style: italic; }
+
+    /* ── Tables ── */
+    .st-chapter-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .st-chapter-body th {
+      background: #f3f2fd;
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid #4F46E5;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #3f38b7;
+    }
+    .st-chapter-body td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+    }
+    .st-chapter-body tr:last-child td { border-bottom: none; }
+    .st-chapter-body hr {
+      border: none;
+      border-top: 1px solid #e5e5e5;
+      margin: 24px 0;
+    }
+
+    /* ── Callout / pull quote ── */
+    .st-callout {
+      background: #f3f2fd;
+      border-radius: 12px;
+      padding: 36px 40px 28px;
+      margin: 32px 0;
+      position: relative;
+    }
+    .st-callout-mark {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 64px;
+      color: #4F46E5;
+      opacity: 0.25;
+      line-height: 0.6;
+      position: absolute;
+      top: 16px;
+      left: 24px;
+    }
+    .st-callout-text {
+      font-size: 18px;
+      font-style: italic;
+      color: #333;
+      line-height: 1.65;
+      margin-bottom: 12px;
+      padding-left: 8px;
+    }
+    .st-callout-attr {
+      font-size: 13px;
+      font-weight: 700;
+      color: #4F46E5;
+      padding-left: 8px;
+    }
+
+    /* ── Inline stats ── */
+    .st-inline-stats {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 20px;
+      margin: 32px 0;
+    }
+    .st-inline-stat {
+      flex: 1;
+      min-width: 0;
+      background: #ffffff;
+      border: 1px solid #dcdafa;
+      border-radius: 10px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .st-chapter-alt .st-inline-stat {
+      background: #ffffff;
+    }
+    .st-inline-value {
+      display: block;
+      font-size: 30px;
+      font-weight: 800;
+      color: #4F46E5;
+      line-height: 1.1;
+    }
+    .st-inline-label {
+      display: block;
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 6px;
+    }
+
+    /* ── Footer ── */
+    .st-footer {
+      background: #f8f8fe;
+      padding: 36px 60px;
+      text-align: center;
+    }
+    .st-footer-end {
+      font-size: 22px;
+      font-weight: 700;
+      color: #4F46E5;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+    .st-footer-divider {
+      width: 40px;
+      height: 2px;
+      background: #4F46E5;
+      margin: 0 auto 16px;
+      border-radius: 1px;
+    }
+    .st-footer-info {
+      font-size: 11px;
+      color: #999;
+      line-height: 1.8;
+    }
+    .st-footer-company {
+      font-weight: 700;
+      color: #777;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="st-wrapper">
+      <div class="st-hero">
+        <div class="st-hero-top">
+          <div class="st-hero-logo"><span style="font-family:var(--brand-font-primary);font-weight:700;font-size:18px;color:var(--brand-primary);">Acme Solutions</span></div>
+          <div class="st-hero-meta">
+            <div class="st-hero-prospect">GlobalTech Industries</div>
+            <div>April 1, 2026</div>
+          </div>
+        </div>
+        <div class="st-hero-overline">A Manufacturing Story</div>
+        <h1 class="st-hero-title">Case Study</h1>
+        <p class="st-hero-subtitle">How GlobalTech Industries partnered with Acme Solutions to achieve transformative results in Manufacturing.</p>
+        <div class="st-hero-byline">By Acme Solutions &middot; April 1, 2026</div>
+      </div>
+
+      <div class="st-photo-band"></div>
+
+      
+      <div class="st-chapter ">
+        <div class="st-chapter-inner">
+          <div class="st-chapter-marker">
+            <span class="st-chapter-line"></span>
+            <span class="st-chapter-label">Chapter 01</span>
+            <span class="st-chapter-line"></span>
+          </div>
+          <h2 class="st-chapter-title">Client Profile</h2>
+          <div class="st-chapter-body"><p><strong>Meridian Manufacturing</strong> is a $520M precision parts manufacturer with 3,800 employees across 6 facilities. They serve automotive OEMs and Tier 1 suppliers, processing over 2 million orders annually.</p></div>
+          
+          
+        </div>
+      </div>
+      <div class="st-chapter st-section-alt">
+        <div class="st-chapter-inner">
+          <div class="st-chapter-marker">
+            <span class="st-chapter-line"></span>
+            <span class="st-chapter-label">Chapter 02</span>
+            <span class="st-chapter-line"></span>
+          </div>
+          <h2 class="st-chapter-title">The Challenge</h2>
+          <div class="st-chapter-body"><p>Meridian was struggling with:<br/><ul><li><strong>12 disconnected systems</strong> requiring manual data entry at each handoff</li><br/><li><strong>Month-end close taking 5+ days</strong> with 3 full-time staff dedicated to reconciliation</li><br/><li><strong>18% defect rate</strong> in cross-system data transfers causing production delays</li><br/><li><strong>$1.8M annual compliance remediation costs</strong> from inconsistent reporting</li><br/><li><strong>No visibility</strong> into real-time production metrics for executive team</li></ul></div>
+          
+          
+    <div class="st-inline-stats">
+      
+        <div class="st-inline-stat">
+          <span class="st-inline-value">18%</span>
+          <span class="st-inline-label">staff dedicated reconciliation</span>
+        </div>
+      
+        <div class="st-inline-stat">
+          <span class="st-inline-value">80%</span>
+          <span class="st-inline-label">Month End Close</span>
+        </div>
+      
+        <div class="st-inline-stat">
+          <span class="st-inline-value">$520M</span>
+          <span class="st-inline-label">value</span>
+        </div>
+      
+    </div>
+        </div>
+      </div>
+      <div class="st-chapter ">
+        <div class="st-chapter-inner">
+          <div class="st-chapter-marker">
+            <span class="st-chapter-line"></span>
+            <span class="st-chapter-label">Chapter 03</span>
+            <span class="st-chapter-line"></span>
+          </div>
+          <h2 class="st-chapter-title">The Solution</h2>
+          <div class="st-chapter-body"><p>Acme Solutions deployed a comprehensive automation platform in 78 days: <strong>Phase 1:</strong> Connected SAP ERP and Siemens MES for real-time production data streaming<br/><strong>Phase 2:</strong> Deployed 23 automated workflows replacing manual data entry<br/><strong>Phase 3:</strong> Launched executive dashboards with live KPIs across all 6 facilities<br/><strong>Phase 4:</strong> Implemented automated compliance reporting for ISO 9001 and IATF 16949</p></div>
+          
+          
+        </div>
+      </div>
+      <div class="st-chapter st-section-alt">
+        <div class="st-chapter-inner">
+          <div class="st-chapter-marker">
+            <span class="st-chapter-line"></span>
+            <span class="st-chapter-label">Chapter 04</span>
+            <span class="st-chapter-line"></span>
+          </div>
+          <h2 class="st-chapter-title">The Results</h2>
+          <div class="st-chapter-body"><table><thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Impact</th></tr></thead><tbody><tr><td>Month-End Close</td><td>5 days</td><td>8 hours</td><td>80% faster</td></tr><tr><td>Data Errors</td><td>18%</td><td>0.3%</td><td>98% reduction</td></tr><tr><td>Manual Data Entry</td><td>1,200 hrs/mo</td><td>180 hrs/mo</td><td>85% reduction</td></tr><tr><td>Compliance Costs</td><td>$1.8M/yr</td><td>$120K/yr</td><td>93% savings</td></tr></tbody></table>| Executive Visibility | None | Real-time | Complete | <strong>Total Year 1 ROI: 4.8x</strong><br/><strong>Payback Period: 3.2 months</strong></p></div>
+          
+          
+        </div>
+      </div>
+      <div class="st-chapter ">
+        <div class="st-chapter-inner">
+          <div class="st-chapter-marker">
+            <span class="st-chapter-line"></span>
+            <span class="st-chapter-label">Chapter 05</span>
+            <span class="st-chapter-line"></span>
+          </div>
+          <h2 class="st-chapter-title">Client Testimonial</h2>
+          <div class="st-chapter-body"><p>"Acme Solutions transformed how we operate. What used to take 5 days at month-end now takes 8 hours, and our executives have real-time visibility for the first time ever. The ROI was undeniable within the first quarter." — <strong>Sarah Chen</strong>, VP of Operations, Meridian Manufacturing</p></div>
+          
+          
+        </div>
+      </div>
+
+      <footer class="st-footer">
+        <div class="st-footer-end">The End</div>
+        <div class="st-footer-divider"></div>
+        <div class="st-footer-info">
+          <span class="st-footer-company">Acme Solutions</span> | Enterprise workflow automation platform<br/>
+          Prepared for GlobalTech Industries &middot; April 1, 2026
+        </div>
+      </footer>
+    </div>
+  
+</body>
+</html>

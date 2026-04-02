@@ -21,7 +21,8 @@ function render(input: StyleInput): string {
   const refNumber = `REF-${Date.now().toString(36).toUpperCase().slice(-6)}`;
   const accent = brand.accent || brand.primary;
 
-  const sectionsHtml = input.sections.map((s, i) => {
+  const filteredSections = input.sections.filter(s => s.title.trim() || s.content.trim());
+  const sectionsHtml = filteredSections.map((s, i) => {
     const roman = toRoman(i + 1);
     const cleanContent = stripEmojis(s.content);
     const formatted = formatMarkdown(cleanContent);
@@ -81,9 +82,12 @@ function render(input: StyleInput): string {
     }
 
     .page {
-      max-width: 820px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 60px 80px;
+      box-sizing: border-box;
+      overflow-wrap: break-word;
     }
 
     /* ── Firm Letterhead ── */
@@ -189,6 +193,7 @@ function render(input: StyleInput): string {
       text-indent: 2em;
       text-align: justify;
       hyphens: auto;
+      overflow-wrap: break-word;
     }
     .section-body p {
       margin-bottom: 14px;
@@ -312,12 +317,14 @@ function render(input: StyleInput): string {
     /* ── Stat Box (for data-heavy sections) ── */
     .stat-box-row {
       display: flex;
+      flex-wrap: nowrap;
       gap: 20px;
       margin: 20px 0;
       text-indent: 0;
     }
     .stat-box {
       flex: 1;
+      min-width: 0;
       border: 1px solid #ccc;
       padding: 16px 20px;
       text-align: center;

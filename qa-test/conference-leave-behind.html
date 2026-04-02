@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conference Leave Behind - GlobalTech Industries - Acme Solutions</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+      
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+      
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+      @page {
+        size: letter;
+        margin: 0;
+      }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .fb-section { page-break-inside: avoid; }
+        .fb-stat-band { page-break-inside: avoid; }
+      }
+
+      body {
+        font-family: var(--brand-font-primary);
+        color: #334155;
+        background: #ffffff;
+        line-height: 1.7;
+        font-size: var(--brand-font-body-size);
+        margin: 0;
+        padding: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+      }
+
+      /* ── Full-Bleed Header ── */
+      .fb-header {
+        width: 100%;
+        background: #4F46E5;
+        color: #FFFFFF;
+        padding: 56px 0 52px;
+        position: relative;
+        overflow: hidden;
+      }
+      .fb-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: #3b35ac;
+      }
+      .fb-header-inner {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 48px;
+      }
+      .fb-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+      .fb-header-logo img {
+        height: 38px;
+        filter: brightness(0) invert(1);
+      }
+      .fb-header-logo-text {
+        font-weight: 700;
+        font-size: 18px;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+      }
+      .fb-header-meta {
+        text-align: right;
+        font-size: 12px;
+        opacity: 0.85;
+        line-height: 1.6;
+      }
+      .fb-header-meta .prospect-name {
+        font-weight: 700;
+        font-size: 14px;
+        opacity: 1;
+      }
+      .fb-prospect-logo img {
+        height: 28px;
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+        margin-bottom: 4px;
+      }
+      .fb-header-title {
+        font-size: calc(var(--brand-font-h1-size) + 4px);
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+        color: #FFFFFF;
+      }
+      .fb-header-subtitle {
+        font-size: 16px;
+        font-weight: 400;
+        opacity: 0.85;
+        color: #FFFFFF;
+      }
+      .fb-header-type {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        background: rgba(255,255,255,0.18);
+        padding: 4px 14px;
+        margin-bottom: 16px;
+      }
+
+      /* ── Content Wrapper ── */
+      .fb-content {
+        width: 100%;
+        max-width: 816px;
+        margin: 0 auto;
+      }
+
+      /* ── Alternating Section Bands ── */
+      .fb-band {
+        width: 100%;
+        padding: 0;
+      }
+      .fb-band-white { background: #ffffff; }
+      .fb-band-gray { background: #f4f4fd; }
+
+      .fb-section {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 44px 48px;
+        page-break-inside: avoid;
+      }
+
+      /* Section header */
+      .fb-section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+        padding-bottom: 14px;
+        border-bottom: 3px solid #4F46E5;
+      }
+      .fb-section-num {
+        font-size: 12px;
+        font-weight: 700;
+        color: #4F46E5;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        flex-shrink: 0;
+      }
+      .fb-section-title {
+        font-size: var(--brand-font-h2-size);
+        font-weight: 700;
+        color: #1a1a1a;
+        letter-spacing: -0.01em;
+      }
+
+      /* Typography within sections */
+      .fb-section h2 { display: none; }
+      .fb-section h3 {
+        font-size: var(--brand-font-h3-size);
+        font-weight: 600;
+        color: #222;
+        margin: 28px 0 10px;
+        padding-left: 14px;
+        border-left: 3px solid #a7a3f2;
+      }
+      .fb-section h4 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #333;
+        margin: 20px 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .fb-section p {
+        margin-bottom: 14px;
+        color: #3a3a3a;
+        line-height: 1.75;
+      }
+      .fb-section strong { font-weight: 600; color: #1a1a1a; }
+      .fb-section em { font-style: italic; color: #555; }
+      .fb-section hr {
+        border: none;
+        height: 1px;
+        background: #e0e0e0;
+        margin: 28px 0;
+      }
+
+      /* Lists */
+      .fb-section ul, .fb-section ol {
+        margin: 12px 0 18px 0;
+        padding: 0 0 0 24px;
+      }
+      .fb-section li {
+        margin-bottom: 8px;
+        padding-left: 4px;
+        line-height: 1.65;
+      }
+      .fb-section ul li::marker { color: #4F46E5; font-weight: 700; }
+
+      /* ── Stat Band (full-bleed accent) ── */
+      .fb-stat-band {
+        width: 100%;
+        background: #4F46E5;
+        color: #FFFFFF;
+        padding: 0;
+      }
+      .fb-stat-band-inner {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 48px;
+      }
+      .fb-stat-band-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        opacity: 0.8;
+        margin-bottom: 20px;
+        color: #FFFFFF;
+      }
+      .fb-stat-grid {
+        display: flex;
+        gap: 32px;
+        flex-wrap: nowrap;
+      }
+      .fb-stat-item {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        padding: 20px 16px;
+        background: rgba(255,255,255,0.12);
+      }
+      .fb-stat-value {
+        font-size: 36px;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #FFFFFF;
+        margin-bottom: 6px;
+      }
+      .fb-stat-label {
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #FFFFFF;
+      }
+      .fb-stat-content {
+        color: #FFFFFF;
+        line-height: 1.65;
+      }
+      .fb-stat-content p { color: #FFFFFF; }
+      .fb-stat-content strong { color: #FFFFFF; font-weight: 700; }
+      .fb-stat-content li { color: #FFFFFF; }
+      .fb-stat-content ul li::marker { color: rgba(255,255,255,0.6); }
+
+      /* ── Tables ── */
+      .fb-section table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 24px 0;
+        font-size: 14px;
+      }
+      .fb-section thead th {
+        background: #4F46E5;
+        color: #FFFFFF;
+        font-weight: 600;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .fb-section td {
+        padding: 11px 16px;
+        border-bottom: 1px solid #e5e5e5;
+        color: #3a3a3a;
+      }
+      .fb-section tr:nth-child(even) td {
+        background: #fafafa;
+      }
+      .fb-section th:first-child { padding-left: 16px; }
+
+      /* Blockquotes as callouts */
+      .fb-section blockquote {
+        background: #e5e3fb;
+        border-left: 4px solid #4F46E5;
+        padding: 18px 24px;
+        margin: 24px 0;
+        font-size: 15px;
+        color: #2d2d2d;
+      }
+
+      /* ── Footer ── */
+      .fb-footer {
+        width: 100%;
+        background: #1a1a1a;
+        color: #999;
+        padding: 0;
+      }
+      .fb-footer-inner {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 28px 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+      }
+      .fb-footer-company {
+        font-weight: 600;
+        color: #ccc;
+      }
+      .fb-footer-page {
+        font-size: 10px;
+        color: #777;
+      }
+    
+  </style>
+</head>
+<body>
+  
+      <div class="fb-header">
+        <div class="fb-header-inner">
+          <div class="fb-header-top">
+            <div class="fb-header-logo-text">Acme Solutions</div>
+            
+      <div class="fb-header-meta">
+        
+        <div class="prospect-name">GlobalTech Industries</div>
+        <div>Manufacturing &middot; April 1, 2026</div>
+      </div>
+    
+          </div>
+          <div class="fb-header-type">Conference Leave Behind</div>
+          <div class="fb-header-title">Conference Leave Behind for GlobalTech Industries</div>
+          <div class="fb-header-subtitle">Prepared by Acme Solutions &middot; Manufacturing &middot; 2,500 employees</div>
+        </div>
+      </div>
+
+      
+        <div class="fb-band fb-band-white">
+          <div class="fb-section">
+            <div class="fb-section-header">
+              <span class="fb-section-num">01</span>
+              <span class="fb-section-title">The Manufacturing Automation Gap</span>
+            </div>
+            <p><strong>87% of manufacturers</strong> say digital transformation is critical. Only <strong>12% have automated</strong> their core workflows. The gap is costing the industry <strong>$847B annually</strong> in operational inefficiency.</p>
+          </div>
+        </div>
+      
+        <div class="fb-band fb-band-gray">
+          <div class="fb-section">
+            <div class="fb-section-header">
+              <span class="fb-section-num">02</span>
+              <span class="fb-section-title">What We Do</span>
+            </div>
+            <p>Acme Solutions connects your manufacturing systems — ERP, MES, QMS, CRM — into a single real-time platform. No batch delays. No manual data entry. No compliance gaps. <strong>200+ connectors</strong> | <strong>50+ manufacturing templates</strong> | <strong>90-day deployment</strong></p>
+          </div>
+        </div>
+      
+          <div class="fb-stat-band">
+            <div class="fb-stat-band-inner">
+              <div class="fb-stat-band-title">03 &mdash; By the Numbers</div>
+              
+          <div class="fb-stat-grid">
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">340+ enterprise deployments</div>
+                <div class="fb-stat-label">in manufacturing</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">4.2x average ROI</div>
+                <div class="fb-stat-label">in Year 1</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">73% reduction</div>
+                <div class="fb-stat-label">in manual processes</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">99.97% uptime</div>
+                <div class="fb-stat-label">SLA guarantee</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">< 90 days</div>
+                <div class="fb-stat-label">average go-live</div>
+              </div>
+            
+          </div>
+        
+              
+            </div>
+          </div>
+        
+          <div class="fb-stat-band">
+            <div class="fb-stat-band-inner">
+              <div class="fb-stat-band-title">04 &mdash; Customer Results</div>
+              
+          <div class="fb-stat-grid">
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">Meridian Manufacturing</div>
+                <div class="fb-stat-label">Month-end close from 5 days to 8 hours</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">Atlas Industrial</div>
+                <div class="fb-stat-label">Eliminated 100% of compliance gaps</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">Nexus Precision</div>
+                <div class="fb-stat-label">$1.2M savings in Year 1</div>
+              </div>
+            
+              <div class="fb-stat-item">
+                <div class="fb-stat-value">Sterling Dynamics</div>
+                <div class="fb-stat-label">85% reduction in data entry errors</div>
+              </div>
+            
+          </div>
+        
+              
+            </div>
+          </div>
+        
+        <div class="fb-band fb-band-white">
+          <div class="fb-section">
+            <div class="fb-section-header">
+              <span class="fb-section-num">05</span>
+              <span class="fb-section-title">Next Steps</span>
+            </div>
+            <p>Scan the QR code or visit <strong>acmesolutions.com/manufacturing</strong> to:<br/><ul><li>Get a free workflow assessment</li><br/><li>See a live demo with your data</li><br/><li>Access our manufacturing automation playbook <strong>Contact:</strong> Alex Rivera | alex@acmesolutions.com | (555) 123-4567</li></ul>
+          </div>
+        </div>
+      
+
+      <div class="fb-footer">
+        <div class="fb-footer-inner">
+          <div>
+            <span class="fb-footer-company">Acme Solutions</span>
+             &middot; Enterprise workflow automation platform
+          </div>
+          <div>April 1, 2026</div>
+          <div class="fb-footer-page">Page 1</div>
+        </div>
+      </div>
+    
+</body>
+</html>

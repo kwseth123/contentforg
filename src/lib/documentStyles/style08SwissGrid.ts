@@ -77,11 +77,14 @@ const style08SwissGrid: DocumentStyle = {
         font-size: 14px;
         margin: 0;
         padding: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
 
       /* ── Page Grid Container ── */
       .swiss-page {
-        max-width: 960px;
+        width: 100%;
+        max-width: 816px;
         margin: 0 auto;
         padding: 0 40px;
       }
@@ -199,6 +202,7 @@ const style08SwissGrid: DocumentStyle = {
         column-gap: 16px;
         padding: 32px 0;
         border-bottom: 1px solid #cccccc;
+        page-break-inside: avoid;
       }
 
       /* Label column */
@@ -300,6 +304,7 @@ const style08SwissGrid: DocumentStyle = {
         padding: 20px 16px 20px 18px;
         border-left: 4px solid #000000;
         margin-bottom: 8px;
+        min-width: 0;
       }
       .swiss-stat-value {
         font-size: 32px;
@@ -346,6 +351,9 @@ const style08SwissGrid: DocumentStyle = {
         color: #333;
         text-align: left;
       }
+      .swiss-content tbody tr:nth-child(even) td {
+        background: #f8f8f8;
+      }
       .swiss-content tbody tr:last-child td {
         border-bottom: 2px solid #000000;
       }
@@ -358,7 +366,7 @@ const style08SwissGrid: DocumentStyle = {
         column-gap: 16px;
         padding: 24px 0 40px;
         border-top: 2px solid #000000;
-        margin-top: 8px;
+        margin-top: auto;
       }
       .swiss-footer-left {
         grid-column: 1 / 4;
@@ -399,7 +407,8 @@ const style08SwissGrid: DocumentStyle = {
       : '';
 
     // Build sections
-    const sectionsHtml = sections.map((s, i) => {
+    const validSections = sections.filter(s => s.content && s.content.trim().length > 0);
+    const sectionsHtml = validSections.map((s, i) => {
       const title = stripEmojis(s.title);
       const content = stripEmojis(s.content);
       const num = String(i + 1).padStart(2, '0');
@@ -498,7 +507,7 @@ const style08SwissGrid: DocumentStyle = {
       title: `${titleLabel} - ${prospect.companyName} - ${companyName}`,
       css,
       body,
-      fonts: ['Inter'],
+      fonts: [...brandFonts(brand), 'Inter'],
     });
   },
 

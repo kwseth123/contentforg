@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Summary — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0;
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .dc-section { page-break-inside: avoid; }
+    }
+
+    body {
+      font-family: var(--brand-font-secondary);
+      color: #1a1a1a;
+      background: #ffffff;
+      line-height: 1.7;
+      font-size: var(--brand-font-body-size);
+      margin: 0; padding: 0;
+      -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    .dc-page {
+      width: 100%;
+      max-width: 816px;
+      margin: 0 auto;
+      padding: 80px 48px 60px;
+      box-sizing: border-box;
+    }
+
+    /* ── Header: minimal, dramatic type ── */
+    .dc-header {
+      margin-bottom: 56px;
+    }
+    .dc-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .dc-header-logo img { height: 28px; }
+    .dc-header-meta-right {
+      text-align: right;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #999;
+    }
+    .dc-header-meta-right .dc-prospect-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: 0.05em;
+      text-transform: none;
+    }
+    .dc-header-type {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .dc-header-title {
+      font-family: var(--brand-font-primary);
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 1.0;
+      color: #000;
+      margin: 0 0 16px;
+      letter-spacing: -0.02em;
+    }
+    .dc-header-subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+    .dc-header-accent-line {
+      width: 64px;
+      height: 4px;
+      background: #4F46E5;
+      margin-top: 32px;
+    }
+
+    /* ── Thin rules ── */
+    .dc-thin-rule {
+      width: 100%;
+      height: 1px;
+      background: #e0e0e0;
+      margin: 40px 0;
+    }
+
+    /* ── Pull Quote ── */
+    .dc-pullquote {
+      padding: 32px 0;
+      position: relative;
+    }
+    .dc-pullquote-mark {
+      font-family: var(--brand-font-primary);
+      font-size: 80px;
+      font-weight: 800;
+      color: #4F46E5;
+      line-height: 0.6;
+      margin-bottom: 8px;
+    }
+    .dc-pullquote-text {
+      font-family: var(--brand-font-primary);
+      font-size: 28px;
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.35;
+      color: #333;
+      max-width: 560px;
+    }
+
+    /* ── Stats ── */
+    .dc-stats {
+      display: flex;
+      gap: 48px;
+      padding: 36px 0;
+      flex-wrap: nowrap;
+    }
+    .dc-stat {
+      flex: 1;
+      min-width: 0;
+    }
+    .dc-stat-number {
+      font-family: var(--brand-font-primary);
+      font-size: 56px;
+      font-weight: 800;
+      line-height: 1;
+      color: #000;
+      margin-bottom: 6px;
+    }
+    .dc-stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #999;
+    }
+
+    /* ── Sections ── */
+    .dc-section {
+      margin-bottom: 48px;
+      page-break-inside: avoid;
+    }
+    .dc-section-rule {
+      width: 100%;
+      height: 1px;
+      background: #e0e0e0;
+      margin-bottom: 24px;
+    }
+    .dc-section-meta {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: #bbb;
+      margin-bottom: 12px;
+    }
+    .dc-section-title {
+      font-family: var(--brand-font-primary);
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: #111;
+      margin: 0 0 20px;
+      letter-spacing: -0.01em;
+    }
+    .dc-section-body {
+      color: #444;
+      font-size: var(--brand-font-body-size);
+    }
+    .dc-section-body p { margin-bottom: 16px; }
+    .dc-section-body h1,
+    .dc-section-body h2 {
+      font-family: var(--brand-font-primary);
+      font-size: 26px;
+      font-weight: 700;
+      color: #111;
+      margin: 32px 0 12px;
+      line-height: 1.15;
+    }
+    .dc-section-body h3 {
+      font-family: var(--brand-font-primary);
+      font-size: 18px;
+      font-weight: 700;
+      color: #222;
+      margin: 24px 0 10px;
+    }
+    .dc-section-body h4 {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #999;
+      margin: 20px 0 8px;
+    }
+    .dc-section-body strong { font-weight: 700; color: #111; }
+    .dc-section-body em { font-style: italic; color: #555; }
+    .dc-section-body ul, .dc-section-body ol {
+      padding-left: 20px;
+      margin: 12px 0;
+    }
+    .dc-section-body li { margin-bottom: 8px; }
+    .dc-section-body li::marker { color: #4F46E5; }
+    .dc-section-body hr {
+      border: none;
+      height: 1px;
+      background: #e8e8e8;
+      margin: 28px 0;
+    }
+
+    /* Tables */
+    .dc-section-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+    .dc-section-body thead th {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 2px solid #000;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .dc-section-body tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* ── Footer ── */
+    .dc-footer {
+      margin-top: 64px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dc-footer-text {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #bbb;
+    }
+    .dc-footer-accent {
+      width: 32px;
+      height: 3px;
+      background: #4F46E5;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="dc-page">
+      <!-- Header -->
+      <div class="dc-header">
+        <div class="dc-header-top">
+          <div class="dc-header-logo"><span style="font-family:var(--brand-font-primary);font-weight:700;font-size:18px;color:var(--brand-primary);">Acme Solutions</span></div>
+          <div class="dc-header-meta-right">
+            <div class="dc-prospect-name">GlobalTech Industries</div>
+            <div>April 1, 2026</div>
+          </div>
+        </div>
+        <div class="dc-header-type">executive summary / Manufacturing</div>
+        <h1 class="dc-header-title">Executive Summary</h1>
+        <div class="dc-header-subtitle">Prepared for GlobalTech Industries &middot; 2,500 employees</div>
+        <div class="dc-header-accent-line"></div>
+      </div>
+
+      <!-- Pull Quote -->
+      
+    <div class="dc-pullquote">
+      <div class="dc-pullquote-mark">&ldquo;</div>
+      <div class="dc-pullquote-text">GlobalTech Industries is experiencing significant operational inefficiency driven by disconnected systems and manual processes. Our analysis identifies $2.4M in</div>
+    </div>
+    <div class="dc-thin-rule"></div>
+  
+
+      <!-- Stats -->
+      
+    <div class="dc-stats">
+      
+        <div class="dc-stat">
+          <div class="dc-stat-number">23%</div>
+          <div class="dc-stat-label">ting tasks that</div>
+        </div>
+      
+        <div class="dc-stat">
+          <div class="dc-stat-number">76%</div>
+          <div class="dc-stat-label">Month End Close</div>
+        </div>
+      
+        <div class="dc-stat">
+          <div class="dc-stat-number">$2.4M</div>
+          <div class="dc-stat-label">value</div>
+        </div>
+      
+        <div class="dc-stat">
+          <div class="dc-stat-number">4.2x</div>
+          <div class="dc-stat-label">multiplier</div>
+        </div>
+      
+    </div>
+    <div class="dc-thin-rule"></div>
+  
+
+      <!-- Sections -->
+      
+    <div class="dc-section">
+      <div class="dc-section-rule"></div>
+      <div class="dc-section-meta">01 / 05</div>
+      <h2 class="dc-section-title">Executive Overview</h2>
+      <div class="dc-section-body"><p>GlobalTech Industries is experiencing significant operational inefficiency driven by disconnected systems and manual processes. Our analysis identifies $2.4M in annual waste that can be eliminated through workflow automation, with a projected 4.2x ROI in the first year.</p></div>
+    </div>
+  
+    <div class="dc-section">
+      <div class="dc-section-rule"></div>
+      <div class="dc-section-meta">02 / 05</div>
+      <h2 class="dc-section-title">Key Findings</h2>
+      <div class="dc-section-body"><ul><li><strong>$2.4M annual waste</strong> from manual data reconciliation across 12 systems</li><br/><li><strong>14 hours/week</strong> per manager spent on reporting tasks that should be automated</li><br/><li><strong>23% error rate</strong> in cross-system data transfers leading to compliance exposure</li><br/><li><strong>6.2 day average</strong> for month-end close vs. industry benchmark of 2 days</li><br/><li><strong>Zero real-time visibility</strong> into production metrics for leadership</li></ul></div>
+    </div>
+  
+    <div class="dc-section">
+      <div class="dc-section-rule"></div>
+      <div class="dc-section-meta">03 / 05</div>
+      <h2 class="dc-section-title">Recommended Solution</h2>
+      <div class="dc-section-body"><p>We recommend a phased deployment of the Acme Solutions platform: <strong>Phase 1 (Weeks 1-4):</strong> Connect ERP and MES for real-time production data<br/><strong>Phase 2 (Weeks 5-8):</strong> Deploy automated reporting and compliance engine<br/><strong>Phase 3 (Weeks 9-12):</strong> Roll out no-code workflow builder to operations team Total investment: $285,000 | Expected annual savings: $1,200,000</p></div>
+    </div>
+  
+    <div class="dc-section">
+      <div class="dc-section-rule"></div>
+      <div class="dc-section-meta">04 / 05</div>
+      <h2 class="dc-section-title">Strategic Impact</h2>
+      <div class="dc-section-body"><table><thead><tr><th>Metric</th><th>Current State</th><th>Future State</th><th>Improvement</th></tr></thead><tbody><tr><td>Month-End Close</td><td>6.2 days</td><td>1.5 days</td><td>76% faster</td></tr><tr><td>Data Accuracy</td><td>77%</td><td>99.2%</td><td>+22 points</td></tr><tr><td>Manual Tasks</td><td>840 hrs/mo</td><td>126 hrs/mo</td><td>85% reduction</td></tr><tr><td>Compliance Readiness</td><td>Manual</td><td>Automated</td><td>100% coverage</td></tr></tbody></table></div>
+    </div>
+  
+    <div class="dc-section">
+      <div class="dc-section-rule"></div>
+      <div class="dc-section-meta">05 / 05</div>
+      <h2 class="dc-section-title">Next Steps</h2>
+      <div class="dc-section-body"><ol><li class="ol-item"><strong>Executive alignment session</strong> with CIO and VP Operations (Week 1)</li><br/><li class="ol-item"><strong>Technical deep dive</strong> with IT architecture team (Week 2)</li><br/><li class="ol-item"><strong>Pilot scope definition</strong> for production line #3 (Week 3)</li><br/><li class="ol-item"><strong>Business case presentation</strong> to leadership team (Week 4)</li><br/><li class="ol-item"><strong>Contract and timeline finalization</strong> (Week 5)</li></ol></div>
+    </div>
+  
+
+      <!-- Footer -->
+      <div class="dc-footer">
+        <div class="dc-footer-text">Acme Solutions &mdash; Enterprise workflow automation platform</div>
+        <div class="dc-footer-text">April 1, 2026</div>
+        <div class="dc-footer-text">Page 1</div>
+        <div class="dc-footer-accent"></div>
+      </div>
+    </div>
+  
+</body>
+</html>

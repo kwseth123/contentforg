@@ -57,9 +57,10 @@ function render(input: StyleInput): string {
   const finBlue = '#0c2340';
   const finLightBlue = '#1a3a5c';
   const finGray = '#f5f6f8';
-  const totalPages = Math.max(1, Math.ceil(cleanSections.length / 3));
+  const filteredSections = cleanSections.filter(s => s.title.trim() || s.content.trim());
+  const totalPages = Math.max(1, Math.ceil(filteredSections.length / 3));
 
-  const sectionsHtml = cleanSections.map((s, i) => {
+  const sectionsHtml = filteredSections.map((s, i) => {
     return `
       <div class="fr-section">
         <div class="fr-section-bar">
@@ -103,14 +104,18 @@ function render(input: StyleInput): string {
       background: #ffffff;
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     ${professionalSymbolCSS(accent)}
 
     .fr-page {
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 48px 72px;
+      box-sizing: border-box;
     }
 
     /* ══ Institutional Header ══ */
@@ -193,10 +198,12 @@ function render(input: StyleInput): string {
     }
     .fr-metrics-row {
       display: flex;
+      flex-wrap: nowrap;
       gap: 24px;
     }
     .fr-metric {
       flex: 1;
+      min-width: 0;
       text-align: center;
       padding: 12px 8px;
       border-right: 1px solid #e5e7eb;

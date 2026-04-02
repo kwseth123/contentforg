@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposal — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0.5in 0.75in;
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cd-page { padding: 0; max-width: none; }
+      .cd-slide { page-break-after: always; }
+    }
+
+    body {
+      font-family: 'Inter', var(--brand-font-secondary), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: var(--brand-font-body-size);
+      color: #1a1a1a;
+      background: #f0f0f0;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    .cd-page {
+      width: 100%;
+      max-width: 816px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+    }
+
+    /* ══ Cover Slide ══ */
+    .cd-cover {
+      background: #ffffff;
+      padding: 72px 64px 48px;
+      margin-bottom: 24px;
+      position: relative;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .cd-cover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+    .cd-cover-rule {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: #4F46E5;
+    }
+    .cd-cover-title {
+      font-family: 'Inter', var(--brand-font-primary), sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      color: #111111;
+      line-height: 1.15;
+      margin: 0 0 12px 0;
+      letter-spacing: -0.02em;
+    }
+    .cd-cover-subtitle {
+      font-size: 16px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    .cd-cover-meta {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 24px;
+    }
+
+    /* ══ Stats Bar ══ */
+    .cd-stats-bar {
+      background: #ffffff;
+      display: flex;
+      flex-wrap: nowrap;
+      margin-bottom: 24px;
+      border-top: 4px solid #4F46E5;
+    }
+    .cd-stat {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding: 24px 16px;
+      border-right: 1px solid #f3f4f6;
+    }
+    .cd-stat:last-child { border-right: none; }
+    .cd-stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #111111;
+      line-height: 1.1;
+    }
+    .cd-stat-label {
+      font-size: 10px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+    }
+
+    /* ══ Slide Sections ══ */
+    .cd-slide {
+      background: #ffffff;
+      padding: 48px 64px 24px;
+      margin-bottom: 24px;
+      position: relative;
+      page-break-inside: avoid;
+    }
+
+    /* ── Insight Box ── */
+    .cd-insight-box {
+      border-left: 4px solid #4F46E5;
+      padding: 16px 24px;
+      background: #f6f6fe;
+      margin-bottom: 28px;
+    }
+    .cd-insight-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #4F46E5;
+      margin-bottom: 6px;
+    }
+    .cd-insight-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .cd-slide-title {
+      font-family: 'Inter', var(--brand-font-primary), sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #111111;
+      margin: 0 0 20px 0;
+      line-height: 1.2;
+    }
+
+    .cd-slide-body {
+      overflow-wrap: break-word;
+    }
+    .cd-slide-body p {
+      margin-bottom: 14px;
+    }
+    .cd-slide-body h1,
+    .cd-slide-body h2,
+    .cd-slide-body h3,
+    .cd-slide-body h4 {
+      color: #111111;
+      margin: 24px 0 10px;
+      font-weight: 700;
+    }
+    .cd-slide-body h2 { font-size: 20px; }
+    .cd-slide-body h3 { font-size: 17px; }
+    .cd-slide-body h4 { font-size: 14px; font-weight: 600; }
+    .cd-slide-body strong { font-weight: 600; }
+
+    /* ── Em-dash bullets ── */
+    .cd-slide-body ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 14px 0;
+    }
+    .cd-slide-body ul li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+    .cd-slide-body ul li::before {
+      content: '\2014';
+      position: absolute;
+      left: 0;
+      color: #4F46E5;
+      font-weight: 700;
+    }
+    .cd-slide-body ol {
+      padding-left: 24px;
+      margin: 14px 0;
+    }
+    .cd-slide-body ol li {
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+    .cd-slide-body hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 28px 0;
+    }
+
+    /* ══ Tables ══ */
+    .cd-slide-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+    .cd-slide-body th {
+      background: #4F46E5;
+      color: #FFFFFF;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .cd-slide-body td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .cd-slide-body tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    /* ── Slide Footer ── */
+    .cd-slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 9px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ══ Page Footer ══ */
+    .cd-footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: auto;
+    }
+    .cd-footer-confidential {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 9px;
+      margin-bottom: 6px;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="cd-page">
+      <!-- Cover Slide -->
+      <div class="cd-cover">
+        <div class="cd-cover-rule"></div>
+        <div class="cd-cover-header">
+          <span style="font-family:var(--brand-font-primary);font-weight:700;font-size:18px;color:var(--brand-primary);">Acme Solutions</span>
+          <div style="font-size:10px;color:#9ca3af;">April 1, 2026</div>
+        </div>
+        <h1 class="cd-cover-title">Proposal</h1>
+        <div class="cd-cover-subtitle">Prepared for GlobalTech Industries</div>
+        <div class="cd-cover-meta">
+          Manufacturing | 2,500 employees
+           | April 1, 2026
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      
+    <div class="cd-stats-bar">
+      
+        <div class="cd-stat">
+          <div class="cd-stat-value">85%</div>
+          <div class="cd-stat-label">nnect disconnected systems</div>
+        </div>
+      
+        <div class="cd-stat">
+          <div class="cd-stat-value">50%</div>
+          <div class="cd-stat-label">license support Payment</div>
+        </div>
+      
+        <div class="cd-stat">
+          <div class="cd-stat-value">$285,000</div>
+          <div class="cd-stat-label">value</div>
+        </div>
+      
+    </div>
+
+      <!-- Content Slides -->
+      
+      <div class="cd-slide">
+        <!-- Insight Box -->
+        <div class="cd-insight-box">
+          <div class="cd-insight-label">KEY INSIGHT</div>
+          <div class="cd-insight-text">This proposal outlines a comprehensive workflow automation engagement for GlobalTech Industries.</div>
+        </div>
+
+        <h2 class="cd-slide-title">Engagement Overview</h2>
+        <div class="cd-slide-body"><p>This proposal outlines a comprehensive workflow automation engagement for GlobalTech Industries. The objective is to connect 12 disconnected systems, automate 85% of manual data entry, and deliver real-time operational visibility within 90 days. <strong>Engagement Value:</strong> $285,000<br/><strong>Timeline:</strong> 12 weeks<br/><strong>Team:</strong> 4 dedicated consultants + 1 project manager</p></div>
+
+        <div class="cd-slide-footer">
+          <span>Acme Solutions</span>
+          <span>CONFIDENTIAL AND PROPRIETARY</span>
+          <span>1 / 5</span>
+        </div>
+      </div>
+
+      <div class="cd-slide">
+        <!-- Insight Box -->
+        <div class="cd-insight-box">
+          <div class="cd-insight-label">KEY INSIGHT</div>
+          <div class="cd-insight-text">Phase 1: Foundation (Weeks 14)
+ System audit and integration architecture design
+ SAP ERP and Siemens MES connector deployment
+ Realtime data streaming pipeline configuration
+ Initial dashboard framework setup Phase 2: Automation (Weeks 58)
+ Deploy 23 automated workflows across production, quality, and finance
+ Compliance engine configuration (SOX, ISO 9001)
+ User acceptance testing with operations team
+ Change management and training program Phase 3: Optimization (Weeks 912)
+ Executive dashboard rollout across all facilities
+ Nocode workflow builder training for power users
+ Performance tuning and optimization
+ Golive support and hypercare period</div>
+        </div>
+
+        <h2 class="cd-slide-title">Scope of Work</h2>
+        <div class="cd-slide-body"><p><strong>Phase 1: Foundation (Weeks 1-4)</strong><br/><ul><li>System audit and integration architecture design</li><br/><li>SAP ERP and Siemens MES connector deployment</li><br/><li>Real-time data streaming pipeline configuration</li><br/><li>Initial dashboard framework setup <strong>Phase 2: Automation (Weeks 5-8)</strong></li><br/><li>Deploy 23 automated workflows across production, quality, and finance</li><br/><li>Compliance engine configuration (SOX, ISO 9001)</li><br/><li>User acceptance testing with operations team</li><br/><li>Change management and training program <strong>Phase 3: Optimization (Weeks 9-12)</strong></li><br/><li>Executive dashboard rollout across all facilities</li><br/><li>No-code workflow builder training for power users</li><br/><li>Performance tuning and optimization</li><br/><li>Go-live support and hypercare period</li></ul></div>
+
+        <div class="cd-slide-footer">
+          <span>Acme Solutions</span>
+          <span>CONFIDENTIAL AND PROPRIETARY</span>
+          <span>2 / 5</span>
+        </div>
+      </div>
+
+      <div class="cd-slide">
+        <!-- Insight Box -->
+        <div class="cd-insight-box">
+          <div class="cd-insight-label">KEY INSIGHT</div>
+          <div class="cd-insight-text">Component  Cost 
+
+ Platform License (Year 1)  $132,000 
+ Implementation Services  $98,000 
+ Integration Connectors  $30,000 
+ Training & Change Mgmt  $15,000 
+ Project Management  $10,000 
+ Total  $285,000  Year 2+ Renewal: $200,000/year (license + support)
+Payment Terms: 50% at signing, 25% at Phase 2, 25% at golive</div>
+        </div>
+
+        <h2 class="cd-slide-title">Investment Breakdown</h2>
+        <div class="cd-slide-body"><table><thead><tr><th>Component</th><th>Cost</th></tr></thead><tbody><tr><td>Platform License (Year 1)</td><td>$132,000</td></tr><tr><td>Implementation Services</td><td>$98,000</td></tr><tr><td>Integration Connectors</td><td>$30,000</td></tr><tr><td>Training &amp; Change Mgmt</td><td>$15,000</td></tr><tr><td>Project Management</td><td>$10,000</td></tr></tbody></table>| <strong>Total</strong> | <strong>$285,000</strong> | <strong>Year 2+ Renewal:</strong> $200,000/year (license + support)<br/><strong>Payment Terms:</strong> 50% at signing, 25% at Phase 2, 25% at go-live</p></div>
+
+        <div class="cd-slide-footer">
+          <span>Acme Solutions</span>
+          <span>CONFIDENTIAL AND PROPRIETARY</span>
+          <span>3 / 5</span>
+        </div>
+      </div>
+
+      <div class="cd-slide">
+        <!-- Insight Box -->
+        <div class="cd-insight-box">
+          <div class="cd-insight-label">KEY INSIGHT</div>
+          <div class="cd-insight-text">Monthend close reduced from 6.2 days to under 2 days
+ Manual data entry reduced by 85% or greater
+ Data accuracy improved from 77% to 99%+
+ Realtime dashboards live for all 6 facilities
+ Zero critical compliance gaps in next audit cycle
+ User adoption rate of 90%+ within 60 days of golive</div>
+        </div>
+
+        <h2 class="cd-slide-title">Success Criteria</h2>
+        <div class="cd-slide-body"><ul><li>Month-end close reduced from 6.2 days to under 2 days</li><br/><li>Manual data entry reduced by 85% or greater</li><br/><li>Data accuracy improved from 77% to 99%+</li><br/><li>Real-time dashboards live for all 6 facilities</li><br/><li>Zero critical compliance gaps in next audit cycle</li><br/><li>User adoption rate of 90%+ within 60 days of go-live</li></ul></div>
+
+        <div class="cd-slide-footer">
+          <span>Acme Solutions</span>
+          <span>CONFIDENTIAL AND PROPRIETARY</span>
+          <span>4 / 5</span>
+        </div>
+      </div>
+
+      <div class="cd-slide">
+        <!-- Insight Box -->
+        <div class="cd-insight-box">
+          <div class="cd-insight-label">KEY INSIGHT</div>
+          <div class="cd-insight-text">Contract Duration: 36 months
+SLA Guarantee: 99.97% uptime with financial penalties
+Data Security: SOC 2 Type II, ISO 27001, ITARcompliant
+Termination: 90day notice period after initial 12 months
+Warranty: 12month defect warranty on all custom configurations
+Support: 24/7 enterprise support with 2hour critical response SLA</div>
+        </div>
+
+        <h2 class="cd-slide-title">Terms & Conditions</h2>
+        <div class="cd-slide-body"><p><strong>Contract Duration:</strong> 36 months<br/><strong>SLA Guarantee:</strong> 99.97% uptime with financial penalties<br/><strong>Data Security:</strong> SOC 2 Type II, ISO 27001, ITAR-compliant<br/><strong>Termination:</strong> 90-day notice period after initial 12 months<br/><strong>Warranty:</strong> 12-month defect warranty on all custom configurations<br/><strong>Support:</strong> 24/7 enterprise support with 2-hour critical response SLA</p></div>
+
+        <div class="cd-slide-footer">
+          <span>Acme Solutions</span>
+          <span>CONFIDENTIAL AND PROPRIETARY</span>
+          <span>5 / 5</span>
+        </div>
+      </div>
+
+      <!-- Final Footer -->
+      <div class="cd-footer">
+        <div class="cd-footer-confidential">Confidential and Proprietary</div>
+        <div>Acme Solutions | April 1, 2026 | Page 1 of 3</div>
+      </div>
+    </div>
+  
+</body>
+</html>

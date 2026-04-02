@@ -84,6 +84,8 @@ const style07Asymmetric: DocumentStyle = {
         font-size: var(--brand-font-body-size);
         margin: 0;
         padding: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
 
       /* ── Hero Header ── */
@@ -177,6 +179,13 @@ const style07Asymmetric: DocumentStyle = {
         z-index: 1;
       }
 
+      /* ── Page Container ── */
+      .asym-page {
+        width: 100%;
+        max-width: 816px;
+        margin: 0 auto;
+      }
+
       /* ── Section Wrapper ── */
       .asym-sections { padding: 0; }
 
@@ -185,6 +194,7 @@ const style07Asymmetric: DocumentStyle = {
         position: relative;
         padding: 48px 60px 48px;
         overflow: hidden;
+        page-break-inside: avoid;
       }
       .asym-section-offset-left {
         padding-left: 25%;
@@ -333,11 +343,11 @@ const style07Asymmetric: DocumentStyle = {
         display: flex;
         gap: 0;
         margin: 24px 0;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
       .asym-stat-item {
         flex: 1;
-        min-width: 130px;
+        min-width: 0;
         padding: 24px 20px;
         border-right: 1px solid #e5e5e5;
       }
@@ -410,6 +420,7 @@ const style07Asymmetric: DocumentStyle = {
         justify-content: space-between;
         align-items: center;
         border-top: 1px solid #e0e0e0;
+        margin-top: auto;
       }
       .asym-footer-left {
         font-size: 12px;
@@ -443,8 +454,9 @@ const style07Asymmetric: DocumentStyle = {
     `;
 
     // Build sections with varying layouts
+    const validSections = sections.filter(s => s.content && s.content.trim().length > 0);
     let accentSectionUsed = false;
-    const sectionsHtml = sections.map((s, i) => {
+    const sectionsHtml = validSections.map((s, i) => {
       const title = stripEmojis(s.title);
       const content = stripEmojis(s.content);
       const num = String(i + 1).padStart(2, '0');
@@ -512,6 +524,7 @@ const style07Asymmetric: DocumentStyle = {
     }).join('');
 
     const body = `
+      <div class="asym-page">
       <div class="asym-hero">
         <div class="asym-hero-bg-num">A</div>
         <div class="asym-hero-top">
@@ -534,6 +547,7 @@ const style07Asymmetric: DocumentStyle = {
           ${companyDescription ? ' &middot; ' + companyDescription : ''}
         </div>
         <div class="asym-footer-right">${dateStr} &middot; Page 1</div>
+      </div>
       </div>
     `;
 

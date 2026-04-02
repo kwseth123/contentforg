@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acme Solutions - Solution Overview - GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    @page { margin: 0; size: letter; }
+
+    .onepager-wrapper {
+      width: 100%;
+      max-width: 8.5in;
+      min-height: 11in;
+      max-height: 11in;
+      overflow: hidden;
+      margin: 0 auto;
+      font-family: var(--brand-font-primary);
+      color: #334155;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header band */
+    .onepager-header {
+      background: #4F46E5;
+      color: #FFFFFF;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .onepager-header-logo img { height: 28px; }
+    .onepager-header-right {
+      text-align: right;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .onepager-header-right .prospect-name {
+      font-weight: 700;
+      font-size: 14px;
+      opacity: 1;
+    }
+
+    /* Hero section */
+    .onepager-hero {
+      padding: 28px 40px 16px;
+    }
+    .onepager-hero h1, .onepager-hero p:first-child {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #4F46E5;
+      margin: 0 0 8px;
+    }
+    .onepager-hero p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #334155;
+      margin: 0;
+    }
+
+    /* Stat bar */
+    .onepager-stats {
+      display: flex;
+      gap: 16px;
+      padding: 0 40px 20px;
+    }
+    .onepager-stat {
+      flex: 1;
+      background: #f1f0fd;
+      border-radius: 8px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .onepager-stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4F46E5;
+      line-height: 1.1;
+    }
+    .onepager-stat-label {
+      font-size: 11px;
+      color: #334155;
+      opacity: 0.7;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Two-column body */
+    .onepager-body {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 24px;
+      padding: 0 40px 20px;
+      flex: 1;
+    }
+
+    .onepager-left {}
+
+    .onepager-challenge, .onepager-solution {
+      margin-bottom: 16px;
+    }
+    .onepager-challenge ul, .onepager-solution ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .onepager-challenge li, .onepager-solution li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .onepager-challenge li::before, .onepager-solution li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .onepager-challenge strong, .onepager-solution strong {
+      color: #4F46E5;
+    }
+
+    /* Why Us sidebar */
+    .onepager-whyus {
+      background: #ffffff;
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 16px;
+    }
+    .onepager-whyus p, .onepager-whyus li {
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .onepager-whyus strong { color: #4F46E5; }
+    .onepager-whyus ul { list-style: none; padding: 0; margin: 0; }
+    .onepager-whyus li { padding-left: 0; margin-bottom: 6px; }
+
+    /* Proof quote */
+    .onepager-proof {
+      background: #f8f9fa;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+      font-style: italic;
+      color: #555;
+    }
+    .onepager-proof p { margin: 0; }
+
+    /* Footer band */
+    .onepager-footer {
+      background: #4F46E5;
+      color: #FFFFFF;
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      opacity: 0.9;
+      margin-top: auto;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="onepager-wrapper">
+      <div class="onepager-header">
+        <div class="onepager-header-logo" style="font-weight:700;font-size:16px;">Acme Solutions</div>
+        <div class="onepager-header-right">
+          <div class="prospect-name">GlobalTech Industries</div>
+          <div>Solution Overview | April 1, 2026</div>
+        </div>
+      </div>
+
+      <div class="onepager-hero"><p><strong>Automate Your Manufacturing Workflows in 90 Days</strong><br/>Eliminate manual data entry, reduce errors by 73%, and free your team to focus on what matters.</p></div>
+      <div class="onepager-stats">
+    <div class="onepager-stat">
+      <div class="onepager-stat-value">73%</div>
+      <div class="onepager-stat-label">Error Reduction</div>
+    </div>
+  
+    <div class="onepager-stat">
+      <div class="onepager-stat-value">4.2x</div>
+      <div class="onepager-stat-label">ROI in Year One</div>
+    </div>
+  
+    <div class="onepager-stat">
+      <div class="onepager-stat-value">90 Days</div>
+      <div class="onepager-stat-label">Full Deployment</div>
+    </div>
+  </div>
+
+      <div class="onepager-body">
+        <div class="onepager-left">
+          <div class="onepager-challenge"><ul><li>Manual data entry across 12+ disconnected systems</li><br/><li>Average 14 hours per week spent on reconciliation</li><br/><li>Compliance gaps from inconsistent reporting</li><br/><li>No real-time visibility into production metrics</li></ul></div>
+          <div class="onepager-solution"><ul><li><strong>Unified Data Layer</strong> connects ERP, MES, and CRM in real-time</li><br/><li><strong>Smart Automation</strong> eliminates 85% of manual touchpoints</li><br/><li><strong>Live Dashboards</strong> give leadership instant visibility</li><br/><li><strong>Compliance Engine</strong> auto-generates audit-ready reports</li></ul></div>
+        </div>
+        <div class="onepager-right">
+          <div class="onepager-whyus"><ul><li><strong>12 years</strong> in manufacturing automation</li><br/><li><strong>340+ enterprise deployments</strong> globally</li><br/><li><strong>99.97% uptime</strong> SLA guarantee</li><br/><li><strong>Dedicated CSM</strong> for every account</li><br/><li>Named Leader in Gartner MQ 2025</li></ul></div>
+          <div class="onepager-proof"><p>"Acme Solutions cut our month-end close from 5 days to 8 hours. The ROI was undeniable within the first quarter." — Sarah Chen, VP Operations, Meridian Manufacturing</p></div>
+        </div>
+      </div>
+
+      <div class="onepager-footer">
+        <div>Acme Solutions | Enterprise workflow automation platform</div>
+        <div>Prepared for GlobalTech Industries</div>
+        <div>April 1, 2026</div>
+      </div>
+    </div>
+  
+</body>
+</html>

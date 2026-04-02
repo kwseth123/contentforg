@@ -41,6 +41,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineCube,
   HiOutlinePhone,
+  HiOutlineLightBulb,
 } from 'react-icons/hi2';
 
 interface DashboardData {
@@ -84,6 +85,7 @@ export default function DashboardPage() {
   const [products, setProducts] = useState<ProductProfile[]>([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [leaderboard, setLeaderboard] = useState<{name:string;generations:number;avgScore:number|null}[]>([]);
+  const [brainStats, setBrainStats] = useState<{ totalItems: number; totalInsights: number; competitiveMentions: number } | null>(null);
   const role = (session?.user as Record<string, unknown>)?.role as string;
   const kbCompletion = useKBCompletion();
 
@@ -139,6 +141,7 @@ export default function DashboardPage() {
         .then((data) => setProducts(data))
         .catch(() => setProducts([]));
       fetch('/api/leaderboard').then(r => r.ok ? r.json() : []).then(setLeaderboard).catch(() => {});
+      fetch('/api/brain').then(r => r.ok ? r.json() : null).then(d => { if (d?.stats) setBrainStats(d.stats); }).catch(() => {});
     }
   }, [status, loadDashboard]);
 
@@ -937,6 +940,33 @@ export default function DashboardPage() {
                 <span className="text-xs uppercase font-medium" style={{ color: 'var(--text-muted)' }}>Needs Attention</span>
                 <p className="text-3xl font-bold mt-1" style={{ color: 'var(--accent)' }}>{needsAttention.length}</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>outdated items</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Brain Stats ── */}
+          {brainStats && brainStats.totalItems > 0 && (
+            <div className="grid grid-cols-3 gap-4 mt-4">
+              <div className="card-sm rounded-xl p-5 flex items-center gap-3" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                <HiOutlineLightBulb className="text-2xl flex-shrink-0" style={{ color: 'var(--accent)' }} />
+                <div>
+                  <span className="text-xs uppercase font-medium" style={{ color: 'var(--text-muted)' }}>Files Indexed</span>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{brainStats.totalItems}</p>
+                </div>
+              </div>
+              <div className="card-sm rounded-xl p-5 flex items-center gap-3" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                <HiOutlineSparkles className="text-2xl flex-shrink-0" style={{ color: '#22c55e' }} />
+                <div>
+                  <span className="text-xs uppercase font-medium" style={{ color: 'var(--text-muted)' }}>Insights Extracted</span>
+                  <p className="text-2xl font-bold" style={{ color: '#22c55e' }}>{brainStats.totalInsights}</p>
+                </div>
+              </div>
+              <div className="card-sm rounded-xl p-5 flex items-center gap-3" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                <HiOutlineChartBar className="text-2xl flex-shrink-0" style={{ color: '#ef4444' }} />
+                <div>
+                  <span className="text-xs uppercase font-medium" style={{ color: 'var(--text-muted)' }}>Competitive Mentions</span>
+                  <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>{brainStats.competitiveMentions}</p>
+                </div>
               </div>
             </div>
           )}

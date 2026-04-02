@@ -63,7 +63,7 @@ function render(input: StyleInput): string {
     ...s,
     title: stripEmojis(s.title),
     content: stripEmojis(s.content),
-  }));
+  })).filter(s => s.content && s.content.trim().length > 0);
   const stats = extractStats(cleanSections);
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const accent = brand.accent || brand.primary;
@@ -94,13 +94,16 @@ function render(input: StyleInput): string {
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     /* ── Layout: split panel ── */
     .split-wrapper {
       display: flex;
       min-height: 100vh;
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
 
@@ -114,6 +117,9 @@ function render(input: StyleInput): string {
       flex-direction: column;
       position: relative;
       min-height: 100vh;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
     .panel-left::after {
       content: '';
@@ -249,11 +255,15 @@ function render(input: StyleInput): string {
       background: #fff;
       padding: 56px 52px 48px;
       min-height: 100vh;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     /* Sections */
     .section {
       margin-bottom: 48px;
+      page-break-inside: avoid;
     }
     .section-title {
       font-size: 18px;
@@ -402,6 +412,9 @@ function render(input: StyleInput): string {
       .panel-right {
         margin-left: 35%;
       }
+      .section {
+        page-break-inside: avoid;
+      }
     }
   `;
 
@@ -450,7 +463,7 @@ function render(input: StyleInput): string {
 
       <!-- Right Panel -->
       <div class="panel-right">
-        ${cleanSections.map((s, i) => `
+        ${cleanSections.filter(s => s.content && s.content.trim().length > 0).map((s, i) => `
         ${i > 0 ? '<div class="section-divider"></div>' : ''}
         <div class="section">
           <h2 class="section-title">${s.title}</h2>

@@ -91,7 +91,8 @@ function render(input: StyleInput): string {
     </div>` : '';
 
   // Sections HTML
-  const sectionsHtml = sections.map((s, i) => {
+  const filteredSections = sections.filter(s => s.title.trim() || s.content.trim());
+  const sectionsHtml = filteredSections.map((s, i) => {
     const pullQuote = extractPullQuote(s.content);
     const num = String(i + 1).padStart(2, '0');
     const cleanContent = stripEmojis(s.content);
@@ -113,7 +114,7 @@ function render(input: StyleInput): string {
         <h2 class="ed-section-title">${stripEmojis(s.title)}</h2>
         ${i === 0 ? `<div class="ed-section-body ed-has-dropcap">${formatMarkdown(cleanContent)}</div>` : `<div class="ed-section-body">${formatMarkdown(cleanContent)}</div>`}
         ${pullQuoteHtml}
-        ${i < sections.length - 1 ? '<div class="ed-ornament-break"><span></span><span></span><span></span></div>' : ''}
+        ${i < filteredSections.length - 1 ? '<div class="ed-ornament-break"><span></span><span></span><span></span></div>' : ''}
       </div>`;
   }).join('');
 
@@ -134,7 +135,7 @@ function render(input: StyleInput): string {
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .ed-section { break-inside: avoid; }
+      .ed-section { break-inside: avoid; page-break-inside: avoid; }
     }
 
     body {
@@ -150,9 +151,11 @@ function render(input: StyleInput): string {
 
     /* ── Publication wrapper ── */
     .ed-wrapper {
-      max-width: 780px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
+      overflow-wrap: break-word;
     }
 
     /* ── Masthead header ── */
@@ -229,13 +232,14 @@ function render(input: StyleInput): string {
     /* ── Stats bar ── */
     .ed-stats-bar {
       display: flex;
+      flex-wrap: nowrap;
       justify-content: center;
       gap: 40px;
       padding: 28px 80px;
       background: ${lightBg};
       border-bottom: 1px solid ${lighten(accent, 0.85)};
     }
-    .ed-stat { text-align: center; }
+    .ed-stat { text-align: center; min-width: 0; }
     .ed-stat-value {
       font-family: 'Playfair Display', Georgia, serif;
       font-size: 28px;
@@ -263,6 +267,7 @@ function render(input: StyleInput): string {
       position: relative;
       margin-bottom: 48px;
       text-align: justify;
+      page-break-inside: avoid;
     }
     .ed-section-num-bg {
       position: absolute;
@@ -328,6 +333,7 @@ function render(input: StyleInput): string {
       line-height: 1.9;
       position: relative;
       z-index: 1;
+      overflow-wrap: break-word;
     }
     .ed-section-body p { margin-bottom: 16px; }
     .ed-section-body h1, .ed-section-body h2,
@@ -443,6 +449,7 @@ function render(input: StyleInput): string {
       position: relative;
       padding: 24px 80px 32px;
       text-align: center;
+      margin-top: auto;
     }
     .ed-footer::before {
       content: '';

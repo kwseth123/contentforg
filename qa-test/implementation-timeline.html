@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Implementation Timeline — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0.65in 0.75in;
+      @bottom-center {
+        content: "Page " counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 9px;
+        color: #bbb;
+      }
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tl-entry { break-inside: avoid; page-break-inside: avoid; }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: #334155;
+      background: #f8f9fb;
+      line-height: 1.65;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 0;
+    }
+
+    .tl-wrapper {
+      width: 100%; max-width: 816px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .tl-header {
+      background: #ffffff;
+      padding: 40px 48px;
+      border-bottom: 3px solid #4F46E5;
+      position: relative;
+    }
+    .tl-header::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #a7a3f2;
+    }
+    .tl-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .tl-header-logo { flex-shrink: 0; }
+    .tl-header-meta {
+      text-align: right;
+      font-size: 12px;
+      color: #888;
+      line-height: 1.6;
+    }
+    .tl-header-prospect {
+      font-weight: 700;
+      color: #4F46E5;
+      font-size: 13px;
+    }
+    .tl-header-title {
+      font-size: 41px;
+      font-weight: 800;
+      color: #1a1a1a;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .tl-header-subtitle {
+      font-size: 15px;
+      color: #777;
+    }
+    .tl-header-range {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 6px 14px;
+      background: #f8f8fe;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4F46E5;
+    }
+    .tl-header-range svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── Overview stats ── */
+    .tl-overview {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 16px;
+      padding: 24px 48px;
+      background: #ffffff;
+    }
+    .tl-overview-stat {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding: 16px;
+      background: #f8f8fe;
+      border-radius: 10px;
+    }
+    .tl-overview-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4F46E5;
+      line-height: 1.1;
+    }
+    .tl-overview-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    /* ── Gantt card ── */
+    .tl-gantt-card {
+      background: #ffffff;
+      margin: 24px 48px;
+      border-radius: 12px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .tl-gantt-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 18px;
+    }
+    .tl-gantt-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .tl-gantt-row:last-child { margin-bottom: 0; }
+    .tl-gantt-label {
+      width: 140px;
+      font-size: 12px;
+      color: #555;
+      text-align: right;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tl-gantt-track {
+      flex: 1;
+      height: 16px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .tl-gantt-fill {
+      height: 100%;
+      border-radius: 8px;
+    }
+    .tl-gantt-status {
+      width: 80px;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      padding: 3px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Status colors */
+    .tl-status-complete {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    .tl-status-progress {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    .tl-status-upcoming {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    /* ── Timeline content ── */
+    .tl-content-area {
+      padding: 32px 48px;
+    }
+
+    .tl-entry {
+      display: flex;
+      gap: 24px;
+      min-height: 80px;
+      margin-bottom: 4px;
+      page-break-inside: avoid;
+    }
+    .tl-marker-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 32px;
+    }
+    .tl-dot-outer {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .tl-dot-inner {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .tl-line {
+      width: 2px;
+      flex: 1;
+      opacity: 0.25;
+      min-height: 40px;
+    }
+
+    /* ── Content cards ── */
+    .tl-content-card {
+      flex: 1;
+      padding-bottom: 24px;
+    }
+    .tl-card-top {
+      background: #ffffff;
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .tl-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .tl-phase-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .tl-status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+    }
+    .tl-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+
+    /* ── Body prose ── */
+    .tl-body { color: #555; line-height: 1.7; overflow-wrap: break-word; }
+    .tl-body p { margin-bottom: 12px; }
+    .tl-body h1, .tl-body h2, .tl-body h3, .tl-body h4 {
+      color: #1a1a1a;
+      margin: 18px 0 8px;
+    }
+    .tl-body h1 { font-size: 20px; font-weight: 700; }
+    .tl-body h2 { font-size: 17px; font-weight: 700; }
+    .tl-body h3 { font-size: 15px; font-weight: 600; }
+    .tl-body ul, .tl-body ol { padding-left: 22px; margin: 10px 0; }
+    .tl-body li { margin-bottom: 6px; }
+    .tl-body strong { font-weight: 700; color: #1a1a1a; }
+    .tl-body em { font-style: italic; }
+
+    /* ── Tables ── */
+    .tl-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .tl-body th {
+      background: #f1f0fd;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-bottom: 2px solid #4F46E5;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tl-body td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #eee;
+    }
+    .tl-body tr:last-child td { border-bottom: none; }
+    .tl-body hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+
+    /* ── Milestones ── */
+    .tl-milestones {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #eee;
+    }
+    .tl-milestones-header {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+      margin-bottom: 10px;
+    }
+    .tl-milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .tl-milestone-dot {
+      width: 18px;
+      height: 18px;
+      border: 2px solid;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .tl-dot-checked {
+      background: rgba(79, 70, 229, 0.08);
+    }
+    .tl-milestone-text {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.4;
+    }
+
+    /* ── Footer ── */
+    .tl-footer {
+      background: #ffffff;
+      border-top: 3px solid #4F46E5;
+      padding: 24px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #999;
+      position: relative;
+    }
+    .tl-footer::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #a7a3f2;
+    }
+    .tl-footer-left {}
+    .tl-footer-company {
+      font-weight: 700;
+      color: #777;
+    }
+    .tl-footer-center {
+      text-align: center;
+    }
+    .tl-footer-right {
+      text-align: right;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="tl-wrapper">
+      <header class="tl-header">
+        <div class="tl-header-top">
+          <div class="tl-header-logo"><span style="font-family:var(--brand-font-primary);font-weight:700;font-size:18px;color:var(--brand-primary);">Acme Solutions</span></div>
+          <div class="tl-header-meta">
+            <div class="tl-header-prospect">GlobalTech Industries</div>
+            <div>Manufacturing</div>
+            <div>April 1, 2026</div>
+          </div>
+        </div>
+        <h1 class="tl-header-title">Implementation Timeline</h1>
+        <div class="tl-header-subtitle">Implementation roadmap for GlobalTech Industries</div>
+        <div class="tl-header-range">
+          <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="#4F46E5" stroke-width="1.5"/><path d="M1 6h12M4 1v2M10 1v2" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round"/></svg>
+          5 Phases &middot; April 1, 2026
+        </div>
+      </header>
+
+      
+      
+    <div class="tl-gantt-card">
+      <div class="tl-gantt-header">Project Timeline Overview</div>
+      <div class="tl-gantt-bars">
+        
+            <div class="tl-gantt-row">
+              <span class="tl-gantt-label">Phase 1: Discovery & Architecture (Weeks 1-2)</span>
+              <div class="tl-gantt-track">
+                <div class="tl-gantt-fill" style="width:100%;background:#4F46E5;opacity:1;"></div>
+              </div>
+              <span class="tl-gantt-status tl-status-complete">Complete</span>
+            </div>
+            <div class="tl-gantt-row">
+              <span class="tl-gantt-label">Phase 2: Core Integration (Weeks 3-6)</span>
+              <div class="tl-gantt-track">
+                <div class="tl-gantt-fill" style="width:92%;background:#4F46E5;opacity:1;"></div>
+              </div>
+              <span class="tl-gantt-status tl-status-complete">Complete</span>
+            </div>
+            <div class="tl-gantt-row">
+              <span class="tl-gantt-label">Phase 3: Workflow Automation (Weeks 7-9)</span>
+              <div class="tl-gantt-track">
+                <div class="tl-gantt-fill" style="width:84%;background:#4F46E5;opacity:0.7;"></div>
+              </div>
+              <span class="tl-gantt-status tl-status-progress">In Progress</span>
+            </div>
+            <div class="tl-gantt-row">
+              <span class="tl-gantt-label">Phase 4: Dashboards & Training (Weeks 10-11)</span>
+              <div class="tl-gantt-track">
+                <div class="tl-gantt-fill" style="width:76%;background:#433cc3;opacity:0.7;"></div>
+              </div>
+              <span class="tl-gantt-status tl-status-progress">In Progress</span>
+            </div>
+            <div class="tl-gantt-row">
+              <span class="tl-gantt-label">Phase 5: Go-Live & Hypercare (Week 12)</span>
+              <div class="tl-gantt-track">
+                <div class="tl-gantt-fill" style="width:68%;background:#726bea;opacity:0.35;"></div>
+              </div>
+              <span class="tl-gantt-status tl-status-upcoming">Upcoming</span>
+            </div>
+      </div>
+    </div>
+
+      <div class="tl-content-area">
+        
+      <div class="tl-entry">
+        <div class="tl-marker-col">
+          <div class="tl-dot-outer" style="border-color:#4F46E5;">
+            <div class="tl-dot-inner" style="background:#4F46E5;"></div>
+          </div>
+          <div class="tl-line" style="background:linear-gradient(to bottom, #4F46E5, #4F46E5);"></div>
+        </div>
+        <div class="tl-content-card">
+          <div class="tl-card-top" style="border-left:4px solid #4F46E5;">
+            <div class="tl-card-header">
+              <div class="tl-phase-badge" style="background:#ededfc;color:#4F46E5;">Phase 1</div>
+              <div class="tl-status-badge tl-status-complete">Complete</div>
+            </div>
+            <h2 class="tl-title">Phase 1: Discovery & Architecture (Weeks 1-2)</h2>
+            <div class="tl-body"><ul><li><strong>Week 1:</strong> Kickoff meeting, stakeholder interviews, system inventory</li><br/><li><strong>Week 2:</strong> Integration architecture design, security review, environment provisioning</li><br/><li><strong>Milestone:</strong> Architecture approved by IT and Operations</li><br/><li><strong>Owner:</strong> Joint team — Acme Solutions + GlobalTech IT</li><br/><li><strong>Risk:</strong> ERP access provisioning may take 5-7 business days</li></ul></div>
+            
+      <div class="tl-milestones">
+        <div class="tl-milestones-header">Key Milestones</div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Week 1:</strong> Kickoff meeting, stakeholder interviews, system inventory</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Week 2:</strong> Integration architecture design, security review, environment provisioning</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Milestone:</strong> Architecture approved by IT and Operations</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Owner:</strong> Joint team — Acme Solutions + GlobalTech IT</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Risk:</strong> ERP access provisioning may take 5-7 business days</span>
+          </div>
+        
+      </div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-entry">
+        <div class="tl-marker-col">
+          <div class="tl-dot-outer" style="border-color:#4F46E5;">
+            <div class="tl-dot-inner" style="background:#4F46E5;"></div>
+          </div>
+          <div class="tl-line" style="background:linear-gradient(to bottom, #4F46E5, #4F46E5);"></div>
+        </div>
+        <div class="tl-content-card">
+          <div class="tl-card-top" style="border-left:4px solid #4F46E5;">
+            <div class="tl-card-header">
+              <div class="tl-phase-badge" style="background:#ededfc;color:#4F46E5;">Phase 2</div>
+              <div class="tl-status-badge tl-status-complete">Complete</div>
+            </div>
+            <h2 class="tl-title">Phase 2: Core Integration (Weeks 3-6)</h2>
+            <div class="tl-body"><ul><li><strong>Week 3:</strong> SAP ERP connector deployment and configuration</li><br/><li><strong>Week 4:</strong> Siemens MES connector deployment and real-time streaming setup</li><br/><li><strong>Week 5:</strong> Data mapping, transformation rules, and validation testing</li><br/><li><strong>Week 6:</strong> End-to-end integration testing and data reconciliation</li><br/><li><strong>Milestone:</strong> All core systems connected with validated data flow</li><br/><li><strong>Owner:</strong> Acme Solutions integration team</li><br/><li><strong>Risk:</strong> Custom field mappings may require additional SAP configuration</li></ul></div>
+            
+      <div class="tl-milestones">
+        <div class="tl-milestones-header">Key Milestones</div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Week 3:</strong> SAP ERP connector deployment and configuration</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Week 4:</strong> Siemens MES connector deployment and real-time streaming setup</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Week 5:</strong> Data mapping, transformation rules, and validation testing</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Week 6:</strong> End-to-end integration testing and data reconciliation</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Milestone:</strong> All core systems connected with validated data flow</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Owner:</strong> Acme Solutions integration team</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot tl-dot-checked" style="border-color:#4F46E5;">
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" stroke="#4F46E5" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="tl-milestone-text"><strong>Risk:</strong> Custom field mappings may require additional SAP configuration</span>
+          </div>
+        
+      </div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-entry">
+        <div class="tl-marker-col">
+          <div class="tl-dot-outer" style="border-color:#4F46E5;">
+            <div class="tl-dot-inner" style="background:#4F46E5;"></div>
+          </div>
+          <div class="tl-line" style="background:linear-gradient(to bottom, #4F46E5, #433cc3);"></div>
+        </div>
+        <div class="tl-content-card">
+          <div class="tl-card-top" style="border-left:4px solid #4F46E5;">
+            <div class="tl-card-header">
+              <div class="tl-phase-badge" style="background:#ededfc;color:#4F46E5;">Phase 3</div>
+              <div class="tl-status-badge tl-status-progress">In Progress</div>
+            </div>
+            <h2 class="tl-title">Phase 3: Workflow Automation (Weeks 7-9)</h2>
+            <div class="tl-body"><ul><li><strong>Week 7:</strong> Deploy production order workflows (8 workflows)</li><br/><li><strong>Week 8:</strong> Deploy quality and compliance workflows (9 workflows)</li><br/><li><strong>Week 9:</strong> Deploy finance and reporting workflows (6 workflows)</li><br/><li><strong>Milestone:</strong> All 23 workflows live and processing in parallel</li><br/><li><strong>Owner:</strong> Acme Solutions automation team + GlobalTech process owners</li><br/><li><strong>Risk:</strong> Process owner availability for UAT sessions</li></ul></div>
+            
+      <div class="tl-milestones">
+        <div class="tl-milestones-header">Key Milestones</div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#4F46E5;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Week 7:</strong> Deploy production order workflows (8 workflows)</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#4F46E5;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Week 8:</strong> Deploy quality and compliance workflows (9 workflows)</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#4F46E5;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Week 9:</strong> Deploy finance and reporting workflows (6 workflows)</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#4F46E5;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Milestone:</strong> All 23 workflows live and processing in parallel</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#4F46E5;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Owner:</strong> Acme Solutions automation team + GlobalTech process owners</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#4F46E5;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Risk:</strong> Process owner availability for UAT sessions</span>
+          </div>
+        
+      </div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-entry">
+        <div class="tl-marker-col">
+          <div class="tl-dot-outer" style="border-color:#433cc3;">
+            <div class="tl-dot-inner" style="background:#433cc3;"></div>
+          </div>
+          <div class="tl-line" style="background:linear-gradient(to bottom, #433cc3, #726bea);"></div>
+        </div>
+        <div class="tl-content-card">
+          <div class="tl-card-top" style="border-left:4px solid #433cc3;">
+            <div class="tl-card-header">
+              <div class="tl-phase-badge" style="background:#ececf9;color:#433cc3;">Phase 4</div>
+              <div class="tl-status-badge tl-status-progress">In Progress</div>
+            </div>
+            <h2 class="tl-title">Phase 4: Dashboards & Training (Weeks 10-11)</h2>
+            <div class="tl-body"><ul><li><strong>Week 10:</strong> Executive dashboard deployment across all 6 facilities</li><br/><li><strong>Week 11:</strong> Power user training (no-code builder), admin training, end-user training</li><br/><li><strong>Milestone:</strong> All users trained and self-sufficient</li><br/><li><strong>Owner:</strong> Acme Solutions customer success team</li><br/><li><strong>Deliverable:</strong> Training documentation, video library, quick-reference cards</li></ul></div>
+            
+      <div class="tl-milestones">
+        <div class="tl-milestones-header">Key Milestones</div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#433cc3;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Week 10:</strong> Executive dashboard deployment across all 6 facilities</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#433cc3;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Week 11:</strong> Power user training (no-code builder), admin training, end-user training</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#433cc3;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Milestone:</strong> All users trained and self-sufficient</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#433cc3;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Owner:</strong> Acme Solutions customer success team</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#433cc3;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Deliverable:</strong> Training documentation, video library, quick-reference cards</span>
+          </div>
+        
+      </div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-entry">
+        <div class="tl-marker-col">
+          <div class="tl-dot-outer" style="border-color:#726bea;">
+            <div class="tl-dot-inner" style="background:#726bea;opacity:0.3;"></div>
+          </div>
+          
+        </div>
+        <div class="tl-content-card">
+          <div class="tl-card-top" style="border-left:4px solid #726bea;">
+            <div class="tl-card-header">
+              <div class="tl-phase-badge" style="background:#f1f0fd;color:#726bea;">Phase 5</div>
+              <div class="tl-status-badge tl-status-upcoming">Upcoming</div>
+            </div>
+            <h2 class="tl-title">Phase 5: Go-Live & Hypercare (Week 12)</h2>
+            <div class="tl-body"><ul><li><strong>Go-Live:</strong> Full production cutover with Acme Solutions on-site support</li><br/><li><strong>Hypercare:</strong> 2-week dedicated support window (24/7 coverage)</li><br/><li><strong>Milestone:</strong> System operating independently with no critical issues</li><br/><li><strong>Escalation Path:</strong> Dedicated Slack channel, 2-hour critical SLA</li><br/><li><strong>Post Go-Live:</strong> Monthly business reviews for first 6 months</li></ul></div>
+            
+      <div class="tl-milestones">
+        <div class="tl-milestones-header">Key Milestones</div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#726bea;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Go-Live:</strong> Full production cutover with Acme Solutions on-site support</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#726bea;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Hypercare:</strong> 2-week dedicated support window (24/7 coverage)</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#726bea;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Milestone:</strong> System operating independently with no critical issues</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#726bea;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Escalation Path:</strong> Dedicated Slack channel, 2-hour critical SLA</span>
+          </div>
+        
+          <div class="tl-milestone-item">
+            <div class="tl-milestone-dot " style="border-color:#726bea;">
+              
+            </div>
+            <span class="tl-milestone-text"><strong>Post Go-Live:</strong> Monthly business reviews for first 6 months</span>
+          </div>
+        
+      </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <footer class="tl-footer">
+        <div class="tl-footer-left">
+          <span class="tl-footer-company">Acme Solutions</span> | Enterprise workflow automation platform
+        </div>
+        <div class="tl-footer-center">
+          Last updated: April 1, 2026 &middot; Rev 1.0
+        </div>
+        <div class="tl-footer-right">
+          Prepared for GlobalTech Industries
+        </div>
+      </footer>
+    </div>
+  
+</body>
+</html>

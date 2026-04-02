@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battle Card - GlobalTech Industries - Acme Solutions</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+      
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+      
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #E53935;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #E53935;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #E53935;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #E53935;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #E53935;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #E53935; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #E53935; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #E53935;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #E53935;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #E53935;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+      @page {
+        size: letter;
+        margin: 0.6in;
+      }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+
+      body {
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #222222;
+        background: #ffffff;
+        line-height: 1.55;
+        font-size: 14px;
+        margin: 0;
+        padding: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+      }
+
+      /* ── Page Grid Container ── */
+      .swiss-page {
+        width: 100%;
+        max-width: 816px;
+        margin: 0 auto;
+        padding: 0 40px;
+      }
+
+      /* ── 12-Column Grid ── */
+      .swiss-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: 16px;
+      }
+
+      /* ── Header ── */
+      .swiss-header {
+        padding: 48px 0 24px;
+        border-bottom: 2px solid #000000;
+        margin-bottom: 0;
+      }
+      .swiss-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+      }
+      .swiss-header-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .swiss-header-logo img { height: 28px; }
+      .swiss-header-logo-text {
+        font-weight: 700;
+        font-size: 16px;
+        color: #000;
+        letter-spacing: -0.01em;
+      }
+      .swiss-accent-block {
+        width: 24px;
+        height: 24px;
+        background: #E53935;
+        flex-shrink: 0;
+      }
+      .swiss-header-right {
+        text-align: right;
+      }
+      .swiss-header-prospect-logo img {
+        height: 22px;
+        opacity: 0.5;
+        margin-bottom: 4px;
+      }
+      .swiss-header-meta-text {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #999;
+        font-weight: 500;
+        line-height: 1.6;
+      }
+      .swiss-header-meta-text .prospect-name {
+        font-size: 12px;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 0.06em;
+      }
+
+      /* Title area in grid */
+      .swiss-title-area {
+        grid-column: 1 / 9;
+        padding: 8px 0 0;
+      }
+      .swiss-title-type {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #E53935;
+        margin-bottom: 8px;
+      }
+      .swiss-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: #000000;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        text-align: left;
+        margin-bottom: 0;
+      }
+      .swiss-date-area {
+        grid-column: 9 / 13;
+        padding: 8px 0 0;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .swiss-date-label {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #aaa;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .swiss-date-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        text-align: right;
+      }
+
+      /* ── Section Row (12-column grid) ── */
+      .swiss-section {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: 16px;
+        padding: 32px 0;
+        border-bottom: 1px solid #cccccc;
+        page-break-inside: avoid;
+      }
+
+      /* Label column */
+      .swiss-label {
+        grid-column: 1 / 4;
+        padding-top: 2px;
+      }
+      .swiss-label-num {
+        font-size: 11px;
+        font-weight: 800;
+        color: #E53935;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+      .swiss-label-text {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #777;
+        line-height: 1.4;
+        font-variant: small-caps;
+      }
+
+      /* Content column */
+      .swiss-content {
+        grid-column: 4 / 13;
+      }
+
+      /* ── Typography (flush-left, no centering) ── */
+      .swiss-content h2 { display: none; }
+      .swiss-content h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000000;
+        margin: 24px 0 8px;
+        line-height: 1.3;
+        text-align: left;
+      }
+      .swiss-content h4 {
+        font-size: 10px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        margin: 20px 0 8px;
+        line-height: 1.4;
+        font-variant: small-caps;
+      }
+      .swiss-content p {
+        margin-bottom: 12px;
+        color: #333333;
+        line-height: 1.6;
+        text-align: left;
+        font-size: 14px;
+      }
+      .swiss-content strong { font-weight: 700; color: #000000; }
+      .swiss-content em { font-style: italic; color: #555; }
+      .swiss-content hr {
+        border: none;
+        height: 1px;
+        background: #e0e0e0;
+        margin: 24px 0;
+      }
+
+      /* Lists */
+      .swiss-content ul, .swiss-content ol {
+        margin: 8px 0 16px 18px;
+        padding: 0;
+      }
+      .swiss-content li {
+        margin-bottom: 6px;
+        line-height: 1.55;
+        font-size: 14px;
+      }
+      .swiss-content ul li::marker {
+        color: #E53935;
+        font-weight: 700;
+      }
+
+      /* Blockquotes */
+      .swiss-content blockquote {
+        border-left: 4px solid #E53935;
+        padding: 12px 18px;
+        margin: 20px 0;
+        background: #fafafa;
+        color: #333;
+        font-size: 14px;
+      }
+
+      /* ── Stat Grid ── */
+      .swiss-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0;
+        margin: 16px 0;
+      }
+      .swiss-stat-item {
+        padding: 20px 16px 20px 18px;
+        border-left: 4px solid #000000;
+        margin-bottom: 8px;
+        min-width: 0;
+      }
+      .swiss-stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #000000;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+        text-align: left;
+      }
+      .swiss-stat-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        text-align: left;
+        font-variant: small-caps;
+      }
+
+      /* ── Tables ── */
+      .swiss-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 13px;
+      }
+      .swiss-content thead th {
+        background: transparent;
+        color: #000000;
+        font-weight: 700;
+        text-align: left;
+        padding: 8px 12px;
+        border-top: 2px solid #000000;
+        border-bottom: 2px solid #000000;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-variant: small-caps;
+      }
+      .swiss-content td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e0e0e0;
+        color: #333;
+        text-align: left;
+      }
+      .swiss-content tbody tr:nth-child(even) td {
+        background: #f8f8f8;
+      }
+      .swiss-content tbody tr:last-child td {
+        border-bottom: 2px solid #000000;
+      }
+
+      /* ── Footer ── */
+      .swiss-footer {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: 16px;
+        padding: 24px 0 40px;
+        border-top: 2px solid #000000;
+        margin-top: auto;
+      }
+      .swiss-footer-left {
+        grid-column: 1 / 4;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #999;
+        font-variant: small-caps;
+      }
+      .swiss-footer-center {
+        grid-column: 4 / 10;
+        font-size: 10px;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        text-align: left;
+        font-variant: small-caps;
+      }
+      .swiss-footer-right {
+        grid-column: 10 / 13;
+        font-size: 10px;
+        color: #bbb;
+        text-align: right;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-variant: small-caps;
+      }
+    
+  </style>
+</head>
+<body>
+  
+      <div class="swiss-page">
+        <div class="swiss-header">
+          <div class="swiss-header-top">
+            <div class="swiss-header-logo">
+              <div class="swiss-accent-block"></div>
+              <span class="swiss-header-logo-text">Acme Solutions</span>
+            </div>
+            <div class="swiss-header-right">
+              
+              <div class="swiss-header-meta-text">
+                <div class="prospect-name">GlobalTech Industries</div>
+                <div>Manufacturing</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiss-grid" style="padding:16px 0 0;">
+          <div class="swiss-title-area">
+            <div class="swiss-title-type">Battle Card</div>
+            <div class="swiss-title">Battle Card for GlobalTech Industries</div>
+          </div>
+          <div class="swiss-date-area">
+            <div class="swiss-date-label">Date</div>
+            <div class="swiss-date-value">April 1, 2026</div>
+          </div>
+        </div>
+
+        <div class="swiss-grid">
+          
+        <div class="swiss-section">
+          <div class="swiss-label">
+            <div class="swiss-label-num">01</div>
+            <div class="swiss-label-text">Quick Facts</div>
+          </div>
+          <div class="swiss-content">
+            
+            <p><strong>Target Buyer:</strong> VP of Operations, CIO<br/><strong>Deal Size:</strong> $150K-$500K ARR<br/><strong>Sales Cycle:</strong> 60-90 days<br/><strong>Win Rate vs. Competitors:</strong> 68%</p>
+          </div>
+        </div>
+      
+        <div class="swiss-section">
+          <div class="swiss-label">
+            <div class="swiss-label-num">02</div>
+            <div class="swiss-label-text">Key Differentiators</div>
+          </div>
+          <div class="swiss-content">
+            
+            <ul><li><strong>Real-time integration</strong> — competitors require batch sync (24hr delay)</li><br/><li><strong>No-code workflow builder</strong> — competitors need professional services</li><br/><li><strong>Manufacturing-specific</strong> — purpose-built vs. generic platform</li><br/><li><strong>Embedded compliance</strong> — SOX, ISO 9001, ITAR out of the box</li></ul>
+          </div>
+        </div>
+      
+        <div class="swiss-section">
+          <div class="swiss-label">
+            <div class="swiss-label-num">03</div>
+            <div class="swiss-label-text">Competitive Landscape</div>
+          </div>
+          <div class="swiss-content">
+            
+            <table><thead><tr><th>Feature</th><th>Acme Solutions</th><th>Competitor A</th><th>Competitor B</th></tr></thead><tbody><tr><td>Real-Time Sync</td><td>Yes</td><td>No (24hr batch)</td><td>Partial</td></tr><tr><td>No-Code Builder</td><td>Yes</td><td>No</td><td>Limited</td></tr><tr><td>MFG Templates</td><td>50+</td><td>5</td><td>12</td></tr><tr><td>Compliance</td><td>Built-in</td><td>Add-on ($)</td><td>None</td></tr><tr><td>Avg. Deploy Time</td><td>90 days</td><td>9 months</td><td>6 months</td></tr></tbody></table>
+          </div>
+        </div>
+      
+        <div class="swiss-section">
+          <div class="swiss-label">
+            <div class="swiss-label-num">04</div>
+            <div class="swiss-label-text">Landmine Questions</div>
+          </div>
+          <div class="swiss-content">
+            
+            <ul><li>"How does your platform handle real-time shop floor data?" (They batch — we stream)</li><br/><li>"Can a business user build workflows without IT?" (They require PS — we don't)</li><br/><li>"What compliance frameworks are included out of the box?" (They charge extra)</li><br/><li>"What is your guaranteed uptime SLA?" (They cap at 99.5% — we guarantee 99.97%)</li></ul>
+          </div>
+        </div>
+      
+        <div class="swiss-section">
+          <div class="swiss-label">
+            <div class="swiss-label-num">05</div>
+            <div class="swiss-label-text">Objection Handling</div>
+          </div>
+          <div class="swiss-content">
+            
+            <p><strong>"We already use Competitor A"</strong><br/>Ask: "How much time does your team spend waiting for batch data to sync?" Their 24-hour delay means decisions are always based on yesterday's data. <strong>"Your price is higher"</strong><br/>Ask: "When you factor in the professional services cost for Competitor B, what is the true 3-year TCO?" Our all-inclusive pricing is 30% lower over 3 years. <strong>"We need to involve IT"</strong><br/>Leverage: Our no-code builder means Operations owns the workflow. IT stays focused on infrastructure.</p>
+          </div>
+        </div>
+      
+        <div class="swiss-section">
+          <div class="swiss-label">
+            <div class="swiss-label-num">06</div>
+            <div class="swiss-label-text">Recent Wins</div>
+          </div>
+          <div class="swiss-content">
+            
+            <ul><li><strong>Meridian Manufacturing</strong> ($320K ARR) — Won against Competitor A; real-time sync was decisive</li><br/><li><strong>Atlas Industrial</strong> ($180K ARR) — Displaced Competitor B; compliance gap was the driver</li><br/><li><strong>Nexus Precision</strong> ($475K ARR) — Greenfield; deployed in 78 days</li></ul>
+          </div>
+        </div>
+      
+
+          <div class="swiss-footer">
+            <div class="swiss-footer-left">Acme Solutions</div>
+            <div class="swiss-footer-center">Enterprise workflow automation platform</div>
+            <div class="swiss-footer-right">April 1, 2026 &middot; Page 1</div>
+          </div>
+        </div>
+      </div>
+    
+</body>
+</html>

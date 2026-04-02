@@ -58,7 +58,9 @@ function render(input: StyleInput): string {
   const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   // Build section blocks
-  const sectionsHtml = sections.map((s, i) => {
+  const filteredSections = sections.filter(s => s.title.trim() || s.content.trim());
+
+  const sectionsHtml = filteredSections.map((s, i) => {
     const block = palette[i % palette.length];
     const headingColor = block.bg === '#ffffff' || block.bg === '#f4f5f7' ? brand.primary : block.text;
     const tableHeaderBg = block.bg === '#ffffff' || block.bg === '#f4f5f7' ? brand.primary : darken(block.bg, 0.15);
@@ -103,6 +105,7 @@ function render(input: StyleInput): string {
     }
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cb-block { page-break-inside: avoid; }
     }
 
     body {
@@ -113,6 +116,8 @@ function render(input: StyleInput): string {
       font-size: var(--brand-font-body-size);
       margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     /* ── Header: full-width brand primary block ── */
@@ -122,7 +127,8 @@ function render(input: StyleInput): string {
       padding: 56px 64px 48px;
     }
     .cb-header-inner {
-      max-width: 900px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       display: flex;
       align-items: flex-start;
@@ -171,9 +177,11 @@ function render(input: StyleInput): string {
     /* ── Color blocks ── */
     .cb-block {
       padding: 52px 64px;
+      page-break-inside: avoid;
     }
     .cb-block-inner {
-      max-width: 900px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
     .cb-block-label {
@@ -260,11 +268,11 @@ function render(input: StyleInput): string {
       display: flex;
       gap: 32px;
       justify-content: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
     .cb-stat {
       text-align: center;
-      min-width: 140px;
+      min-width: 0;
       flex: 1;
     }
     .cb-stat-value {
@@ -289,7 +297,8 @@ function render(input: StyleInput): string {
       padding: 28px 64px;
     }
     .cb-footer-inner {
-      max-width: 900px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       display: flex;
       align-items: center;

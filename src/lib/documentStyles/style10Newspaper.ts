@@ -39,7 +39,8 @@ function render(input: StyleInput): string {
   const volumeStr = `VOL. ${volumeDate.getFullYear() - 2020}, NO. ${volumeDate.getMonth() + 1}`;
 
   // Build sections: first section gets a lead paragraph (no columns), rest get columns
-  const sectionsHtml = sections.map((s, i) => {
+  const validSections = sections.filter(s => s.content && s.content.trim().length > 0);
+  const sectionsHtml = validSections.map((s, i) => {
     const cleanTitle = stripEmojis(s.title);
     const cleanContent = stripEmojis(s.content);
     const isFirst = i === 0;
@@ -97,10 +98,13 @@ function render(input: StyleInput): string {
       background: #FAFAF5;
       line-height: 1.65;
       font-size: var(--brand-font-body-size);
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .page {
-      max-width: 960px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 36px 48px;
     }
@@ -226,6 +230,7 @@ function render(input: StyleInput): string {
     .article-section {
       margin-bottom: 28px;
       position: relative;
+      page-break-inside: avoid;
     }
     .section-rule {
       border: none;
@@ -367,7 +372,7 @@ function render(input: StyleInput): string {
 
     /* ── Footer ─────────────────────────────────── */
     .footer {
-      margin-top: 32px;
+      margin-top: auto;
       padding-top: 10px;
       border-top: 3px double #111;
       display: flex;

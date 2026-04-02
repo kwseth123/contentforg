@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>outbound-email-sequence — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0;
+    }
+
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: #fff;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 816px;
+      min-height: 11in;
+      margin: 0 auto;
+      padding: 80px 72px 60px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    /* ── Header ── */
+    .doc-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .doc-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .doc-header-left img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+    }
+    .doc-header-left .company-wordmark {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.01em;
+    }
+    .doc-header-right {
+      text-align: right;
+      font-size: 11px;
+      color: #999;
+      letter-spacing: 0.02em;
+    }
+    .doc-header-right .doc-type {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #bbb;
+      margin-bottom: 2px;
+    }
+    .doc-header-right .doc-date {
+      color: #ccc;
+    }
+    .header-rule {
+      height: 1px;
+      background: #4F46E5;
+      margin-bottom: 64px;
+      opacity: 0.4;
+    }
+
+    /* ── Title block ── */
+    .title-block {
+      margin-bottom: 64px;
+    }
+    .title-block .meta-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 16px;
+    }
+    .title-block h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .title-block .prospect-detail {
+      font-size: 13px;
+      color: #999;
+      font-weight: 400;
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 64px;
+      margin-bottom: 56px;
+      padding-bottom: 48px;
+    }
+    .stat-item {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+    .stat-item .stat-value {
+      font-size: 42px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .stat-item .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-top: 8px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 56px;
+      page-break-inside: avoid;
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 20px;
+    }
+    .section-content {
+      max-width: 620px;
+    }
+    .section-content p {
+      margin-bottom: 20px;
+      color: #333;
+      line-height: 1.8;
+    }
+    .section-content h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111;
+      margin: 40px 0 16px;
+      line-height: 1.25;
+    }
+    .section-content h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #111;
+      margin: 36px 0 14px;
+      line-height: 1.3;
+    }
+    .section-content h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #222;
+      margin: 28px 0 12px;
+    }
+    .section-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #444;
+      margin: 24px 0 8px;
+    }
+    .section-content strong {
+      font-weight: 600;
+      color: #111;
+    }
+    .section-content em {
+      font-style: italic;
+    }
+    .section-content ul, .section-content ol {
+      padding-left: 0;
+      margin: 16px 0;
+      list-style: none;
+    }
+    .section-content li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 10px;
+      line-height: 1.7;
+      color: #333;
+    }
+    .section-content li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #4F46E5;
+      opacity: 0.5;
+    }
+    .section-content ol li {
+      counter-increment: item;
+    }
+    .section-content ol {
+      counter-reset: item;
+    }
+    .section-content ol li::before {
+      content: counter(item) '.';
+      background: none;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #bbb;
+      top: 0;
+    }
+    .section-content hr {
+      border: none;
+      margin: 48px 0;
+    }
+
+    /* ── Tables ── */
+    .section-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 13px;
+    }
+    .section-content thead th {
+      text-align: left;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #999;
+      border-bottom: 2px solid #eee;
+      background: transparent;
+    }
+    .section-content tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f5f5f5;
+      color: #444;
+    }
+    .section-content tbody tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    /* ── Footer ── */
+    .doc-footer {
+      margin-top: auto;
+      padding-top: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #ccc;
+      letter-spacing: 0.02em;
+      position: relative;
+    }
+    .doc-footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #f0f0f0;
+    }
+    .doc-footer .footer-company {
+      font-weight: 500;
+      color: #bbb;
+    }
+
+    /* ── Print ── */
+    @media print {
+      .page {
+        padding: 60px 72px 48px;
+      }
+      .section {
+        page-break-inside: avoid;
+      }
+      .doc-footer {
+        position: fixed;
+        bottom: 40px;
+        left: 72px;
+        right: 72px;
+      }
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="page">
+      <!-- Header -->
+      <div class="doc-header">
+        <div class="doc-header-left">
+          <span class="company-wordmark">Acme Solutions</span>
+        </div>
+        <div class="doc-header-right">
+          <div class="doc-type">outbound-email-sequence</div>
+          <div class="doc-date">April 1, 2026</div>
+        </div>
+      </div>
+      <div class="header-rule"></div>
+
+      <!-- Title -->
+      <div class="title-block">
+        <div class="meta-label">Prepared for GlobalTech Industries</div>
+        <h1>outbound-email-sequence for GlobalTech Industries</h1>
+        <div class="prospect-detail">Manufacturing &middot; 2,500 employees</div>
+      </div>
+
+      <!-- Stats -->
+      
+      <div class="stats-row">
+        
+        <div class="stat-item">
+          <div class="stat-value">23%</div>
+          <div class="stat-label">Average months total</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">0.3%</div>
+          <div class="stat-label">Average days total</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">$2.1M</div>
+          <div class="stat-label">value</div>
+        </div>
+      </div>
+
+      <!-- Sections -->
+      
+      <div class="section">
+        <div class="section-label">Email 1: Initial Outreach</div>
+        <div class="section-content"><p><strong>Subject:</strong> Quick question about GlobalTech's data reconciliation <strong>Body:</strong><br/>Hi Sarah, I noticed GlobalTech recently acquired Atlas Precision — congratulations. Integrating two ERP systems is one of the most operationally complex challenges in manufacturing. We helped Meridian Manufacturing reduce their month-end close from 5 days to 8 hours after a similar acquisition. Their VP of Operations called it "the single highest-ROI project we've done in a decade." Would a 15-minute call to share what worked for them be valuable? Best,<br/>Alex</p></div>
+      </div>
+      <div class="section">
+        <div class="section-label">Email 2: Value-Add Follow Up (Day 3)</div>
+        <div class="section-content"><p><strong>Subject:</strong> Re: Quick question about GlobalTech's data reconciliation <strong>Body:</strong><br/>Hi Sarah, Following up on my earlier note. I put together a quick benchmark comparing manufacturers who automated their ERP integration vs. those who did it manually: - <strong>Manual integration:</strong> Average 14 months, $2.1M total cost, 23% data error rate<br/><ul><li><strong>Automated integration:</strong> Average 90 days, $285K total cost, 0.3% data error rate The gap is significant. Happy to walk through the methodology if helpful. Best,</li><br/></ul>Alex</p></div>
+      </div>
+      <div class="section">
+        <div class="section-label">Email 3: Social Proof (Day 7)</div>
+        <div class="section-content"><p><strong>Subject:</strong> How Atlas + GlobalTech could close the books in 8 hours <strong>Body:</strong><br/>Hi Sarah, Three manufacturers in your space deployed our platform this quarter: 1. <strong>Meridian Manufacturing</strong> — 80% faster month-end close<br/><ol><li class="ol-item"><strong>Atlas Industrial</strong> — Eliminated compliance gaps entirely</li><br/><li class="ol-item"><strong>Nexus Precision</strong> — $1.2M savings in Year 1 All three went live in under 90 days. I'd love to share specifics on how they did it. Worth 15 minutes this week? Best,</li><br/></ol>Alex</p></div>
+      </div>
+      <div class="section">
+        <div class="section-label">Email 4: Breakup (Day 14)</div>
+        <div class="section-content"><p><strong>Subject:</strong> Should I close the file? <strong>Body:</strong><br/>Hi Sarah, I've reached out a few times about streamlining GlobalTech's ERP integration. I understand timing may not be right. If this isn't a priority right now, no worries — I'll close the file on my end. But if the Atlas integration is keeping your team up at night, I'm here to help. Either way, wishing you and the team the best. Best,<br/>Alex</p></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="doc-footer">
+        <span class="footer-company">Acme Solutions</span>
+        <span>April 1, 2026</span>
+      </div>
+    </div>
+  
+</body>
+</html>

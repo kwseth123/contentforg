@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roi Business Case — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0.85in 1in;
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .fr-page { padding: 0; max-width: none; }
+      .fr-section { page-break-inside: avoid; }
+    }
+
+    body {
+      font-family: 'Inter', var(--brand-font-secondary), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: var(--brand-font-body-size);
+      color: #1a1a1a;
+      background: #ffffff;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    .fr-page {
+      width: 100%;
+      max-width: 816px;
+      margin: 0 auto;
+      padding: 48px 72px;
+      box-sizing: border-box;
+    }
+
+    /* ══ Institutional Header ══ */
+    .fr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 14px;
+      border-bottom: 3px solid #0c2340;
+      margin-bottom: 4px;
+    }
+    .fr-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .fr-header-company {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #0c2340;
+    }
+    .fr-header-type {
+      font-size: 10px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .fr-header-right {
+      text-align: right;
+      font-size: 10px;
+      color: #6b7280;
+      line-height: 1.8;
+    }
+    .fr-header-right strong {
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    .fr-header-subrule {
+      border: none;
+      border-top: 1px solid #0c2340;
+      margin: 0 0 28px 0;
+    }
+
+    /* ══ Title Block ══ */
+    .fr-title-block {
+      margin-bottom: 24px;
+    }
+    .fr-doc-title {
+      font-family: 'Inter', var(--brand-font-primary), sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #0c2340;
+      line-height: 1.2;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.01em;
+    }
+    .fr-doc-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    /* ══ Metrics Banner ══ */
+    .fr-metrics-banner {
+      background: #f5f6f8;
+      border: 1px solid #e5e7eb;
+      border-top: 3px solid #0c2340;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+    }
+    .fr-metrics-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #0c2340;
+      margin-bottom: 14px;
+    }
+    .fr-metrics-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 24px;
+    }
+    .fr-metric {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding: 12px 8px;
+      border-right: 1px solid #e5e7eb;
+    }
+    .fr-metric:last-child {
+      border-right: none;
+    }
+    .fr-metric-value {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: #0c2340;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+    .fr-metric-label {
+      font-size: 10px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 6px;
+    }
+
+    /* ══ Sections ══ */
+    .fr-section {
+      margin-bottom: 32px;
+      page-break-inside: avoid;
+    }
+    .fr-section-bar {
+      background: #f5f6f8;
+      border-left: 4px solid #0c2340;
+      padding: 10px 18px;
+      margin-bottom: 16px;
+    }
+    .fr-section-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0c2340;
+    }
+    .fr-section-body p {
+      margin-bottom: 12px;
+      text-align: justify;
+    }
+    .fr-section-body h1,
+    .fr-section-body h2,
+    .fr-section-body h3,
+    .fr-section-body h4 {
+      color: #0c2340;
+      margin: 20px 0 8px;
+      font-weight: 700;
+    }
+    .fr-section-body h2 { font-size: 17px; }
+    .fr-section-body h3 { font-size: 15px; }
+    .fr-section-body h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .fr-section-body strong { font-weight: 600; color: #111; }
+    .fr-section-body ul,
+    .fr-section-body ol {
+      padding-left: 24px;
+      margin: 10px 0;
+    }
+    .fr-section-body li {
+      margin-bottom: 5px;
+      line-height: 1.6;
+    }
+    .fr-section-body hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 24px 0;
+    }
+
+    /* ══ Tables — Financial Style ══ */
+    .fr-section-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      border-top: 2px solid #0c2340;
+      border-bottom: 2px solid #0c2340;
+    }
+    .fr-section-body th {
+      background: transparent;
+      color: #0c2340;
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 14px;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #0c2340;
+    }
+    .fr-section-body td {
+      padding: 7px 14px;
+      border-bottom: 1px solid #e5e7eb;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', var(--brand-font-secondary), monospace;
+    }
+    .fr-section-body tr:hover td {
+      background: #f8f9fb;
+    }
+
+    /* ══ Footer ══ */
+    .fr-footer {
+      margin-top: 48px;
+      padding-top: 16px;
+      border-top: 2px solid #0c2340;
+    }
+    .fr-footer-disclaimer {
+      font-size: 9px;
+      color: #9ca3af;
+      line-height: 1.5;
+      font-style: italic;
+      margin-bottom: 10px;
+      max-width: 80%;
+    }
+    .fr-footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+    .fr-footer-left { text-align: left; }
+    .fr-footer-center {
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .fr-footer-right {
+      text-align: right;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 9px;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="fr-page">
+      <!-- Institutional Header -->
+      <div class="fr-header">
+        <div class="fr-header-left">
+          <span style="font-family:var(--brand-font-primary);font-weight:700;font-size:18px;color:var(--brand-primary);">Acme Solutions</span>
+          <div class="fr-header-company">Acme Solutions</div>
+          <div class="fr-header-type">Research Report</div>
+        </div>
+        <div class="fr-header-right">
+          <strong>Date:</strong> April 1, 2026<br/>
+          <strong>Prepared for:</strong> GlobalTech Industries<br/>
+          <strong>Industry:</strong> Manufacturing<br/>
+          <strong>Classification:</strong> Confidential
+        </div>
+      </div>
+      <hr class="fr-header-subrule" />
+
+      <!-- Title Block -->
+      <div class="fr-title-block">
+        <h1 class="fr-doc-title">Roi Business Case</h1>
+        <div class="fr-doc-subtitle">Analysis prepared for GlobalTech Industries (2,500 employees)</div>
+      </div>
+
+      <!-- Key Metrics -->
+      
+    <div class="fr-metrics-banner">
+      <div class="fr-metrics-label">KEY METRICS</div>
+      <div class="fr-metrics-row">
+        
+          <div class="fr-metric">
+            <div class="fr-metric-value">425%</div>
+            <div class="fr-metric-label">Period months Year</div>
+          </div>
+        
+          <div class="fr-metric">
+            <div class="fr-metric-value">23%</div>
+            <div class="fr-metric-label">loaded Error Reduction</div>
+          </div>
+        
+          <div class="fr-metric">
+            <div class="fr-metric-value">$685,000</div>
+            <div class="fr-metric-label">value</div>
+          </div>
+        
+          <div class="fr-metric">
+            <div class="fr-metric-value">2.1x</div>
+            <div class="fr-metric-label">multiplier</div>
+          </div>
+        
+      </div>
+    </div>
+
+      <!-- Sections -->
+      
+      <div class="fr-section">
+        <div class="fr-section-bar">
+          <span class="fr-section-label">Investment Summary</span>
+        </div>
+        <div class="fr-section-body"><p><strong>Total 3-Year Investment:</strong> $685,000<br/><ul><li>Year 1: $285,000 (platform + implementation)</li><br/><li>Year 2: $200,000 (license renewal + expansion)</li><br/><li>Year 3: $200,000 (license renewal) <strong>Total 3-Year Return:</strong> $3,600,000</li><br/></ul><strong>Net Present Value:</strong> $2,340,000<br/><strong>Payback Period:</strong> 4.8 months<br/><strong>3-Year ROI:</strong> 425%</p></div>
+      </div>
+
+      <div class="fr-section">
+        <div class="fr-section-bar">
+          <span class="fr-section-label">Cost Savings Breakdown</span>
+        </div>
+        <div class="fr-section-body"><table><thead><tr><th>Category</th><th>Annual Savings</th><th>Calculation Basis</th></tr></thead><tbody><tr><td>Labor Efficiency</td><td>$720,000</td><td>840 hrs/mo × $71/hr avg fully loaded</td></tr><tr><td>Error Reduction</td><td>$340,000</td><td>23% error rate → 1.2%, $1,480 avg error cost</td></tr><tr><td>Compliance</td><td>$180,000</td><td>3 audit findings/yr × $60K remediation</td></tr><tr><td>Faster Close</td><td>$120,000</td><td>4.7 days saved × $25.5K/day opportunity cost</td></tr><tr><td>Reduced Overtime</td><td>$95,000</td><td>280 OT hrs/mo eliminated</td></tr><tr><td><strong>Total Annual</strong></td><td><strong>$1,455,000</strong></td><td></td></tr></tbody></table></div>
+      </div>
+
+      <div class="fr-section">
+        <div class="fr-section-bar">
+          <span class="fr-section-label">Revenue Impact</span>
+        </div>
+        <div class="fr-section-body"><p><strong>Faster Quote-to-Order:</strong> Reducing cycle from 72hrs to 4hrs enables capturing 12% more orders<br/><ul><li>Estimated revenue uplift: $2.1M annually</li><br/><li>Contribution margin impact: $630,000 <strong>Customer Retention:</strong> Real-time order tracking reduces churn by an estimated 8%</li><br/><li>Retained revenue: $1.8M annually <strong>New Market Enablement:</strong> Automated compliance unlocks aerospace Tier 1 contracts</li><br/><li>Pipeline value: $4.5M over 3 years</li></ul></div>
+      </div>
+
+      <div class="fr-section">
+        <div class="fr-section-bar">
+          <span class="fr-section-label">Risk Analysis</span>
+        </div>
+        <div class="fr-section-body"><p><strong>Implementation Risk:</strong> LOW<br/><ul><li>340+ successful deployments in manufacturing</li><br/><li>92% on-time delivery rate</li><br/><li>Dedicated implementation team with MFG expertise <strong>Adoption Risk:</strong> LOW-MEDIUM</li><br/><li>No-code interface reduces training burden</li><br/><li>Average user proficiency reached in 2.3 weeks</li><br/><li>Change management support included <strong>Technology Risk:</strong> LOW</li><br/><li>SOC 2 Type II certified</li><br/><li>99.97% uptime SLA with financial penalties</li><br/><li>Data residency options for regulated industries</li></ul></div>
+      </div>
+
+      <div class="fr-section">
+        <div class="fr-section-bar">
+          <span class="fr-section-label">Sensitivity Analysis</span>
+        </div>
+        <div class="fr-section-body"><table><thead><tr><th>Scenario</th><th>ROI</th><th>Payback</th></tr></thead><tbody><tr><td>Conservative (50% of projected savings)</td><td>212%</td><td>9.6 months</td></tr><tr><td>Base Case (100%)</td><td>425%</td><td>4.8 months</td></tr></tbody></table>| Optimistic (130%) | 553% | 3.7 months | Even at 50% realization, the investment delivers 2.1x return with sub-10-month payback.</p></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="fr-footer">
+        <div class="fr-footer-disclaimer">
+          This document contains confidential and proprietary information. Distribution is restricted to intended recipients only. Past performance does not guarantee future results.
+        </div>
+        <div class="fr-footer-content">
+          <div class="fr-footer-left">Acme Solutions | April 1, 2026</div>
+          <div class="fr-footer-center">Page 1 of 2</div>
+          <div class="fr-footer-right">For internal use only</div>
+        </div>
+      </div>
+    </div>
+  
+</body>
+</html>

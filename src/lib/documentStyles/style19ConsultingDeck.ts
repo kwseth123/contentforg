@@ -49,7 +49,7 @@ function render(input: StyleInput): string {
     ...s,
     title: stripEmojis(s.title),
     content: stripEmojis(s.content),
-  }));
+  })).filter(s => s.title.trim() || s.content.trim());
   const stats = extractStats(cleanSections);
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -117,8 +117,10 @@ function render(input: StyleInput): string {
     ${professionalSymbolCSS(accent)}
 
     .cd-page {
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
+      overflow-wrap: break-word;
     }
 
     /* ══ Cover Slide ══ */
@@ -170,11 +172,13 @@ function render(input: StyleInput): string {
     .cd-stats-bar {
       background: #ffffff;
       display: flex;
+      flex-wrap: nowrap;
       margin-bottom: 24px;
       border-top: 4px solid ${accent};
     }
     .cd-stat {
       flex: 1;
+      min-width: 0;
       text-align: center;
       padding: 24px 16px;
       border-right: 1px solid #f3f4f6;
@@ -234,6 +238,9 @@ function render(input: StyleInput): string {
       line-height: 1.2;
     }
 
+    .cd-slide-body {
+      overflow-wrap: break-word;
+    }
     .cd-slide-body p {
       margin-bottom: 14px;
     }
@@ -328,6 +335,7 @@ function render(input: StyleInput): string {
       padding: 20px 0;
       font-size: 10px;
       color: #9ca3af;
+      margin-top: auto;
     }
     .cd-footer-confidential {
       font-weight: 700;

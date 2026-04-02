@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>linkedin-post — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0;
+    }
+
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: #fff;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    /* ── Page wrapper ── */
+    .magazine-page {
+      width: 100%;
+      max-width: 816px;
+      margin: 0 auto;
+    }
+
+    /* ── Header bar ── */
+    .mag-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      border-bottom: 1px solid #eee;
+      background: #fff;
+    }
+    .mag-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .mag-header-left img {
+      height: 28px;
+      width: auto;
+    }
+    .mag-header-left .sep {
+      width: 1px;
+      height: 20px;
+      background: #ddd;
+    }
+    .mag-header-left .brand-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #111;
+    }
+    .mag-header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 11px;
+      color: #999;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ── Hero section ── */
+    .mag-hero {
+      padding: 56px 48px 48px;
+      background: #fff;
+    }
+    .mag-hero .hero-meta {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4F46E5;
+      margin-bottom: 16px;
+    }
+    .mag-hero h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 40px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      max-width: 85%;
+    }
+    .mag-hero .hero-accent-line {
+      width: 56px;
+      height: 3px;
+      background: #4F46E5;
+      margin-bottom: 20px;
+    }
+    .mag-hero .hero-subtitle {
+      font-size: 17px;
+      color: #666;
+      font-weight: 300;
+      line-height: 1.5;
+      max-width: 65%;
+    }
+
+    /* ── Stats grid ── */
+    .mag-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin: 0 48px 0;
+      border-top: 2px solid #111;
+      border-bottom: 1px solid #eee;
+    }
+    .mag-stat {
+      padding: 28px 24px;
+      text-align: center;
+      border-right: 1px solid #eee;
+    }
+    .mag-stat:last-child {
+      border-right: none;
+    }
+    .mag-stat-value {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 36px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1;
+    }
+    .mag-stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    /* ── Content grid ── */
+    .mag-content {
+      padding: 0 48px;
+    }
+
+    /* First section: full-width multi-column */
+    .mag-section-intro {
+      padding: 48px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .mag-section-intro .section-body {
+      columns: 2;
+      column-gap: 40px;
+    }
+    .mag-section-intro .section-body p {
+      break-inside: avoid;
+    }
+
+    /* Grid layout for middle sections */
+    .mag-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .mag-grid-item {
+      padding: 40px 32px 40px 0;
+      border-bottom: 1px solid #eee;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      page-break-inside: avoid;
+    }
+    .mag-grid-item:nth-child(even) {
+      padding: 40px 0 40px 32px;
+      border-left: 1px solid #eee;
+    }
+    .mag-grid-item.full-width {
+      grid-column: 1 / -1;
+      padding: 40px 0;
+    }
+
+    /* Alternating background sections */
+    .mag-section-alt {
+      background: #f9fafb;
+      margin: 0 -48px;
+      padding: 48px 48px;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* Section titles */
+    .mag-section-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 20px;
+      line-height: 1.25;
+    }
+
+    /* Pull quotes */
+    .mag-pullquote {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-style: italic;
+      color: #444;
+      line-height: 1.4;
+      padding: 32px 0 32px 24px;
+      border-left: 3px solid #4F46E5;
+      margin: 32px 0;
+      position: relative;
+    }
+    .mag-pullquote::before {
+      content: '\201C';
+      position: absolute;
+      top: 16px;
+      left: 24px;
+      font-size: 56px;
+      color: rgba(79, 70, 229, 0.15);
+      font-family: 'Playfair Display', Georgia, serif;
+      line-height: 1;
+    }
+
+    /* Section body typography */
+    .section-body p {
+      margin-bottom: 14px;
+      color: #444;
+      line-height: 1.7;
+    }
+    .section-body h1, .section-body h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 700;
+      color: #111;
+      margin: 28px 0 12px;
+    }
+    .section-body h2 { font-size: 20px; }
+    .section-body h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+      margin: 24px 0 10px;
+    }
+    .section-body h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 20px 0 8px;
+    }
+    .section-body strong { font-weight: 600; color: #222; }
+    .section-body em { font-style: italic; }
+
+    /* Lists */
+    .section-body ul, .section-body ol {
+      padding-left: 0;
+      margin: 14px 0;
+      list-style: none;
+    }
+    .section-body li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 8px;
+      line-height: 1.65;
+      color: #444;
+    }
+    .section-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .section-body ol {
+      counter-reset: item;
+    }
+    .section-body ol li {
+      counter-increment: item;
+    }
+    .section-body ol li::before {
+      content: counter(item);
+      background: none;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #4F46E5;
+      top: 0;
+    }
+    .section-body hr {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 28px 0;
+    }
+
+    /* Tables */
+    .section-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 12px;
+    }
+    .section-body thead th {
+      text-align: left;
+      padding: 12px 14px;
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #666;
+      background: #f1f0fd;
+      border-bottom: 2px solid #4F46E5;
+    }
+    .section-body tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #444;
+    }
+    .section-body tbody tr:nth-child(even) td {
+      background: #f9fafb;
+    }
+
+    /* ── Footer ── */
+    .mag-footer {
+      background: #111;
+      color: #fff;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      margin-top: 48px;
+    }
+    .mag-footer-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .mag-footer-left img {
+      height: 20px;
+      width: auto;
+      filter: brightness(0) invert(1);
+    }
+    .mag-footer-left .footer-text {
+      opacity: 0.7;
+    }
+    .mag-footer-right {
+      opacity: 0.5;
+    }
+
+    /* ── Print ── */
+    @media print {
+      .magazine-page { max-width: none; }
+      .mag-section-alt { margin: 0 -48px; }
+      .mag-grid-item {
+        page-break-inside: avoid;
+      }
+      .mag-section-intro, .mag-section-alt {
+        page-break-inside: avoid;
+      }
+      .mag-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="magazine-page">
+      <!-- Header -->
+      <div class="mag-header">
+        <div class="mag-header-left">
+          <span class="brand-name">Acme Solutions</span>
+          
+          
+        </div>
+        <div class="mag-header-right">
+          <span>linkedin-post</span>
+          <span>April 1, 2026</span>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <div class="mag-hero">
+        <div class="hero-meta">linkedin-post</div>
+        <h1>linkedin-post for GlobalTech Industries</h1>
+        <div class="hero-accent-line"></div>
+        <div class="hero-subtitle">Manufacturing &middot; 2,500 employees</div>
+      </div>
+
+      <!-- Stats -->
+      
+      <div class="mag-stats">
+        
+        <div class="mag-stat">
+          <div class="mag-stat-value">23%</div>
+          <div class="mag-stat-label">ager spent reconciling</div>
+        </div>
+        <div class="mag-stat">
+          <div class="mag-stat-value">0.3%</div>
+          <div class="mag-stat-label">ays hours Data</div>
+        </div>
+        <div class="mag-stat">
+          <div class="mag-stat-value">$2.4M</div>
+          <div class="mag-stat-label">value</div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="mag-content">
+        
+    <div class="mag-section-intro">
+      <div class="section-body"><p>Manufacturing leaders are spending $2.4M per year on a problem they don't even know they have.</p></div>
+    </div>
+      <div class="mag-grid">
+        
+          <div class="mag-grid-item">
+            <h3 class="mag-section-title">Body</h3>
+            <div class="mag-pullquote">I just wrapped a project with a $340M manufacturer</div>
+            <div class="section-body"><p>I just wrapped a project with a $340M manufacturer. Here's what we found: - 12 disconnected systems requiring manual data entry at every handoff<br/><ul><li>14 hours per week per manager spent reconciling spreadsheets</li><br/><li>A 23% error rate that was costing them $340K annually in rework The kicker? They thought this was normal. We deployed automated workflows in 90 days. The results:</li><br/><li>Month-end close went from 5 days to 8 hours</li><br/><li>Data errors dropped to 0.3%</li><br/><li>They reclaimed 1,020 hours of labor per month The ROI paid for the entire platform in 3.2 months.</li></ul></div>
+          </div>
+          <div class="mag-grid-item">
+            <h3 class="mag-section-title">Call to Action</h3>
+            
+            <div class="section-body"><p>If your manufacturing team is still reconciling data manually across multiple systems, you're leaving money on the table. Drop "AUTOMATE" in the comments and I'll share the playbook we used.</p></div>
+          </div>
+        
+      </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mag-footer">
+        <div class="mag-footer-left">
+          
+          <span class="footer-text">Acme Solutions &middot; Prepared for GlobalTech Industries</span>
+        </div>
+        <div class="mag-footer-right">April 1, 2026</div>
+      </div>
+    </div>
+  
+</body>
+</html>

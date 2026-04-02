@@ -80,7 +80,8 @@ function render(input: StyleInput): string {
     </div>` : '';
 
   // Sections with watermark numbers
-  const sectionsHtml = sections.map((s, i) => {
+  const validSections = sections.filter(s => s.content && s.content.trim().length > 0);
+  const sectionsHtml = validSections.map((s, i) => {
     const cleanTitle = stripEmojis(s.title);
     const cleanContent = stripEmojis(s.content);
     const watermark = allNumbers[i % allNumbers.length];
@@ -118,10 +119,13 @@ function render(input: StyleInput): string {
       line-height: 1.7;
       font-size: var(--brand-font-body-size);
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .page {
-      max-width: 900px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -242,6 +246,7 @@ function render(input: StyleInput): string {
       padding-bottom: 44px;
       border-bottom: 1px solid #eee;
       min-height: 100px;
+      page-break-inside: avoid;
     }
     .section:last-of-type {
       border-bottom: none;
@@ -434,7 +439,7 @@ function render(input: StyleInput): string {
       font-size: 11px;
       color: #aaa;
       letter-spacing: 0.04em;
-      margin-top: 8px;
+      margin-top: auto;
     }
     .footer-left {
       display: flex;

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContentForg QA Report — 2026-04-02</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 32px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .header .summary {
+      font-size: 16px;
+      color: #94a3b8;
+    }
+    .header .summary .pass-count { color: #22c55e; font-weight: 700; }
+    .header .summary .fail-count { color: #ef4444; font-weight: 700; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    .card-header {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+    }
+    .card-header strong {
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-preview {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .card-preview iframe {
+      width: 250%;
+      height: 250%;
+      border: none;
+      transform: scale(0.4);
+      transform-origin: top left;
+      pointer-events: none;
+    }
+    ul {
+      padding: 8px 18px 8px 32px;
+      background: #1a1a2e;
+      border-bottom: 1px solid #334155;
+    }
+    ul li {
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ContentForg QA Test Report</h1>
+    <div class="summary">
+      15 documents tested &mdash;
+      <span class="pass-count">15 passed</span> /
+      <span class="fail-count">0 failed</span>
+      &mdash; April 1, 2026
+    </div>
+  </div>
+  <div class="grid">
+    
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Solution One-Pager</strong>
+          </div>
+          <div class="card-meta">Ultra Minimal (style-01)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="solution-one-pager.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Battle Card</strong>
+          </div>
+          <div class="card-meta">Swiss Grid (style-08)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="battle-card.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Competitive Analysis</strong>
+          </div>
+          <div class="card-meta">Dark Mode (style-09)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="competitive-analysis.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Executive Summary</strong>
+          </div>
+          <div class="card-meta">Dramatic Contrast (style-14)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="executive-summary.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Discovery Call Prep</strong>
+          </div>
+          <div class="card-meta">Technical Brief (style-20)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="discovery-call-prep.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>ROI Business Case</strong>
+          </div>
+          <div class="card-meta">Financial Report (style-18)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="roi-business-case.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Case Study</strong>
+          </div>
+          <div class="card-meta">Storytelling (style-25)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="case-study.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Email Sequence</strong>
+          </div>
+          <div class="card-meta">Ultra Minimal (style-01)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="outbound-email-sequence.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Proposal</strong>
+          </div>
+          <div class="card-meta">Consulting Deck (style-19)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="proposal.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Implementation Timeline</strong>
+          </div>
+          <div class="card-meta">Timeline (style-27)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="implementation-timeline.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Mutual Action Plan</strong>
+          </div>
+          <div class="card-meta">Scorecard (style-28)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="mutual-action-plan.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>LinkedIn Post</strong>
+          </div>
+          <div class="card-meta">Magazine Grid (style-03)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="linkedin-post.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Conference Leave-Behind</strong>
+          </div>
+          <div class="card-meta">Full Bleed (style-05)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="conference-leave-behind.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Objection Handling Guide</strong>
+          </div>
+          <div class="card-meta">Ultra Minimal (style-01)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="objection-handling-guide.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="status" style="background:#22c55e;">PASS</span>
+            <strong>Post Demo Follow Up</strong>
+          </div>
+          <div class="card-meta">Ultra Minimal (style-01)</div>
+        </div>
+        
+        <div class="card-preview">
+          <iframe src="post-demo-follow-up.html" sandbox="allow-same-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    
+  </div>
+</body>
+</html>

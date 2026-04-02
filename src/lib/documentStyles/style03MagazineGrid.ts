@@ -78,7 +78,7 @@ function render(input: StyleInput): string {
     ...s,
     title: stripEmojis(s.title),
     content: stripEmojis(s.content),
-  }));
+  })).filter(s => s.content && s.content.trim().length > 0);
   const stats = extractStats(cleanSections);
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const accent = brand.accent || brand.primary;
@@ -106,11 +106,14 @@ function render(input: StyleInput): string {
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     /* ── Page wrapper ── */
     .magazine-page {
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
 
@@ -248,6 +251,10 @@ function render(input: StyleInput): string {
     .mag-grid-item {
       padding: 40px 32px 40px 0;
       border-bottom: 1px solid #eee;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      page-break-inside: avoid;
     }
     .mag-grid-item:nth-child(even) {
       padding: 40px 0 40px 32px;
@@ -435,6 +442,12 @@ function render(input: StyleInput): string {
     @media print {
       .magazine-page { max-width: none; }
       .mag-section-alt { margin: 0 -48px; }
+      .mag-grid-item {
+        page-break-inside: avoid;
+      }
+      .mag-section-intro, .mag-section-alt {
+        page-break-inside: avoid;
+      }
       .mag-footer {
         position: fixed;
         bottom: 0;

@@ -187,6 +187,7 @@ interface ActionCard {
   description: string;
   icon: React.ReactNode;
   requiresCompetitor?: boolean;
+  contentType: string;
   contextBuilder: (analysis: AnalysisResult) => string;
 }
 
@@ -196,6 +197,7 @@ const ACTION_CARDS: ActionCard[] = [
     title: 'Generate Follow-Up Email',
     description: 'Personalized follow-up referencing their pain points and agreed next steps.',
     icon: <HiOutlineEnvelope className="text-xl" />,
+    contentType: 'post-demo-followup',
     contextBuilder: (a) =>
       `Write a follow-up email to ${a.prospectName} after a discovery call. Pain points: ${a.painPoints.map((p) => p.content).join('; ')}. Next steps: ${a.nextSteps.map((n) => n.content).join('; ')}. Buying signals: ${a.buyingSignals.map((b) => b.content).join('; ')}.`,
   },
@@ -204,6 +206,7 @@ const ACTION_CARDS: ActionCard[] = [
     title: 'Generate One-Pager',
     description: 'Tailored solution overview addressing their specific needs and current state.',
     icon: <HiOutlineDocumentText className="text-xl" />,
+    contentType: 'solution-one-pager',
     contextBuilder: (a) =>
       `Create a solution one-pager for ${a.prospectName}. Their current state: ${a.currentState.map((c) => c.content).join('; ')}. Desired state: ${a.desiredState.map((d) => d.content).join('; ')}. Key pain points: ${a.painPoints.map((p) => p.content).join('; ')}.`,
   },
@@ -212,6 +215,7 @@ const ACTION_CARDS: ActionCard[] = [
     title: 'Generate Battle Card',
     description: 'Competitive positioning against the vendors they mentioned during the call.',
     icon: <HiOutlineShieldCheck className="text-xl" />,
+    contentType: 'battle-card',
     requiresCompetitor: true,
     contextBuilder: (a) =>
       `Create a battle card for selling against ${a.competitorsMentioned.map((c) => c.content).join(', ')}. Prospect: ${a.prospectName}. Their objections: ${a.objectionsRaised.map((o) => o.content).join('; ')}. What they did not like about competitors: ${a.competitorsMentioned.map((c) => c.source || '').filter(Boolean).join('; ')}.`,
@@ -221,6 +225,7 @@ const ACTION_CARDS: ActionCard[] = [
     title: 'Generate Discovery Prep',
     description: 'Preparation guide for the next call with suggested questions and talk tracks.',
     icon: <HiOutlineMicrophone className="text-xl" />,
+    contentType: 'discovery-call-prep',
     contextBuilder: (a) =>
       `Prepare a discovery prep guide for the next call with ${a.prospectName}. Open items: ${a.objectionsRaised.map((o) => o.content).join('; ')}. Stakeholders: ${a.stakeholders.map((s) => `${s.name} (${s.role})`).join(', ')}. Decision process: ${a.decisionProcess.map((d) => d.content).join('; ')}.`,
   },
@@ -229,6 +234,7 @@ const ACTION_CARDS: ActionCard[] = [
     title: 'Generate Mutual Action Plan',
     description: 'Shared timeline with milestones based on their buying process and deadlines.',
     icon: <HiOutlineCalendarDays className="text-xl" />,
+    contentType: 'mutual-action-plan',
     contextBuilder: (a) =>
       `Create a mutual action plan for ${a.prospectName}. Timeline: ${a.timeline.map((t) => t.content).join('; ')}. Next steps: ${a.nextSteps.map((n) => n.content).join('; ')}. Decision process: ${a.decisionProcess.map((d) => d.content).join('; ')}. Stakeholders: ${a.stakeholders.map((s) => `${s.name} (${s.role})`).join(', ')}.`,
   },
@@ -424,10 +430,12 @@ export default function DiscoveryCallPage() {
   // Navigate to generate
   // ═══════════════════════════════════════════════════════════════════
 
-  const navigateToGenerate = useCallback((context: string) => {
+  const navigateToGenerate = useCallback((context: string, contentType?: string) => {
     const params = new URLSearchParams({ context });
+    if (contentType) params.set('contentType', contentType);
+    if (analysis?.prospectName) params.set('prospectName', analysis.prospectName);
     router.push(`/generate?${params.toString()}`);
-  }, [router]);
+  }, [router, analysis]);
 
   // ═══════════════════════════════════════════════════════════════════
   // Reset
@@ -788,7 +796,7 @@ export default function DiscoveryCallPage() {
                   {ACTION_CARDS.filter((card) => !card.requiresCompetitor || hasCompetitors).map((card) => (
                     <button
                       key={card.id}
-                      onClick={() => navigateToGenerate(card.contextBuilder(analysis))}
+                      onClick={() => navigateToGenerate(card.contextBuilder(analysis), card.contentType)}
                       className="rounded-xl border p-4 text-left transition-all hover:shadow-md group"
                       style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
                       onMouseEnter={(e) => {

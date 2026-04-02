@@ -68,6 +68,8 @@ const style05FullBleed: DocumentStyle = {
       }
       @media print {
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .fb-section { page-break-inside: avoid; }
+        .fb-stat-band { page-break-inside: avoid; }
       }
 
       body {
@@ -78,6 +80,8 @@ const style05FullBleed: DocumentStyle = {
         font-size: var(--brand-font-body-size);
         margin: 0;
         padding: 0;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
 
       /* ── Full-Bleed Header ── */
@@ -163,7 +167,8 @@ const style05FullBleed: DocumentStyle = {
 
       /* ── Content Wrapper ── */
       .fb-content {
-        max-width: 800px;
+        width: 100%;
+        max-width: 816px;
         margin: 0 auto;
       }
 
@@ -179,6 +184,7 @@ const style05FullBleed: DocumentStyle = {
         max-width: 800px;
         margin: 0 auto;
         padding: 44px 48px;
+        page-break-inside: avoid;
       }
 
       /* Section header */
@@ -273,11 +279,11 @@ const style05FullBleed: DocumentStyle = {
       .fb-stat-grid {
         display: flex;
         gap: 32px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
       .fb-stat-item {
         flex: 1;
-        min-width: 140px;
+        min-width: 0;
         text-align: center;
         padding: 20px 16px;
         background: rgba(255,255,255,0.12);
@@ -383,8 +389,9 @@ const style05FullBleed: DocumentStyle = {
     `;
 
     // Build sections with alternating bands and stat detection
+    const filteredSections = sections.filter(s => s.content && s.content.trim().length > 0);
     let sectionIndex = 0;
-    const sectionsHtml = sections.map((s, i) => {
+    const sectionsHtml = filteredSections.map((s, i) => {
       const title = stripEmojis(s.title);
       const content = stripEmojis(s.content);
       const num = String(i + 1).padStart(2, '0');

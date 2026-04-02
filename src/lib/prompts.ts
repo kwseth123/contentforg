@@ -103,6 +103,9 @@ IMPORTANT RULES:
 - Be confident, ROI-focused, and professional — no fluff
 - Write for B2B sales audiences
 
+CRITICAL — SECTION COMPLETENESS (YOU MUST FOLLOW THIS):
+You must fully complete every section. Never write a section header or intro sentence and leave the content blank. Every bullet point list must have 3-5 actual bullet points with real content. Every section that says it will show something must actually show it. If you do not have enough information from the knowledge base to fill a section, use industry-standard examples and clearly note they are examples. Never leave a section empty or with only an intro sentence. Every section must have at minimum a headline, 2-3 substantive sentences or bullet points, and one specific fact, number, or proof point.
+
 ## VISUAL RENDERING RULES
 When generating document content, always choose the best visual format for each section. Follow these rules strictly:
 

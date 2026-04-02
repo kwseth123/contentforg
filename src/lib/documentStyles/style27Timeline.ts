@@ -37,7 +37,12 @@ function extractMilestones(content: string): string[] {
   for (const line of lines) {
     const trimmed = line.trim();
     if (/^[-*\u2022]\s+/.test(trimmed)) {
-      milestones.push(trimmed.replace(/^[-*\u2022]\s+/, ''));
+      // Strip bullet prefix, then convert inline markdown bold/italic to HTML
+      let text = trimmed.replace(/^[-*\u2022]\s+/, '');
+      text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/(?<!\w)\*(?!\*)(.+?)(?<!\*)\*(?!\w)/g, '<em>$1</em>');
+      milestones.push(text);
     }
   }
   return milestones.slice(0, 8);
@@ -74,7 +79,8 @@ function render(input: StyleInput): string {
 
   if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
 
-  const { sections, contentType, prospect, companyName, date } = input;
+  const { sections: rawSections, contentType, prospect, companyName, date } = input;
+  const sections = rawSections.filter(s => s.title?.trim() || s.content?.trim());
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const stats = extractStats(sections);
   const rgb = hexToRgb(accent);
@@ -191,7 +197,7 @@ function render(input: StyleInput): string {
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .tl-entry { break-inside: avoid; }
+      .tl-entry { break-inside: avoid; page-break-inside: avoid; }
     }
 
     body {
@@ -206,7 +212,7 @@ function render(input: StyleInput): string {
     }
 
     .tl-wrapper {
-      max-width: 860px;
+      width: 100%; max-width: 816px;
       margin: 0 auto;
     }
 
@@ -275,12 +281,14 @@ function render(input: StyleInput): string {
     /* ── Overview stats ── */
     .tl-overview {
       display: flex;
+      flex-wrap: nowrap;
       gap: 16px;
       padding: 24px 48px;
       background: #ffffff;
     }
     .tl-overview-stat {
       flex: 1;
+      min-width: 0;
       text-align: center;
       padding: 16px;
       background: ${lightBg};
@@ -378,6 +386,7 @@ function render(input: StyleInput): string {
       gap: 24px;
       min-height: 80px;
       margin-bottom: 4px;
+      page-break-inside: avoid;
     }
     .tl-marker-col {
       display: flex;
@@ -450,7 +459,7 @@ function render(input: StyleInput): string {
     }
 
     /* ── Body prose ── */
-    .tl-body { color: #555; line-height: 1.7; }
+    .tl-body { color: #555; line-height: 1.7; overflow-wrap: break-word; }
     .tl-body p { margin-bottom: 12px; }
     .tl-body h1, .tl-body h2, .tl-body h3, .tl-body h4 {
       color: #1a1a1a;

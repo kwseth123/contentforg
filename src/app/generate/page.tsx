@@ -81,6 +81,26 @@ const STARTER_PROMPTS = [
   { label: 'Executive summary for committee', contentType: 'executive-summary' as ContentType, text: 'Executive summary for a deal going to committee' },
 ];
 
+// ── Industry-based fallback pain points (when no KB data) ──
+const INDUSTRY_PAIN_POINTS: Record<string, string[]> = {
+  'manufacturing': ['Manual inventory counting errors', 'Lack of real-time ERP visibility', 'Disconnected shop floor systems', 'Slow month-end close process', 'Compliance reporting gaps', 'High employee turnover in operations'],
+  'healthcare': ['Patient data silos across departments', 'Manual claims processing delays', 'HIPAA compliance burden', 'Staff burnout and scheduling issues', 'Interoperability between EMR systems', 'Rising operational costs'],
+  'financial services': ['Manual reconciliation processes', 'Regulatory compliance complexity', 'Legacy system integration challenges', 'Customer onboarding friction', 'Fraud detection gaps', 'Data quality issues across systems'],
+  'technology': ['Scaling infrastructure costs', 'Customer churn and retention', 'Long sales cycles', 'Technical debt slowing development', 'Security vulnerability management', 'Competitive differentiation difficulty'],
+  'retail': ['Inventory visibility across channels', 'Customer experience inconsistency', 'Supply chain disruptions', 'Price optimization challenges', 'Omnichannel fulfillment complexity', 'Workforce scheduling inefficiency'],
+  'logistics': ['Route optimization inefficiency', 'Real-time shipment tracking gaps', 'Driver shortage and retention', 'Last-mile delivery costs', 'Warehouse automation gaps', 'Cross-border compliance complexity'],
+  'default': ['Manual data entry across disconnected systems', 'Lack of real-time operational visibility', 'Slow reporting and decision-making', 'High error rates in cross-system processes', 'Compliance and audit readiness gaps', 'Rising operational costs'],
+};
+
+function getIndustryPainPoints(industry: string): string[] {
+  if (!industry.trim()) return INDUSTRY_PAIN_POINTS['default'];
+  const lower = industry.toLowerCase();
+  for (const [key, points] of Object.entries(INDUSTRY_PAIN_POINTS)) {
+    if (lower.includes(key) || key.includes(lower)) return points;
+  }
+  return INDUSTRY_PAIN_POINTS['default'];
+}
+
 // Helper: find which category a content type belongs to
 function findCategoryForType(ct: ContentType): ContentCategory {
   for (const [catKey, catVal] of Object.entries(CONTENT_CATEGORIES)) {
@@ -348,6 +368,25 @@ function GeneratePage() {
   const { findProspect } = useProspectMemory();
   const [prospectSuggestion, setProspectSuggestion] = useState<{companyName:string;items:{contentTypeLabel:string}[]}|null>(null);
 
+  // ── Smart Pain Point Suggestions ──
+  const [painPointSuggestions, setPainPointSuggestions] = useState<string[]>([]);
+  const [selectedPainPoints, setSelectedPainPoints] = useState<string[]>([]);
+  const [customPainPoint, setCustomPainPoint] = useState('');
+  const [painPointsLoaded, setPainPointsLoaded] = useState(false);
+
+  // ── Advanced Form Collapse ──
+  const [advancedDetailsOpen, setAdvancedDetailsOpen] = useState(false);
+
+  // ── Brain Guidelines ──
+  const [brainGuidelines, setBrainGuidelines] = useState<{
+    approvedTerms: string[];
+    bannedTerms: string[];
+    tone: string;
+    voice: string;
+    hasBrainGuidelines: boolean;
+  }>({ approvedTerms: [], bannedTerms: [], tone: '', voice: '', hasBrainGuidelines: false });
+  const [brainGuidelinesApplied, setBrainGuidelinesApplied] = useState(false);
+
   // ── Simple / Advanced Mode ──
   const [viewMode, setViewMode] = useState<'simple' | 'advanced'>(() => {
     if (typeof window !== 'undefined') {
@@ -387,7 +426,7 @@ function GeneratePage() {
     fetchProducts();
   }, []);
 
-  // Fetch brand default style on mount
+  // Fetch brand style, pain point suggestions, and brain guidelines on mount
   useEffect(() => {
     const fetchBrandStyle = async () => {
       try {
@@ -397,6 +436,69 @@ function GeneratePage() {
           if (kb.brandGuidelines?.documentStyle) {
             setBrandDefaultStyle(kb.brandGuidelines.documentStyle);
           }
+
+          // ── Extract pain point suggestions from KB ──
+          const suggestions: string[] = [];
+
+          // From ICP
+          if (kb.icp?.personas) {
+            for (const p of kb.icp.personas) {
+              if (typeof p === 'string' && p.trim()) suggestions.push(p.trim());
+            }
+          }
+
+          // From competitors
+          if (kb.competitors && Array.isArray(kb.competitors)) {
+            for (const c of kb.competitors) {
+              if (c.weaknesses && typeof c.weaknesses === 'string') {
+                c.weaknesses.split(/[,;\n]/).forEach((w: string) => {
+                  if (w.trim().length > 10 && w.trim().length < 80) suggestions.push(w.trim());
+                });
+              }
+            }
+          }
+
+          // From case studies
+          if (kb.caseStudies && Array.isArray(kb.caseStudies)) {
+            for (const cs of kb.caseStudies) {
+              if (cs.challenge && typeof cs.challenge === 'string') {
+                cs.challenge.split(/[.;\n]/).forEach((s: string) => {
+                  const trimmed = s.trim();
+                  if (trimmed.length > 15 && trimmed.length < 80) suggestions.push(trimmed);
+                });
+              }
+            }
+          }
+
+          // From differentiators (imply pain points by inversion)
+          if (kb.differentiators && typeof kb.differentiators === 'string') {
+            kb.differentiators.split(/[;\n]/).forEach((d: string) => {
+              if (d.trim().length > 10 && d.trim().length < 80) suggestions.push(d.trim());
+            });
+          }
+
+          setPainPointSuggestions(suggestions.length > 0 ? [...new Set(suggestions)].slice(0, 8) : []);
+          setPainPointsLoaded(true);
+
+          // ── Extract brain guidelines ──
+          const bg = kb.brandGuidelines;
+          const bv = kb.brandVoice;
+          const hasGuidelines = !!(
+            bg?.voice?.approvedTerms?.length ||
+            bg?.voice?.bannedTerms?.length ||
+            bg?.voice?.guidelinesText ||
+            bv?.tone ||
+            bv?.wordsToUse?.length ||
+            bv?.wordsToAvoid?.length
+          );
+
+          setBrainGuidelines({
+            approvedTerms: [...(bg?.voice?.approvedTerms || []), ...(bv?.wordsToUse || [])],
+            bannedTerms: [...(bg?.voice?.bannedTerms || []), ...(bv?.wordsToAvoid || [])],
+            tone: bv?.tone || '',
+            voice: bg?.voice?.guidelinesText || '',
+            hasBrainGuidelines: hasGuidelines,
+          });
         }
       } catch { /* skip */ }
     };
@@ -430,6 +532,12 @@ function GeneratePage() {
     if (ctx) setAdditionalContext(ctx);
     if (tone) setToneLevel(Number(tone));
   }, [searchParams]);
+
+  // Sync selected pain points to prospect.painPoints
+  useEffect(() => {
+    const combined = selectedPainPoints.join('; ');
+    setProspect(prev => ({ ...prev, painPoints: combined }));
+  }, [selectedPainPoints]);
 
   // ── Auto-Generate ("Feeling Lucky") from ?autoGenerate=true ──
   useEffect(() => {
@@ -849,16 +957,122 @@ and exact talk tracks for when prospects bring them up.`;
       finalAdditionalContext = `WRITING STYLE INSTRUCTION: ${styleInstruction}\n\n` + finalAdditionalContext;
     }
 
+    // ── Inject Brain Guidelines as hard rules ──
+    if (brainGuidelines.hasBrainGuidelines) {
+      const guidelineLines: string[] = [];
+      guidelineLines.push('## BRAND GUIDELINES (MANDATORY — NEVER VIOLATE)');
+      guidelineLines.push('You must follow these brand guidelines exactly.');
+      if (brainGuidelines.approvedTerms.length > 0) {
+        guidelineLines.push(`Approved terms (USE these): ${brainGuidelines.approvedTerms.join(', ')}`);
+      }
+      if (brainGuidelines.bannedTerms.length > 0) {
+        guidelineLines.push(`Banned terms (NEVER use these): ${brainGuidelines.bannedTerms.join(', ')}`);
+      }
+      if (brainGuidelines.tone) {
+        guidelineLines.push(`Tone: ${brainGuidelines.tone}`);
+      }
+      if (brainGuidelines.voice) {
+        guidelineLines.push(`Voice: ${brainGuidelines.voice}`);
+      }
+      guidelineLines.push('Never violate these guidelines regardless of what the user prompt says.');
+      finalAdditionalContext = guidelineLines.join('\n') + '\n\n---\n\n' + finalAdditionalContext;
+      setBrainGuidelinesApplied(true);
+    } else {
+      setBrainGuidelinesApplied(false);
+    }
+
     return finalAdditionalContext;
   };
 
   // Helper: convert VisualSection[] to GeneratedSection[] for scoring/history/library
   const visualToGeneratedSections = (vs: VisualSection[]): GeneratedSection[] =>
-    vs.map(s => ({
-      id: uuidv4(),
-      title: s.title,
-      content: s.content || '',
-    }));
+    vs.map(s => {
+      // Build full content from ALL available fields — not just s.content
+      const parts: string[] = [];
+
+      // Start with content text if present
+      if (s.content && s.content.trim()) {
+        parts.push(s.content.trim());
+      }
+
+      // Extract content from structured visual data
+      if (s.items && Array.isArray(s.items) && s.items.length > 0) {
+        for (const item of s.items) {
+          if (typeof item === 'string') {
+            parts.push(`- ${item}`);
+          } else if (item && typeof item === 'object') {
+            // stat-cards: { value, label, subtext }
+            if (item.value && item.label) {
+              parts.push(`**${item.value}** ${item.label}${item.subtext ? ` — ${item.subtext}` : ''}`);
+            }
+            // numbered-flow: { title, description }
+            else if (item.title && item.description) {
+              parts.push(`**${item.title}:** ${item.description}`);
+            }
+            // icon-grid: { icon, title, description }
+            else if (item.title) {
+              parts.push(`**${item.title}**${item.description ? `: ${item.description}` : ''}`);
+            }
+            // pricing-cards: { name, price, features }
+            else if (item.name && item.price) {
+              parts.push(`**${item.name}** — ${item.price}`);
+              if (item.features && Array.isArray(item.features)) {
+                for (const f of item.features) parts.push(`  - ${f}`);
+              }
+            }
+            // timeline: { label, duration, description }
+            else if (item.label) {
+              parts.push(`**${item.label}**${item.duration ? ` (${item.duration})` : ''}${item.description ? `: ${item.description}` : ''}`);
+            }
+          }
+        }
+      }
+
+      // before-after
+      if (s.before && s.after) {
+        const beforeItems = Array.isArray(s.before.items) ? s.before.items : [];
+        const afterItems = Array.isArray(s.after.items) ? s.after.items : [];
+        parts.push(`**${s.before.title || 'Before'}:**`);
+        for (const b of beforeItems) parts.push(`- ${b}`);
+        parts.push(`**${s.after.title || 'After'}:**`);
+        for (const a of afterItems) parts.push(`- ${a}`);
+      }
+
+      // comparison-table
+      if (s.headers && s.rows && Array.isArray(s.rows)) {
+        parts.push(`| ${s.headers.join(' | ')} |`);
+        parts.push(`| ${s.headers.map(() => '---').join(' | ')} |`);
+        for (const row of s.rows) {
+          if (row.dimension && row.values) {
+            parts.push(`| ${row.dimension} | ${row.values.join(' | ')} |`);
+          }
+        }
+      }
+
+      // blockquote
+      if (s.quote) {
+        parts.push(`> "${s.quote}"${s.attribution ? ` — ${s.attribution}` : ''}${s.role ? `, ${s.role}` : ''}`);
+      }
+
+      // cta-box
+      if (s.headline && !parts.some(p => p.includes(s.headline!))) {
+        parts.push(`**${s.headline}**`);
+      }
+      if (s.bullets && Array.isArray(s.bullets)) {
+        for (const b of s.bullets) parts.push(`- ${b}`);
+      }
+      if (s.contactInfo) {
+        parts.push(s.contactInfo);
+      }
+
+      const fullContent = parts.join('\n\n');
+
+      return {
+        id: uuidv4(),
+        title: s.title,
+        content: fullContent || s.title, // never empty — at minimum use the title
+      };
+    });
 
   // Helper: handle streaming fallback for visual mode failure
   const handleStreamingResponse = async (res: Response) => {
@@ -999,9 +1213,9 @@ and exact talk tracks for when prospects bring them up.`;
   };
 
   const generate = async () => {
-    if (!prospect.companyName) {
-      toast.error('Please enter a prospect company name');
-      return;
+    // Auto-populate company name if left blank — never block generation
+    if (!prospect.companyName.trim()) {
+      setProspect(prev => ({ ...prev, companyName: 'Prospect' }));
     }
 
     // Product auto-detection logic
@@ -1202,6 +1416,9 @@ and exact talk tracks for when prospects bring them up.`;
       );
       if (!proceed) return;
     }
+
+    toast('Generating PDF...', { icon: '●', duration: 3000, style: { fontSize: '13px' } });
+
     const res = await fetch('/api/export/pdf', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1213,9 +1430,28 @@ and exact talk tracks for when prospects bring them up.`;
         visualSections: visualSections || undefined,
       }),
     });
-    const html = await res.text();
-    const win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500); }
+
+    const contentTypeHeader = res.headers.get('Content-Type') || '';
+
+    if (contentTypeHeader.includes('application/pdf')) {
+      // Browserless PDF — download as file
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${contentType}-${prospect.companyName || 'document'}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('PDF downloaded!');
+    } else {
+      // Fallback: HTML returned (Browserless unavailable) — open print dialog
+      const html = await res.text();
+      const win = window.open('', '_blank');
+      if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500); }
+      if (res.headers.get('X-PDF-Fallback') === 'true') {
+        toast('PDF service unavailable — opened print dialog instead', { icon: '△', duration: 4000, style: { fontSize: '13px' } });
+      }
+    }
   };
 
   const exportPPTX = async () => {
@@ -1267,6 +1503,7 @@ and exact talk tracks for when prospects bring them up.`;
           styleOverride: selectedStyle || undefined,
           styleId: selectedStyleIdRef.current || undefined,
           visualSections: visualSections || undefined,
+          returnHtml: true,
         }),
       });
       const html = await res.text();
@@ -1586,9 +1823,8 @@ and exact talk tracks for when prospects bring them up.`;
   };
 
   const generateAllPersonaVersions = async () => {
-    if (!prospect.companyName) {
-      toast.error('Please enter a prospect company name');
-      return;
+    if (!prospect.companyName.trim()) {
+      setProspect(prev => ({ ...prev, companyName: 'Prospect' }));
     }
     if (selectedPersonas.length === 0) return;
 
@@ -1684,6 +1920,7 @@ and exact talk tracks for when prospects bring them up.`;
   };
 
   const exportAllPersonaPDFs = async () => {
+    toast('Generating persona PDFs...', { icon: '●', duration: 3000, style: { fontSize: '13px' } });
     for (const personaId of Object.keys(personaVersions) as PersonaType[]) {
       const personaSections = personaVersions[personaId];
       if (!personaSections || personaSections.length === 0) continue;
@@ -1702,12 +1939,25 @@ and exact talk tracks for when prospects bring them up.`;
           persona: personaId,
         }),
       });
-      const html = await res.text();
-      const win = window.open('', '_blank');
-      if (win) {
-        win.document.write(html);
-        win.document.close();
-        win.document.title = `${CONTENT_TYPE_LABELS[contentType]} - ${personaConfig?.label || personaId} - ${prospect.companyName}`;
+
+      const ct = res.headers.get('Content-Type') || '';
+      if (ct.includes('application/pdf')) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${contentType}-${personaConfig?.label || personaId}-${prospect.companyName || 'document'}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        // Fallback: open HTML in new window
+        const html = await res.text();
+        const win = window.open('', '_blank');
+        if (win) {
+          win.document.write(html);
+          win.document.close();
+          win.document.title = `${CONTENT_TYPE_LABELS[contentType]} - ${personaConfig?.label || personaId} - ${prospect.companyName}`;
+        }
       }
     }
     toast.success('All persona PDFs exported');
@@ -1819,8 +2069,15 @@ and exact talk tracks for when prospects bring them up.`;
                   {generatingAllPersonas ? (<><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>) : ('All Versions')}
                 </button>
               )}
-              <button onClick={() => setShowStylePicker(true)} disabled={generating || generatingAllPersonas}
-                className="btn-accent disabled:opacity-50 font-semibold py-2 px-6 rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm">
+              <button onClick={() => {
+                  // Auto-fill prospect name if empty
+                  if (!prospect.companyName.trim()) {
+                    setProspect(prev => ({ ...prev, companyName: 'Prospect' }));
+                  }
+                  setShowStylePicker(true);
+                }} disabled={generating || generatingAllPersonas}
+                className="btn-accent disabled:opacity-50 font-bold py-2.5 px-8 rounded-lg flex items-center justify-center gap-2 text-sm shadow-md"
+                style={{ boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)' }}>
                 {generating ? (
                   <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
                 ) : (
@@ -1887,7 +2144,12 @@ and exact talk tracks for when prospects bring them up.`;
                         setDetectedType(detected);
                       }
                     }}
-                    placeholder="e.g. Create a battle card against Salesforce for our healthcare prospects..."
+                    placeholder={(() => {
+                      const hour = new Date().getHours();
+                      if (hour < 12) return 'Good morning. Who are you meeting with today?';
+                      if (hour < 17) return 'What are you working on? Drop a company name, call notes, or just an industry.';
+                      return 'Just got off a call? Drop your notes here.';
+                    })()}
                     className="w-full h-48 p-4 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2"
                     style={{
                       borderColor: 'var(--card-border)',
@@ -1913,26 +2175,34 @@ and exact talk tracks for when prospects bring them up.`;
                   </button>
                 </div>
 
-                {/* Generate button */}
+                {/* Generate button — always visible, always clickable */}
                 <div className="px-6 pb-6">
                   <button
                     onClick={() => {
                       // Set the additional context to the simple prompt before generating
                       setAdditionalContext(simplePrompt);
-                      // Trigger generation via style picker (same flow as advanced mode)
-                      setShowStylePicker(true);
+                      // Auto-select default style for the detected content type
+                      const defaultStyle = getDefaultStyleForContentType(contentType);
+                      setSelectedStyleId(defaultStyle);
+                      selectedStyleIdRef.current = defaultStyle;
+                      // If no prospect name, set a placeholder so validation passes
+                      if (!prospect.companyName.trim()) {
+                        setProspect(prev => ({ ...prev, companyName: 'Prospect' }));
+                      }
+                      // Generate directly — no style picker in simple mode
+                      setTimeout(() => generate(), 0);
                     }}
-                    disabled={generating || !simplePrompt.trim()}
-                    className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--accent)' }}
+                    disabled={generating}
+                    className="w-full py-4 rounded-xl text-base font-bold text-white transition-all shadow-lg hover:shadow-xl disabled:opacity-70"
+                    style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent)' }}
                   >
                     {generating ? (
                       <span className="flex items-center justify-center gap-2">
-                        <HiOutlineArrowPath className="animate-spin" /> Generating...
+                        <HiOutlineArrowPath className="animate-spin text-lg" /> Generating...
                       </span>
                     ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        <HiOutlineSparkles /> Generate
+                      <span className="flex items-center justify-center gap-2.5">
+                        <HiOutlineSparkles className="text-lg" /> Generate
                       </span>
                     )}
                   </button>
@@ -2064,23 +2334,16 @@ and exact talk tracks for when prospects bring them up.`;
               </div>
             )}
 
-            {/* Prospect Fields */}
+            {/* Prospect — Company Name always visible */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Prospect</h3>
-              {([
-                { key: 'companyName' as const, label: 'Company Name *', placeholder: 'Acme Corp' },
-                { key: 'industry' as const, label: 'Industry', placeholder: 'Manufacturing' },
-                { key: 'companySize' as const, label: 'Company Size', placeholder: '500-1000 employees' },
-                { key: 'techStack' as const, label: 'Current Tech/ERP Stack', placeholder: 'SAP, Salesforce...' },
-              ]).map((field) => (
-                <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
-                  <input type="text" value={prospect[field.key]}
-                    onChange={(e) => setProspect({ ...prospect, [field.key]: e.target.value })}
-                    placeholder={field.placeholder}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent" />
-                </div>
-              ))}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                <input type="text" value={prospect.companyName}
+                  onChange={(e) => setProspect({ ...prospect, companyName: e.target.value })}
+                  placeholder="Acme Corp"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent" />
+              </div>
               {prospectSuggestion && (
                 <div
                   className="mt-1 text-xs px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
@@ -2100,50 +2363,147 @@ and exact talk tracks for when prospects bring them up.`;
                   Previously generated for <strong>{prospectSuggestion.companyName}</strong>: {prospectSuggestion.items.map(i => i.contentTypeLabel).slice(0, 3).join(', ')}
                 </div>
               )}
+              {/* Smart Pain Point Suggestions */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Main Pain Points</label>
-                <textarea value={prospect.painPoints}
-                  onChange={(e) => setProspect({ ...prospect, painPoints: e.target.value })}
-                  rows={3} placeholder="Slow manual processes, lack of visibility..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent resize-y" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pain Points</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {(painPointSuggestions.length > 0 ? painPointSuggestions : getIndustryPainPoints(prospect.industry)).slice(0, 6).map((pp, i) => {
+                    const isSelected = selectedPainPoints.includes(pp);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedPainPoints(prev => prev.filter(p => p !== pp));
+                          } else {
+                            setSelectedPainPoints(prev => [...prev, pp]);
+                          }
+                        }}
+                        className="text-xs px-3 py-1.5 rounded-full border transition-all"
+                        style={isSelected ? {
+                          borderColor: 'var(--accent)',
+                          backgroundColor: 'var(--accent)',
+                          color: '#fff',
+                        } : {
+                          borderColor: 'var(--card-border, #e5e7eb)',
+                          backgroundColor: 'var(--card-bg, #fff)',
+                          color: 'var(--text-secondary, #6b7280)',
+                        }}
+                      >
+                        {pp}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Custom pain point input */}
                 <div className="flex gap-2">
-                  <input type="text" value={prospect.website || ''}
-                    onChange={(e) => { setProspect({ ...prospect, website: e.target.value }); setProspectBranding(null); }}
-                    placeholder="https://acme.com"
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent" />
-                  {prospect.website && (
+                  <input
+                    type="text"
+                    value={customPainPoint}
+                    onChange={(e) => setCustomPainPoint(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && customPainPoint.trim()) {
+                        e.preventDefault();
+                        setSelectedPainPoints(prev => [...prev, customPainPoint.trim()]);
+                        setCustomPainPoint('');
+                      }
+                    }}
+                    placeholder="Add your own..."
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 ring-accent"
+                  />
+                  {customPainPoint.trim() && (
                     <button
-                      onClick={fetchProspectBranding}
-                      disabled={fetchingBranding}
-                      className="px-3 py-2 text-xs font-medium rounded-lg disabled:opacity-50 whitespace-nowrap"
-                      style={{ border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)' }}
+                      onClick={() => {
+                        setSelectedPainPoints(prev => [...prev, customPainPoint.trim()]);
+                        setCustomPainPoint('');
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-white"
+                      style={{ backgroundColor: 'var(--accent)' }}
                     >
-                      {fetchingBranding ? 'Fetching...' : 'Fetch Branding'}
+                      Add
                     </button>
                   )}
                 </div>
+                {/* Show selected custom pain points as removable chips */}
+                {selectedPainPoints.filter(pp => !(painPointSuggestions.length > 0 ? painPointSuggestions : getIndustryPainPoints(prospect.industry)).includes(pp)).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedPainPoints.filter(pp => !(painPointSuggestions.length > 0 ? painPointSuggestions : getIndustryPainPoints(prospect.industry)).includes(pp)).map((pp, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: 'var(--accent)' }}>
+                        {pp}
+                        <button onClick={() => setSelectedPainPoints(prev => prev.filter(p => p !== pp))} className="opacity-70 hover:opacity-100">&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {!painPointsLoaded && (
+                  <p className="text-[10px] text-gray-400 mt-1">Loading suggestions from Knowledge Brain...</p>
+                )}
               </div>
-              {prospectBranding && (prospectBranding.logoBase64 || prospectBranding.companyName) && (
-                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Co-Branding Preview</div>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-xs text-gray-600 font-medium">Your Company</div>
-                    <div className="flex items-center gap-2">
-                      {prospectBranding.logoBase64 ? (
-                        <img src={prospectBranding.logoBase64} alt={prospectBranding.companyName} className="h-6 max-w-[100px] object-contain" />
-                      ) : (
-                        <span className="text-xs font-semibold text-gray-700">{prospectBranding.companyName}</span>
+
+              {/* ── Add Details Chevron (collapsible extra fields) ── */}
+              <button
+                onClick={() => setAdvancedDetailsOpen(!advancedDetailsOpen)}
+                className="w-full flex items-center justify-between py-2 text-sm font-medium transition-colors"
+                style={{ color: 'var(--text-secondary, #6b7280)' }}
+              >
+                <span>Add Details</span>
+                <HiOutlineChevronDown className={`transition-transform ${advancedDetailsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {advancedDetailsOpen && (
+                <div className="space-y-3 pt-1">
+                  {([
+                    { key: 'industry' as const, label: 'Industry', placeholder: 'Manufacturing' },
+                    { key: 'companySize' as const, label: 'Company Size', placeholder: '500-1000 employees' },
+                    { key: 'techStack' as const, label: 'Current Tech/ERP Stack', placeholder: 'SAP, Salesforce...' },
+                  ]).map((field) => (
+                    <div key={field.key}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                      <input type="text" value={prospect[field.key]}
+                        onChange={(e) => setProspect({ ...prospect, [field.key]: e.target.value })}
+                        placeholder={field.placeholder}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent" />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                    <div className="flex gap-2">
+                      <input type="text" value={prospect.website || ''}
+                        onChange={(e) => { setProspect({ ...prospect, website: e.target.value }); setProspectBranding(null); }}
+                        placeholder="https://acme.com"
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ring-accent" />
+                      {prospect.website && (
+                        <button
+                          onClick={fetchProspectBranding}
+                          disabled={fetchingBranding}
+                          className="px-3 py-2 text-xs font-medium rounded-lg disabled:opacity-50 whitespace-nowrap"
+                          style={{ border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)' }}
+                        >
+                          {fetchingBranding ? 'Fetching...' : 'Fetch Branding'}
+                        </button>
                       )}
                     </div>
                   </div>
-                  <div className="flex mt-2 h-1 rounded-full overflow-hidden">
-                    <div className="flex-1" style={{ backgroundColor: 'var(--accent)' }} />
-                    <div className="flex-1" style={{ backgroundColor: prospectBranding.primaryColor }} />
-                  </div>
-                  <button onClick={() => setProspectBranding(null)} className="text-xs text-gray-400 hover:text-red-500 mt-1">Clear</button>
+                  {prospectBranding && (prospectBranding.logoBase64 || prospectBranding.companyName) && (
+                    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                      <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Co-Branding Preview</div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-xs text-gray-600 font-medium">Your Company</div>
+                        <div className="flex items-center gap-2">
+                          {prospectBranding.logoBase64 ? (
+                            <img src={prospectBranding.logoBase64} alt={prospectBranding.companyName} className="h-6 max-w-[100px] object-contain" />
+                          ) : (
+                            <span className="text-xs font-semibold text-gray-700">{prospectBranding.companyName}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex mt-2 h-1 rounded-full overflow-hidden">
+                        <div className="flex-1" style={{ backgroundColor: 'var(--accent)' }} />
+                        <div className="flex-1" style={{ backgroundColor: prospectBranding.primaryColor }} />
+                      </div>
+                      <button onClick={() => setProspectBranding(null)} className="text-xs text-gray-400 hover:text-red-500 mt-1">Clear</button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2533,6 +2893,26 @@ and exact talk tracks for when prospects bring them up.`;
                   </span>
                   <span className="text-[10px] bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">Product Match</span>
                 </div>
+              )}
+
+              {/* Brain Guidelines Badge */}
+              {sections.length > 0 && !generating && (
+                brainGuidelinesApplied ? (
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg mb-4" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+                    <HiOutlineBolt style={{ color: 'var(--accent)' }} />
+                    <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>Brain guidelines applied</span>
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', color: 'var(--accent)' }}>
+                      {brainGuidelines.approvedTerms.length + brainGuidelines.bannedTerms.length} rules
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg mb-4">
+                    <HiOutlineBolt className="text-gray-400" />
+                    <span className="text-sm text-gray-500">
+                      Add brand guidelines to your <a href="/company-pack" className="font-medium underline" style={{ color: 'var(--accent)' }}>Knowledge Brain</a> to ensure every document sounds like your brand
+                    </span>
+                  </div>
+                )
               )}
 
               {/* Export toolbar */}

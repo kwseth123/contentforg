@@ -66,7 +66,7 @@ function render(input: StyleInput): string {
     ...s,
     title: stripEmojis(s.title),
     content: stripEmojis(s.content),
-  }));
+  })).filter(s => s.content && s.content.trim().length > 0);
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const accent = brand.accent || brand.primary;
   const { r, g, b } = hexToRgb(accent);
@@ -96,14 +96,20 @@ function render(input: StyleInput): string {
       line-height: 1.8;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     /* ── Page layout ── */
     .typo-page {
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 72px 68px 56px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
 
     /* ── Header: wordmark + date ── */
@@ -170,11 +176,14 @@ function render(input: StyleInput): string {
     /* ── Key numbers ── */
     .typo-numbers {
       display: flex;
+      flex-wrap: nowrap;
       gap: 72px;
       margin-bottom: 64px;
       padding-bottom: 48px;
     }
     .typo-number-item {
+      flex: 1;
+      min-width: 0;
       text-align: left;
     }
     .typo-number-value {
@@ -207,6 +216,7 @@ function render(input: StyleInput): string {
     /* ── Sections ── */
     .typo-section {
       margin-bottom: 0;
+      page-break-inside: avoid;
     }
     .typo-section-title {
       font-family: 'Inter', -apple-system, sans-serif;
@@ -353,7 +363,7 @@ function render(input: StyleInput): string {
 
     /* ── Footer ── */
     .typo-footer {
-      margin-top: 80px;
+      margin-top: auto;
       padding-top: 24px;
       border-top: 1px solid #eee;
       display: flex;
@@ -381,6 +391,9 @@ function render(input: StyleInput): string {
     @media print {
       .typo-page {
         padding: 60px 68px 48px;
+      }
+      .typo-section {
+        page-break-inside: avoid;
       }
       .typo-footer {
         position: fixed;

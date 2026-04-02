@@ -44,8 +44,10 @@ function render(input: StyleInput): string {
   const darkMid = '#1c2230';
   const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  const filteredSections = sections.filter(s => s.title.trim() || s.content.trim());
+
   // Alternating light/dark sections for cinematic rhythm
-  const sectionsHtml = sections.map((s, i) => {
+  const sectionsHtml = filteredSections.map((s, i) => {
     const isDark = i % 3 === 0;
     return `
     <div class="cn-section ${isDark ? 'cn-section-dark' : 'cn-section-light'}">
@@ -85,6 +87,7 @@ function render(input: StyleInput): string {
     }
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cn-section { page-break-inside: avoid; }
     }
 
     body {
@@ -95,6 +98,8 @@ function render(input: StyleInput): string {
       font-size: var(--brand-font-body-size);
       margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     /* ── Hero header: dark gradient, widescreen feel ── */
@@ -112,7 +117,8 @@ function render(input: StyleInput): string {
       background: linear-gradient(90deg, ${accent}, rgba(${ar},${ag},${ab},0.3), transparent);
     }
     .cn-hero-inner {
-      max-width: 920px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
     .cn-hero-top {
@@ -180,7 +186,8 @@ function render(input: StyleInput): string {
       padding: 44px 64px;
     }
     .cn-scene-cards-inner {
-      max-width: 920px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
     .cn-scene-label {
@@ -194,11 +201,11 @@ function render(input: StyleInput): string {
     .cn-scene-grid {
       display: flex;
       gap: 20px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
     .cn-scene-card {
       flex: 1;
-      min-width: 140px;
+      min-width: 0;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       padding: 28px 24px;
@@ -239,9 +246,11 @@ function render(input: StyleInput): string {
     /* ── Sections ── */
     .cn-section {
       padding: 52px 64px;
+      page-break-inside: avoid;
     }
     .cn-section-inner {
-      max-width: 920px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
     }
     .cn-section-dark {
@@ -373,7 +382,8 @@ function render(input: StyleInput): string {
       background: linear-gradient(90deg, transparent, rgba(${ar},${ag},${ab},0.4), transparent);
     }
     .cn-footer-inner {
-      max-width: 920px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       display: flex;
       align-items: center;

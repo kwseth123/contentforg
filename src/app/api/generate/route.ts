@@ -13,17 +13,21 @@ const anthropic = new Anthropic({
 
 const VISUAL_MODE_PROMPT_SUFFIX = `
 
+CRITICAL: You MUST fully write out every section with complete, real content. Never leave a section empty or with only an intro sentence. Every section must have substantive content — real bullet points, real numbers, real analysis. If you lack specific data, use credible industry examples and note them as examples.
+
 IMPORTANT: Return your response as a valid JSON object with this exact structure:
 {
   "sections": [
     {
       "title": "Section Title",
-      "content": "The actual content text for this section. Use markdown formatting.",
+      "content": "REQUIRED: The full written content for this section in markdown. This field must ALWAYS contain the complete text — 3-5 substantive paragraphs or bullet points minimum. Never leave this empty. Even when using structured items below, this content field must contain the full readable text version.",
       "visualFormat": "highlight-box",
       "items": []
     }
   ]
 }
+
+CRITICAL RULE: The "content" field must ALWAYS contain the full, readable text version of the section. It must never be empty, never be just an intro sentence, and never be shorter than 50 characters. Write the complete content in "content" AND provide structured data in "items"/"rows"/"quote" etc. Both must be populated.
 
 Valid visualFormat values: "highlight-box", "stat-cards", "numbered-flow", "before-after", "icon-grid", "comparison-table", "timeline", "blockquote", "pricing-cards", "cta-box"
 
@@ -134,7 +138,7 @@ export async function POST(req: NextRequest) {
       try {
         const message = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
+          max_tokens: 8096,
           system: systemPrompt,
           messages: [{ role: 'user', content: visualUserPrompt }],
         });
@@ -144,6 +148,33 @@ export async function POST(req: NextRequest) {
         for (const block of message.content) {
           if (block.type === 'text') {
             responseText += block.text;
+          }
+        }
+
+        // Check if response was truncated (stop_reason === 'max_tokens')
+        const wasTruncated = message.stop_reason === 'max_tokens';
+        if (wasTruncated) {
+          console.warn('[generate] Visual mode response was truncated (max_tokens reached). Attempting continuation...');
+
+          // Try to get the rest with a continuation prompt
+          try {
+            const continuationMessage = await anthropic.messages.create({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 4096,
+              system: systemPrompt,
+              messages: [
+                { role: 'user', content: visualUserPrompt },
+                { role: 'assistant', content: responseText },
+                { role: 'user', content: 'Your previous response was cut off. Continue EXACTLY where you left off. Complete the remaining JSON. Do not restart.' },
+              ],
+            });
+            for (const block of continuationMessage.content) {
+              if (block.type === 'text') {
+                responseText += block.text;
+              }
+            }
+          } catch (contErr) {
+            console.error('[generate] Continuation failed:', contErr);
           }
         }
 
@@ -162,6 +193,19 @@ export async function POST(req: NextRequest) {
           }
           cleanedText = cleanedText.trim();
 
+          // If JSON is incomplete (truncated), try to fix it
+          if (!cleanedText.endsWith('}')) {
+            // Try to find the last complete section and close the JSON
+            const lastBracket = cleanedText.lastIndexOf('}');
+            if (lastBracket > 0) {
+              cleanedText = cleanedText.substring(0, lastBracket + 1);
+              // Close sections array and root object if needed
+              if (!cleanedText.endsWith(']}')) {
+                cleanedText += ']}';
+              }
+            }
+          }
+
           parsed = JSON.parse(cleanedText);
         } catch {
           // JSON parse failed — fall back to streaming mode
@@ -170,7 +214,59 @@ export async function POST(req: NextRequest) {
         }
 
         if (parsed && Array.isArray(parsed.sections) && parsed.sections.length > 0) {
+          // Validate: check for empty/sparse sections
+          const sparseSections = parsed.sections.filter(
+            (s: VisualSection) => {
+              const hasContent = s.content && s.content.trim().length >= 50;
+              const hasItems = s.items && Array.isArray(s.items) && s.items.length > 0;
+              const hasQuote = !!s.quote;
+              const hasRows = s.rows && Array.isArray(s.rows) && s.rows.length > 0;
+              const hasBullets = s.bullets && Array.isArray(s.bullets) && s.bullets.length > 0;
+              const hasBefore = !!s.before && !!s.after;
+              return !hasContent && !hasItems && !hasQuote && !hasRows && !hasBullets && !hasBefore;
+            }
+          );
+
+          if (sparseSections.length > 0) {
+            console.warn(`[generate] ${sparseSections.length} sparse sections detected:`, sparseSections.map((s: VisualSection) => s.title));
+
+            // Retry sparse sections individually
+            for (const sparse of sparseSections) {
+              try {
+                const fillMsg = await anthropic.messages.create({
+                  model: 'claude-sonnet-4-20250514',
+                  max_tokens: 2000,
+                  system: systemPrompt,
+                  messages: [{
+                    role: 'user',
+                    content: `Write the complete content for this document section. Return ONLY the content text in markdown format — no JSON wrapper, no section headers.
+
+Section title: "${sparse.title}"
+Document type: ${contentType}
+Prospect: ${prospect.companyName} in ${prospect.industry}
+
+Write 3-5 substantive bullet points or paragraphs with real content, specific numbers, and actionable details. Never leave this sparse. Minimum 100 words.`,
+                  }],
+                });
+
+                let fillText = '';
+                for (const block of fillMsg.content) {
+                  if (block.type === 'text') fillText += block.text;
+                }
+
+                // Find and update the sparse section in parsed results
+                const idx = parsed.sections.findIndex((s: VisualSection) => s.title === sparse.title);
+                if (idx >= 0 && fillText.trim().length > 30) {
+                  parsed.sections[idx].content = fillText.trim();
+                }
+              } catch (fillErr) {
+                console.error(`[generate] Failed to fill sparse section "${sparse.title}":`, fillErr);
+              }
+            }
+          }
+
           // Visual mode succeeded
+          console.log(`[generate] Visual mode: ${parsed.sections.length} sections, content lengths: ${parsed.sections.map((s: VisualSection) => `${s.title}=${(s.content || '').length}c`).join(', ')}`);
           return new Response(
             JSON.stringify({ visual: true, sections: parsed.sections }),
             {
@@ -193,7 +289,7 @@ export async function POST(req: NextRequest) {
     try {
       stream = anthropic.messages.stream({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
+        max_tokens: 8096,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       });

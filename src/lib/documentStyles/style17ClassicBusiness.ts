@@ -57,9 +57,10 @@ function render(input: StyleInput): string {
   const navy = '#1b2a4a';
   const charcoal = '#2d3748';
   const lightGray = '#f7f8fa';
-  const totalPages = Math.max(1, Math.ceil(cleanSections.length / 3));
+  const filteredSections = cleanSections.filter(s => s.title.trim() || s.content.trim());
+  const totalPages = Math.max(1, Math.ceil(filteredSections.length / 3));
 
-  const sectionsHtml = cleanSections.map((s, i) => {
+  const sectionsHtml = filteredSections.map((s, i) => {
     const num = `${i + 1}.0`;
     return `
       <div class="cb-section">
@@ -103,14 +104,18 @@ function render(input: StyleInput): string {
       background: #ffffff;
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     ${professionalSymbolCSS(accent)}
 
     .cb-page {
-      max-width: 8.5in;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 60px 72px;
+      box-sizing: border-box;
     }
 
     /* ══ Header ══ */
@@ -175,11 +180,13 @@ function render(input: StyleInput): string {
     /* ══ Stats Row ══ */
     .cb-stats-row {
       display: flex;
+      flex-wrap: nowrap;
       gap: 16px;
       margin-bottom: 36px;
     }
     .cb-stat-box {
       flex: 1;
+      min-width: 0;
       background: ${lightGray};
       border: 1px solid #e5e7eb;
       border-radius: 4px;

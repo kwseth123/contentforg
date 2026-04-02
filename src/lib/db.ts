@@ -714,6 +714,49 @@ export async function ensureCompany(companyId = 'default'): Promise<void> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Brain Items
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export async function getBrainItems(companyId: string = 'default'): Promise<any[]> {
+  try {
+    const { data, error } = await sb()
+      .from('brain_items')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    // Parse JSON string fields back to arrays if needed
+    return (data || []).map((item: any) => ({
+      ...item,
+      insights: typeof item.insights === 'string' ? JSON.parse(item.insights) : (item.insights || []),
+      entities: typeof item.entities === 'string' ? JSON.parse(item.entities) : (item.entities || []),
+      tags: typeof item.tags === 'string' ? JSON.parse(item.tags) : (item.tags || []),
+    }));
+  } catch (err) {
+    console.error('getBrainItems error:', err);
+    return [];
+  }
+}
+
+export async function addBrainItem(companyId: string, item: any): Promise<void> {
+  try {
+    await ensureCompany(companyId);
+    const { error } = await sb()
+      .from('brain_items')
+      .upsert({
+        ...item,
+        company_id: companyId,
+        insights: JSON.stringify(item.insights || []),
+        entities: JSON.stringify(item.entities || []),
+        tags: JSON.stringify(item.tags || []),
+      });
+    if (error) throw error;
+  } catch (err) {
+    console.error('addBrainItem error:', err);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Migration Helper — one-time import from local JSON files to Supabase
 // ═══════════════════════════════════════════════════════════════════════════════
 

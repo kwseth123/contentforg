@@ -103,7 +103,8 @@ function render(input: StyleInput): string {
 
   if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
 
-  const { sections, contentType, prospect, companyName, date } = input;
+  const { sections: rawSections, contentType, prospect, companyName, date } = input;
+  const sections = rawSections.filter(s => s.title?.trim() || s.content?.trim());
   const dateStr =
     date ||
     new Date().toLocaleDateString('en-US', {
@@ -200,7 +201,7 @@ function render(input: StyleInput): string {
     }
 
     .cm-page {
-      max-width: 960px;
+      width: 100%; max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -569,6 +570,7 @@ function render(input: StyleInput): string {
       border-radius: 10px;
       padding: 24px;
       break-inside: avoid;
+      page-break-inside: avoid;
     }
     .cm-detail-title {
       font-family: var(--brand-font-primary);
@@ -583,6 +585,7 @@ function render(input: StyleInput): string {
       font-size: 13px;
       color: #4b5563;
       line-height: 1.6;
+      overflow-wrap: break-word;
     }
     .cm-detail-body h1, .cm-detail-body h2, .cm-detail-body h3, .cm-detail-body h4 {
       font-size: 14px;
@@ -653,8 +656,8 @@ function render(input: StyleInput): string {
 
     @media print {
       .cm-header, .cm-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .cm-matrix-wrap { break-inside: avoid; }
-      .cm-detail-section { break-inside: avoid; }
+      .cm-matrix-wrap { break-inside: avoid; page-break-inside: avoid; }
+      .cm-detail-section { break-inside: avoid; page-break-inside: avoid; }
     }
   `;
 

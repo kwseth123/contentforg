@@ -26,7 +26,8 @@ function render(input: StyleInput): string {
     ? stripEmojis(execSummarySection.content).split(/\n\n/)[0] || stripEmojis(execSummarySection.content).substring(0, 300)
     : '';
 
-  const sectionsHtml = input.sections.map((s, i) => {
+  const filteredSections = input.sections.filter(s => s.title.trim() || s.content.trim());
+  const sectionsHtml = filteredSections.map((s, i) => {
     const cleanContent = stripEmojis(s.content);
     const cleanTitle = stripEmojis(s.title);
     const formatted = formatMarkdown(cleanContent);
@@ -88,9 +89,11 @@ function render(input: StyleInput): string {
     }
 
     .page {
-      max-width: 860px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
+      overflow-wrap: break-word;
     }
 
     /* ── Premium Header with Navy/Gold ── */
@@ -229,6 +232,9 @@ function render(input: StyleInput): string {
       text-shadow: 0.5px 0.5px 0 rgba(0,0,0,0.05);
     }
 
+    .section-body {
+      overflow-wrap: break-word;
+    }
     .section-body p {
       margin-bottom: 14px;
       line-height: 1.8;
@@ -293,11 +299,13 @@ function render(input: StyleInput): string {
     /* ── Stat Frames ── */
     .stat-row {
       display: flex;
+      flex-wrap: nowrap;
       gap: 20px;
       margin: 24px 0;
     }
     .stat-frame {
       flex: 1;
+      min-width: 0;
       border: 1.5px solid ${gold};
       padding: 20px 24px;
       text-align: center;
@@ -429,7 +437,7 @@ function render(input: StyleInput): string {
     </div>
   `;
 
-  return wrapDocument({ title: `${title} — Board Package — ${input.prospect.companyName}`, css, body, fonts: brandFonts(brand) });
+  return wrapDocument({ title: `${title} — Board Package — ${input.prospect.companyName}`, css, body, fonts: ['Georgia', ...brandFonts(brand)] });
 }
 
 // ── Thumbnail ───────────────────────────────────────────────

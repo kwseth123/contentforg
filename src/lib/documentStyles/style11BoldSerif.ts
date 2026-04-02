@@ -54,7 +54,8 @@ function render(input: StyleInput): string {
       `).join('')}
     </div>` : '';
 
-  const sectionsHtml = sections.map((s, i) => {
+  const validSections = sections.filter(s => s.content && s.content.trim().length > 0);
+  const sectionsHtml = validSections.map((s, i) => {
     const cleanTitle = stripEmojis(s.title);
     const cleanContent = stripEmojis(s.content);
     return `
@@ -90,10 +91,13 @@ function render(input: StyleInput): string {
       line-height: 1.75;
       font-size: var(--brand-font-body-size);
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .page {
-      max-width: 860px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -178,6 +182,7 @@ function render(input: StyleInput): string {
     /* ── Stats Bar ──────────────────────────────── */
     .stats-bar {
       display: flex;
+      flex-wrap: nowrap;
       gap: 48px;
       padding: 36px 52px;
       background: #fafaf8;
@@ -185,6 +190,7 @@ function render(input: StyleInput): string {
     }
     .stat-item {
       flex: 1;
+      min-width: 0;
       text-align: center;
     }
     .stat-value {
@@ -219,6 +225,7 @@ function render(input: StyleInput): string {
       margin-bottom: 44px;
       padding-bottom: 44px;
       border-bottom: 1px solid #eee;
+      page-break-inside: avoid;
     }
     .section:last-of-type {
       border-bottom: none;
@@ -378,6 +385,7 @@ function render(input: StyleInput): string {
       font-size: 10px;
       color: #bbb;
       letter-spacing: 0.04em;
+      margin-top: auto;
     }
     .footer-left {
       font-family: 'Playfair Display', Georgia, serif;

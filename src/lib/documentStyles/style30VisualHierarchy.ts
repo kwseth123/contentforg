@@ -107,7 +107,8 @@ function render(input: StyleInput): string {
 
   if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
 
-  const { sections, contentType, prospect, companyName, date } = input;
+  const { sections: rawSections, contentType, prospect, companyName, date } = input;
+  const sections = rawSections.filter(s => s.title?.trim() || s.content?.trim());
   const dateStr =
     date ||
     new Date().toLocaleDateString('en-US', {
@@ -211,7 +212,7 @@ function render(input: StyleInput): string {
     }
 
     .vh-page {
-      max-width: 900px;
+      width: 100%; max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -262,6 +263,7 @@ function render(input: StyleInput): string {
     .vh-section {
       padding: 0;
       transition: background 0.2s;
+      page-break-inside: avoid;
     }
     .vh-section-inner {
       padding: 36px 44px;
@@ -418,6 +420,7 @@ function render(input: StyleInput): string {
     }
 
     /* ── Body content styling ── */
+    .vh-section-body { overflow-wrap: break-word; }
     .vh-section-body h1, .vh-section-body h2, .vh-section-body h3, .vh-section-body h4 {
       font-family: var(--brand-font-primary);
       font-weight: 700;
@@ -499,7 +502,7 @@ function render(input: StyleInput): string {
 
     @media print {
       .vh-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .vh-section { break-inside: avoid; }
+      .vh-section { break-inside: avoid; page-break-inside: avoid; }
       .vh-tier-hero { break-after: avoid; }
     }
   `;

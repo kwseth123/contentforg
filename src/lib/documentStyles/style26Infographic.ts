@@ -65,7 +65,8 @@ function render(input: StyleInput): string {
 
   if (input.contentType === 'solution-one-pager') return buildOnePagerDocument(input, brand);
 
-  const { sections, contentType, prospect, companyName, date } = input;
+  const { sections: rawSections, contentType, prospect, companyName, date } = input;
+  const sections = rawSections.filter(s => s.title?.trim() || s.content?.trim());
   const dateStr = date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const allContent = sections.map(s => s.content).join('\n');
   const percentages = extractPercentages(allContent);
@@ -215,7 +216,7 @@ function render(input: StyleInput): string {
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .ig-section-card { break-inside: avoid; }
+      .ig-section-card { break-inside: avoid; page-break-inside: avoid; }
     }
 
     body {
@@ -230,7 +231,7 @@ function render(input: StyleInput): string {
     }
 
     .ig-wrapper {
-      max-width: 900px;
+      width: 100%; max-width: 816px;
       margin: 0 auto;
       padding: 0;
     }
@@ -331,11 +332,13 @@ function render(input: StyleInput): string {
     /* ── Big numbers ── */
     .ig-big-numbers {
       display: flex;
+      flex-wrap: nowrap;
       gap: 16px;
       margin-bottom: 24px;
     }
     .ig-big-num-card {
       flex: 1;
+      min-width: 0;
       background: #fff;
       border-radius: 12px;
       padding: 24px 16px;
@@ -522,6 +525,7 @@ function render(input: StyleInput): string {
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       display: flex;
       flex-direction: row;
+      page-break-inside: avoid;
     }
     .ig-section-color-bar {
       width: 5px;
@@ -575,7 +579,7 @@ function render(input: StyleInput): string {
     .ig-mini-value { width: 36px; font-size: 12px; font-weight: 700; color: ${accent}; }
 
     /* ── Section body ── */
-    .ig-section-body { color: #555; font-size: 13px; line-height: 1.65; }
+    .ig-section-body { color: #555; font-size: 13px; line-height: 1.65; overflow-wrap: break-word; }
     .ig-section-body p { margin-bottom: 10px; }
     .ig-section-body h1, .ig-section-body h2,
     .ig-section-body h3, .ig-section-body h4 { color: #1a1a1a; margin: 14px 0 8px; }

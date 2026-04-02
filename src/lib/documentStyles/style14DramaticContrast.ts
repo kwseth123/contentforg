@@ -60,11 +60,13 @@ function render(input: StyleInput): string {
   const accent = brand.accent || brand.primary;
   const title = contentType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  const filteredSections = sections.filter(s => s.title.trim() || s.content.trim());
+
   // Build sections with dramatic type hierarchy
-  const sectionsHtml = sections.map((s, i) => `
+  const sectionsHtml = filteredSections.map((s, i) => `
     <div class="dc-section">
       <div class="dc-section-rule"></div>
-      <div class="dc-section-meta">${String(i + 1).padStart(2, '0')} / ${String(sections.length).padStart(2, '0')}</div>
+      <div class="dc-section-meta">${String(i + 1).padStart(2, '0')} / ${String(filteredSections.length).padStart(2, '0')}</div>
       <h2 class="dc-section-title">${stripEmojis(s.title)}</h2>
       <div class="dc-section-body">${formatMarkdown(stripEmojis(s.content))}</div>
     </div>
@@ -102,6 +104,7 @@ function render(input: StyleInput): string {
     }
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .dc-section { page-break-inside: avoid; }
     }
 
     body {
@@ -112,12 +115,16 @@ function render(input: StyleInput): string {
       font-size: var(--brand-font-body-size);
       margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .dc-page {
-      max-width: 680px;
+      width: 100%;
+      max-width: 816px;
       margin: 0 auto;
       padding: 80px 48px 60px;
+      box-sizing: border-box;
     }
 
     /* ── Header: minimal, dramatic type ── */
@@ -214,11 +221,11 @@ function render(input: StyleInput): string {
       display: flex;
       gap: 48px;
       padding: 36px 0;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
     .dc-stat {
       flex: 1;
-      min-width: 100px;
+      min-width: 0;
     }
     .dc-stat-number {
       font-family: var(--brand-font-primary);
@@ -239,6 +246,7 @@ function render(input: StyleInput): string {
     /* ── Sections ── */
     .dc-section {
       margin-bottom: 48px;
+      page-break-inside: avoid;
     }
     .dc-section-rule {
       width: 100%;

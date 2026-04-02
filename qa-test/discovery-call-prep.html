@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discovery Call Prep — GlobalTech Industries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    
+    :root {
+      --brand-primary: #4F46E5;
+      --brand-secondary: #4F46E5;
+      --brand-accent: #4F46E5;
+      --brand-background: #ffffff;
+      --brand-text: #334155;
+      --brand-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --brand-font-h1-size: 37px;
+      --brand-font-h2-size: 24px;
+      --brand-font-h3-size: 19px;
+      --brand-font-body-size: 15px;
+    }
+  
+
+    @page {
+      size: letter;
+      margin: 0.75in 1in;
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tb-layout { display: block; }
+      .tb-sidebar { display: none; }
+      .tb-main { max-width: 100%; }
+      .tb-section { page-break-inside: avoid; }
+    }
+
+    body {
+      font-family: 'Inter', var(--brand-font-secondary), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: var(--brand-font-body-size);
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    
+    /* Professional Symbol System */
+    .pro-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .pro-icon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+    .pro-icon-square {
+      width: 6px;
+      height: 6px;
+      background: #4F46E5;
+    }
+    .pro-icon-line {
+      width: 16px;
+      height: 2px;
+      background: #4F46E5;
+    }
+    .pro-icon-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-icon-warning svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d97706;
+      stroke-width: 2;
+      fill: none;
+    }
+    .pro-icon-arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: #4F46E5;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .pro-status-green { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .pro-status-yellow { width: 8px; height: 8px; border-radius: 50%; background: #eab308; }
+    .pro-status-red { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .pro-rating-filled { width: 10px; height: 10px; border-radius: 50%; background: #4F46E5; display: inline-block; margin-right: 3px; }
+    .pro-rating-empty { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #4F46E5; display: inline-block; margin-right: 3px; }
+
+    /* Section headers with professional accents */
+    .pro-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pro-section-header::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: #4F46E5;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Professional bullet lists */
+    ul.pro-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.pro-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    ul.pro-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4F46E5;
+    }
+
+    /* Professional callout boxes */
+    .pro-callout {
+      border-left: 3px solid #4F46E5;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+  
+
+    .tb-page {
+      width: 100%;
+      max-width: 816px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+    }
+
+    /* ══ Technical Header ══ */
+    .tb-header {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tb-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .tb-header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .tb-header-right {
+      display: flex;
+      gap: 24px;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .tb-header-right dt {
+      font-size: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+      margin-bottom: 1px;
+    }
+    .tb-header-right dd {
+      margin: 0;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 11px;
+    }
+    .tb-header-accent {
+      height: 3px;
+      background: linear-gradient(to right, #2563eb, #6692f1);
+    }
+
+    /* ══ Layout: sidebar + main ══ */
+    .tb-layout {
+      display: flex;
+      min-height: calc(100vh - 120px);
+    }
+    .tb-sidebar {
+      width: 220px;
+      background: #f1f5f9;
+      border-right: 1px solid #e2e8f0;
+      padding: 24px 20px;
+      flex-shrink: 0;
+      overflow-wrap: break-word;
+    }
+    .tb-sidebar-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+      margin-bottom: 14px;
+    }
+    .tb-nav-item {
+      display: block;
+      font-size: 12px;
+      color: #475569;
+      text-decoration: none;
+      padding: 6px 10px;
+      margin-bottom: 2px;
+      border-radius: 4px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tb-nav-item:hover {
+      background: #e2e8f0;
+      border-left-color: #2563eb;
+      color: #0f172a;
+    }
+    .tb-nav-num {
+      color: #2563eb;
+      font-weight: 600;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 11px;
+    }
+    .tb-sidebar-meta {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .tb-sidebar-meta dt {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+    .tb-sidebar-meta dd {
+      margin: 0 0 12px 0;
+      font-size: 12px;
+      color: #334155;
+    }
+
+    .tb-main {
+      flex: 1;
+      padding: 32px 48px;
+      max-width: calc(816px - 220px);
+      overflow-wrap: break-word;
+    }
+
+    /* ══ Title Block ══ */
+    .tb-title-block {
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #2563eb;
+    }
+    .tb-doc-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+      margin: 0 0 6px 0;
+    }
+    .tb-doc-subtitle {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    /* ══ Specifications Grid ══ */
+    .tb-specs-grid {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #2563eb;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .tb-specs-header {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #2563eb;
+      padding: 12px 20px 0;
+    }
+    .tb-specs-row {
+      display: flex;
+      flex-wrap: nowrap;
+      padding: 16px 20px;
+      gap: 20px;
+    }
+    .tb-spec {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding: 12px 8px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+    .tb-spec-value {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2563eb;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+    .tb-spec-label {
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 4px;
+    }
+
+    /* ══ Sections ══ */
+    .tb-section {
+      margin-bottom: 32px;
+      page-break-inside: avoid;
+    }
+    .tb-section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .tb-section-num {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #2563eb;
+    }
+    .tb-section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+      line-height: 1.3;
+    }
+    .tb-section + .tb-section {
+      border-top: 2px solid #2563eb;
+      padding-top: 28px;
+    }
+
+    .tb-section-body {
+      overflow-wrap: break-word;
+    }
+    .tb-section-body p {
+      margin-bottom: 12px;
+    }
+    .tb-section-body h1,
+    .tb-section-body h2,
+    .tb-section-body h3,
+    .tb-section-body h4 {
+      color: #0f172a;
+      margin: 20px 0 8px;
+      font-weight: 700;
+    }
+    .tb-section-body h2 { font-size: 18px; }
+    .tb-section-body h3 { font-size: 16px; }
+    .tb-section-body h4 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #2563eb;
+    }
+    .tb-section-body strong { font-weight: 600; }
+
+    /* ── Checkmark bullets ── */
+    .tb-section-body ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 12px 0;
+    }
+    .tb-section-body ul li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .tb-section-body ul li::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #2563eb;
+      border-radius: 2px;
+      background: #eef3fd;
+    }
+    .tb-section-body ul li::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 8px;
+      width: 6px;
+      height: 3px;
+      border-left: 2px solid #2563eb;
+      border-bottom: 2px solid #2563eb;
+      transform: rotate(-45deg);
+    }
+    .tb-section-body ol {
+      padding-left: 24px;
+      margin: 12px 0;
+    }
+    .tb-section-body ol li {
+      margin-bottom: 6px;
+      line-height: 1.6;
+    }
+    .tb-section-body hr {
+      border: none;
+      border-top: 1px dashed #cbd5e1;
+      margin: 24px 0;
+    }
+
+    /* ══ Tables ══ */
+    .tb-section-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', var(--brand-font-secondary), monospace;
+      border: 1px solid #e2e8f0;
+    }
+    .tb-section-body th {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 14px;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .tb-section-body td {
+      padding: 7px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-variant-numeric: tabular-nums;
+    }
+    .tb-section-body tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* ══ Code blocks ══ */
+    .tb-section-body code,
+    .tb-section-body pre {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #0f172a;
+    }
+    .tb-section-body pre {
+      padding: 16px 20px;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    /* ══ Blockquote as spec box ══ */
+    .tb-section-body blockquote {
+      border: 2px solid #2563eb;
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      background: #f4f7fe;
+      position: relative;
+    }
+    .tb-section-body blockquote::before {
+      content: 'DETAIL';
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 2px;
+    }
+
+    /* ══ Footer ══ */
+    .tb-footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 14px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      margin-top: auto;
+    }
+    .tb-footer-left {
+      display: flex;
+      gap: 16px;
+    }
+    .tb-footer-left dt {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+    }
+    .tb-footer-left dd {
+      margin: 0;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 10px;
+      color: #cbd5e1;
+    }
+    .tb-footer-center {
+      font-variant-numeric: tabular-nums;
+    }
+    .tb-footer-right {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+  
+  </style>
+</head>
+<body>
+  
+    <div class="tb-page">
+      <!-- Technical Header -->
+      <div class="tb-header">
+        <div class="tb-header-left">
+          <span style="font-family:var(--brand-font-primary);font-weight:700;font-size:18px;color:var(--brand-primary);">Acme Solutions</span>
+          <div class="tb-header-title">Discovery Call Prep</div>
+        </div>
+        <div class="tb-header-right">
+          <div>
+            <dt>Document ID</dt>
+            <dd>TB-GS7X39</dd>
+          </div>
+          <div>
+            <dt>Version</dt>
+            <dd>1.0</dd>
+          </div>
+          <div>
+            <dt>Date</dt>
+            <dd>April 1, 2026</dd>
+          </div>
+          <div>
+            <dt>Classification</dt>
+            <dd>Confidential</dd>
+          </div>
+        </div>
+      </div>
+      <div class="tb-header-accent"></div>
+
+      <!-- Layout -->
+      <div class="tb-layout">
+        <!-- Sidebar -->
+        <div class="tb-sidebar">
+          <div class="tb-sidebar-label">Contents</div>
+          
+    <a class="tb-nav-item" href="#section-1">
+      <span class="tb-nav-num">1.</span> Company Background
+    </a>
+  
+    <a class="tb-nav-item" href="#section-2">
+      <span class="tb-nav-num">2.</span> Key Attendees
+    </a>
+  
+    <a class="tb-nav-item" href="#section-3">
+      <span class="tb-nav-num">3.</span> Discovery Questions
+    </a>
+  
+    <a class="tb-nav-item" href="#section-4">
+      <span class="tb-nav-num">4.</span> Competitive Intelligence
+    </a>
+  
+    <a class="tb-nav-item" href="#section-5">
+      <span class="tb-nav-num">5.</span> Meeting Agenda
+    </a>
+  
+
+          <div class="tb-sidebar-meta">
+            <dt>Prepared for</dt>
+            <dd>GlobalTech Industries</dd>
+            <dt>Industry</dt><dd>Manufacturing</dd>
+            <dt>Organization</dt><dd>2,500 employees</dd>
+            <dt>Prepared by</dt>
+            <dd>Acme Solutions</dd>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="tb-main">
+          <div class="tb-title-block">
+            <h1 class="tb-doc-title">Discovery Call Prep</h1>
+            <div class="tb-doc-subtitle">Technical analysis for GlobalTech Industries</div>
+          </div>
+
+          <!-- Specifications -->
+          
+    <div class="tb-specs-grid">
+      <div class="tb-specs-header">SPECIFICATIONS</div>
+      <div class="tb-specs-row">
+        
+          <div class="tb-spec">
+            <div class="tb-spec-value">$340M</div>
+            <div class="tb-spec-label">value</div>
+          </div>
+        
+      </div>
+    </div>
+
+          <!-- Sections -->
+          
+      <div class="tb-section" id="section-1">
+        <div class="tb-section-header">
+          <span class="tb-section-num">1.</span>
+          <h2 class="tb-section-title">Company Background</h2>
+        </div>
+        <div class="tb-section-body"><p><strong>GlobalTech Industries</strong> is a mid-market manufacturer ($340M revenue, 2,500 employees) headquartered in Detroit, MI. They produce precision components for automotive and aerospace sectors. Recently acquired a smaller competitor (Atlas Precision) and are now integrating two separate ERP systems.</p></div>
+      </div>
+
+      <div class="tb-section" id="section-2">
+        <div class="tb-section-header">
+          <span class="tb-section-num">2.</span>
+          <h2 class="tb-section-title">Key Attendees</h2>
+        </div>
+        <div class="tb-section-body"><p><strong>Sarah Chen</strong> — VP Operations (Decision Maker)<br/><ul><li>8 years at GlobalTech, promoted to VP 2 years ago</li><br/><li>LinkedIn: Posted about "digital transformation fatigue" last month</li><br/><li>Known pain: Manual reporting consuming her team's bandwidth <strong>James Park</strong> — Director of IT (Technical Evaluator)</li><br/><li>Background in SAP and Oracle ERP implementations</li><br/><li>Likely concerned about integration complexity and timeline</li><br/><li>Will want to see API documentation and security certifications</li></ul></div>
+      </div>
+
+      <div class="tb-section" id="section-3">
+        <div class="tb-section-header">
+          <span class="tb-section-num">3.</span>
+          <h2 class="tb-section-title">Discovery Questions</h2>
+        </div>
+        <div class="tb-section-body"><p><strong>Pain Discovery:</strong><br/><ul><li>"Walk me through what happens when a production order comes in — how many systems does it touch?"</li><br/><li>"How much time does your team spend on month-end reconciliation?"</li><br/><li>"What keeps you up at night about the Atlas integration?" <strong>Impact Quantification:</strong></li><br/><li>"If you could reclaim those 14 hours/week per manager, what would that team focus on?"</li><br/><li>"What does a compliance gap cost you in audit remediation?" <strong>Decision Process:</strong></li><br/><li>"Beyond you and James, who else needs to weigh in?"</li><br/><li>"What does your evaluation timeline look like?"</li></ul></div>
+      </div>
+
+      <div class="tb-section" id="section-4">
+        <div class="tb-section-header">
+          <span class="tb-section-num">4.</span>
+          <h2 class="tb-section-title">Competitive Intelligence</h2>
+        </div>
+        <div class="tb-section-body"><ul><li>GlobalTech evaluated AutoFlow 18 months ago but did not move forward (unknown reason)</li><br/><li>Their SAP environment suggests they may be considering SAP's native automation tools</li><br/><li>Atlas Precision was using ManuTech — likely under contract through Q3</li><br/><li>Key differentiator to emphasize: Our dual-ERP integration capability is unique</li></ul></div>
+      </div>
+
+      <div class="tb-section" id="section-5">
+        <div class="tb-section-header">
+          <span class="tb-section-num">5.</span>
+          <h2 class="tb-section-title">Meeting Agenda</h2>
+        </div>
+        <div class="tb-section-body"><ol><li class="ol-item"><strong>Introductions &amp; Context</strong> (5 min) — Confirm attendees and objectives</li><br/><li class="ol-item"><strong>Current State Discovery</strong> (15 min) — Systems landscape, pain points, manual processes</li><br/><li class="ol-item"><strong>Impact Quantification</strong> (10 min) — Tie pains to dollars and time</li><br/><li class="ol-item"><strong>Solution Preview</strong> (10 min) — Brief demo of real-time integration</li><br/><li class="ol-item"><strong>Evaluation Process</strong> (5 min) — Timeline, stakeholders, next steps</li><br/><li class="ol-item"><strong>Action Items</strong> (5 min) — Confirm follow-up commitments</li></ol></div>
+      </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="tb-footer">
+        <div class="tb-footer-left">
+          <div>
+            <dt>Document</dt>
+            <dd>TB-GS7X39</dd>
+          </div>
+          <div>
+            <dt>Revision</dt>
+            <dd>1.0 | April 1, 2026</dd>
+          </div>
+        </div>
+        <div class="tb-footer-center">Page 1 of 2</div>
+        <div class="tb-footer-right">Confidential</div>
+      </div>
+    </div>
+  
+</body>
+</html>
