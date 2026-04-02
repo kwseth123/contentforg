@@ -727,13 +727,35 @@ export async function getBrainItems(companyId: string = 'default'): Promise<any[
       .eq('company_id', companyId)
       .order('created_at', { ascending: false });
     if (error) throw error;
-    // Parse JSON string fields back to arrays if needed
-    return (data || []).map((item: any) => ({
-      ...item,
-      insights: typeof item.insights === 'string' ? JSON.parse(item.insights) : (item.insights || []),
-      entities: typeof item.entities === 'string' ? JSON.parse(item.entities) : (item.entities || []),
-      tags: typeof item.tags === 'string' ? JSON.parse(item.tags) : (item.tags || []),
-    }));
+    return (data || []).map((item: any) => {
+      const parseField = (v: any) => {
+        if (typeof v === 'string') try { return JSON.parse(v); } catch { return []; }
+        return v || [];
+      };
+      // insights column stores a JSON object with all analysis data
+      let insightsData: any = {};
+      if (typeof item.insights === 'string') {
+        try { insightsData = JSON.parse(item.insights); } catch { insightsData = {}; }
+      } else if (item.insights && typeof item.insights === 'object') {
+        insightsData = item.insights;
+      }
+      // If insights is an array (legacy), wrap it
+      if (Array.isArray(insightsData)) {
+        insightsData = { insights: insightsData };
+      }
+      return {
+        ...item,
+        file_name: item.filename || item.file_name || '',
+        raw_text: item.extracted_text || item.raw_text || '',
+        summary: item.summary || insightsData.summary || '',
+        insights: parseField(insightsData.insights || insightsData),
+        entities: parseField(item.entities || insightsData.entities),
+        tags: parseField(item.tags || insightsData.tags),
+        category: item.category || insightsData.category || 'product',
+        confidence: item.confidence || insightsData.confidence || 0,
+        source_count: item.source_count || insightsData.source_count || 1,
+      };
+    });
   } catch (err) {
     console.error('getBrainItems error:', err);
     return [];
@@ -743,18 +765,66 @@ export async function getBrainItems(companyId: string = 'default'): Promise<any[
 export async function addBrainItem(companyId: string, item: any): Promise<void> {
   try {
     await ensureCompany(companyId);
+    // Pack all analysis data into the insights column as a JSON object
+    // This works whether or not the migration has added the extra columns
+    const analysisData = {
+      summary: item.summary || '',
+      insights: item.insights || [],
+      entities: item.entities || [],
+      tags: item.tags || [],
+      category: item.category || 'product',
+      confidence: item.confidence || 50,
+      source_count: item.source_count || 1,
+    };
     const { error } = await sb()
       .from('brain_items')
       .upsert({
-        ...item,
+        id: item.id,
         company_id: companyId,
-        insights: JSON.stringify(item.insights || []),
-        entities: JSON.stringify(item.entities || []),
-        tags: JSON.stringify(item.tags || []),
+        filename: item.filename || item.file_name || '',
+        content_type: item.content_type || '',
+        extracted_text: item.extracted_text || item.raw_text || '',
+        insights: JSON.stringify(analysisData),
+        status: item.status || 'processed',
+        created_at: item.created_at || new Date().toISOString(),
       });
     if (error) throw error;
   } catch (err) {
     console.error('addBrainItem error:', err);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Refresh History
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export async function getRefreshHistory(companyId = 'default'): Promise<any[]> {
+  try {
+    const { data, error } = await sb()
+      .from('refresh_history')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('[db] getRefreshHistory failed:', err);
+    return [];
+  }
+}
+
+export async function addRefreshHistory(companyId = 'default', item: any): Promise<void> {
+  try {
+    await ensureCompany(companyId);
+    const { error } = await sb()
+      .from('refresh_history')
+      .insert({
+        ...item,
+        company_id: companyId,
+      });
+    if (error) throw error;
+  } catch (err) {
+    console.error('[db] addRefreshHistory failed:', err);
   }
 }
 

@@ -351,7 +351,7 @@ Make it punchy, specific, and genuinely useful. Lead with a striking headline ad
 This document should make the user think: I could send this right now.`;
 
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/onboarding/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

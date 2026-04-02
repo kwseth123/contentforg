@@ -18,6 +18,7 @@ import {
   HiOutlineTableCells,
   HiOutlineLightBulb,
   HiOutlinePhone,
+  HiOutlineArrowPath,
 } from 'react-icons/hi2';
 import Logo from '@/components/Logo';
 
@@ -34,6 +35,7 @@ const SALES_TOOLS_NAV = [
   { href: '/roi-calculator', label: 'ROI Calculator', icon: HiOutlineCalculator },
   { href: '/feature-matrix', label: 'Feature Matrix', icon: HiOutlineTableCells },
   { href: '/discovery-call', label: 'Discovery Calls', icon: HiOutlinePhone },
+  { href: '/refresh-doc', label: 'Refresh Doc', icon: HiOutlineArrowPath },
 ];
 
 const KNOWLEDGE_NAV = [

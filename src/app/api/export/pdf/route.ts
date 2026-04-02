@@ -196,7 +196,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const returnHtml = body.returnHtml === true;
 
-  const { html, fileName } = await buildDocumentHtml(req, body);
+  // If pre-rendered HTML is provided, use it directly (e.g. from Refresh Doc)
+  let html: string;
+  let fileName: string;
+  if (body.html && typeof body.html === 'string') {
+    html = body.html;
+    fileName = 'refreshed-document';
+  } else {
+    const result = await buildDocumentHtml(req, body);
+    html = result.html;
+    fileName = result.fileName;
+  }
 
   // If client requests HTML (for preview), return HTML
   if (returnHtml) {

@@ -7,6 +7,33 @@ import { v4 as uuidv4 } from 'uuid';
 
 const anthropic = new Anthropic();
 
+async function extractTextFromFile(file: File): Promise<string> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+    const { parsePDF } = await import('@/lib/fileParser');
+    const result = { text: await parsePDF(buffer) };
+    return result.text || '';
+  }
+
+  if (
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    file.name.endsWith('.docx')
+  ) {
+    const mammoth = await import('mammoth');
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value || '';
+  }
+
+  if (file.type === 'application/msword' || file.name.endsWith('.doc')) {
+    // .doc files — best effort: extract as text
+    return buffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  // CSV, TXT, and other text formats
+  return await file.text();
+}
+
 async function processContent(text: string, fileName: string, contentType: string): Promise<any> {
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -44,6 +71,26 @@ Return ONLY valid JSON, no markdown.`
   }
 }
 
+function buildBrainItem(id: string, fileName: string, contentType: string, rawText: string, analysis: any) {
+  return {
+    id,
+    company_id: 'default',
+    filename: fileName,
+    content_type: contentType,
+    extracted_text: rawText.slice(0, 50000),
+    summary: analysis.summary || '',
+    insights: analysis.insights || [],
+    entities: analysis.entities || [],
+    tags: analysis.tags || [],
+    category: analysis.category || 'product',
+    confidence: analysis.confidence || 50,
+    source_count: 1,
+    status: 'processed',
+    processed_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  };
+}
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -53,34 +100,25 @@ export async function POST(request: NextRequest) {
     let processed = 0;
 
     if (contentTypeHeader.includes('multipart/form-data')) {
-      // File upload
       const formData = await request.formData();
       const files = formData.getAll('files') as File[];
 
       for (const file of files.slice(0, 20)) {
-        const text = await file.text();
-        const analysis = await processContent(text, file.name, file.type);
-
-        await db.addBrainItem('default', {
-          id: uuidv4(),
-          company_id: 'default',
-          file_name: file.name,
-          content_type: file.type.includes('pdf') ? 'pdf' : file.type.includes('word') ? 'docx' : 'txt',
-          raw_text: text.slice(0, 50000),
-          summary: analysis.summary,
-          insights: analysis.insights || [],
-          entities: analysis.entities || [],
-          tags: analysis.tags || [],
-          category: analysis.category || 'product',
-          confidence: analysis.confidence || 50,
-          source_count: 1,
-          processed_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        });
-        processed++;
+        try {
+          const text = await extractTextFromFile(file);
+          if (!text.trim()) {
+            console.warn(`[Brain] Empty extraction for ${file.name}`);
+            continue;
+          }
+          const analysis = await processContent(text, file.name, file.type);
+          const ct = file.name.endsWith('.pdf') ? 'pdf' : file.name.endsWith('.docx') ? 'docx' : 'txt';
+          await db.addBrainItem('default', buildBrainItem(uuidv4(), file.name, ct, text, analysis));
+          processed++;
+        } catch (fileErr) {
+          console.error(`[Brain] Failed to process ${file.name}:`, fileErr);
+        }
       }
     } else {
-      // JSON body (paste or URL)
       const body = await request.json();
       const { text, url, type } = body;
 
@@ -91,7 +129,6 @@ export async function POST(request: NextRequest) {
         try {
           const res = await fetch(url);
           content = await res.text();
-          // Basic HTML stripping
           content = content.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
           content = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
           content = content.replace(/<[^>]+>/g, ' ');
@@ -101,25 +138,9 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      if (content) {
+      if (content.trim()) {
         const analysis = await processContent(content, fileName, type);
-
-        await db.addBrainItem('default', {
-          id: uuidv4(),
-          company_id: 'default',
-          file_name: fileName,
-          content_type: type || 'paste',
-          raw_text: content.slice(0, 50000),
-          summary: analysis.summary,
-          insights: analysis.insights || [],
-          entities: analysis.entities || [],
-          tags: analysis.tags || [],
-          category: analysis.category || 'product',
-          confidence: analysis.confidence || 50,
-          source_count: 1,
-          processed_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        });
+        await db.addBrainItem('default', buildBrainItem(uuidv4(), fileName, type || 'paste', content, analysis));
         processed = 1;
       }
     }
