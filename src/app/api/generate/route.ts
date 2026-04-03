@@ -6,6 +6,11 @@ import { buildSystemPrompt, buildUserPrompt, buildSectionRegeneratePrompt } from
 import Anthropic from '@anthropic-ai/sdk';
 import { ContentType, ProspectInfo, VisualSection } from '@/lib/types';
 import { VariationSeed, buildVariationInstructions } from '@/lib/variation';
+import { getSchemaForContentType, getSchema } from '@/lib/contentSchemas';
+import { generateFromSchema, GenerationContext } from '@/lib/generateFromSchema';
+import { getSchemaRenderer } from '@/lib/schemaRenderers';
+import * as db from '@/lib/db';
+import type { StyleInput, BrandVars } from '@/lib/documentStyles/types';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -110,6 +115,113 @@ export async function POST(req: NextRequest) {
         JSON.stringify({ error: 'Failed to load knowledge base. Please configure it in Settings.' }),
         { status: 500 }
       );
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Schema-Driven Generation Path
+    // If a schema exists for this content type + style, use the new
+    // pipeline. Otherwise fall through to legacy visual/streaming.
+    // ═══════════════════════════════════════════════════════════════
+    const styleId = (body.styleId as string) || '';
+    const schema = styleId
+      ? getSchema(contentType, styleId)
+      : getSchemaForContentType(contentType);
+
+    if (schema && visualMode && !regenerateSection) {
+      try {
+        const products = await db.getProducts('default');
+
+        // Resolve brand for the StyleInput
+        const { resolveBrandGuidelines } = await import('@/lib/brandDefaults');
+        const brandGuidelines = resolveBrandGuidelines(kb);
+        const ptToPx = (pt: number) => Math.round(pt * 1.333);
+        const brandVars: BrandVars = {
+          primary: brandGuidelines.colors?.primary || kb.brandColor || '#1e293b',
+          secondary: brandGuidelines.colors?.secondary || kb.brandColor || '#4a4ae0',
+          accent: brandGuidelines.colors?.accent || kb.brandColor || '#f59e0b',
+          background: brandGuidelines.colors?.background || '#ffffff',
+          text: brandGuidelines.colors?.text || '#334155',
+          fontPrimary: brandGuidelines.fonts?.primary || 'Inter',
+          fontSecondary: brandGuidelines.fonts?.secondary || 'Inter',
+          h1Size: ptToPx(brandGuidelines.fonts?.sizes?.h1 || 28),
+          h2Size: ptToPx(brandGuidelines.fonts?.sizes?.h2 || 18),
+          h3Size: ptToPx(brandGuidelines.fonts?.sizes?.h3 || 14),
+          bodySize: ptToPx(brandGuidelines.fonts?.sizes?.body || 11),
+          documentStyle: (brandGuidelines.documentStyle as BrandVars['documentStyle']) || 'modern',
+          logoPlacement: (brandGuidelines.logos?.placement as BrandVars['logoPlacement']) || 'top-left',
+        };
+
+        const primaryLogoBase64 = await db.getLogo('default', 'primary');
+
+        const generationCtx: GenerationContext = {
+          knowledgeBase: kb,
+          products,
+          prospect: {
+            companyName: prospect.companyName || 'Prospect',
+            industry: prospect.industry,
+            companySize: prospect.companySize,
+            painPoints: prospect.painPoints,
+            techStack: prospect.techStack,
+          },
+          additionalContext: additionalContext || undefined,
+          uploadedContent: sessionDocuments?.length ? sessionDocuments.join('\n\n---\n\n') : undefined,
+        };
+
+        console.log(`[generate] Schema-driven generation: ${contentType} / ${schema.templateId}`);
+        const result = await generateFromSchema(schema, generationCtx);
+
+        // Build StyleInput for the renderer
+        const styleInput: StyleInput = {
+          sections: [], // Schema renderers don't use sections
+          contentType,
+          prospect: {
+            companyName: prospect.companyName || 'Prospect',
+            industry: prospect.industry,
+            companySize: prospect.companySize,
+          },
+          companyName: kb.companyName || 'Company',
+          companyDescription: kb.tagline || kb.aboutUs || '',
+          logoBase64: primaryLogoBase64 || undefined,
+          accentColor: kb.brandColor || brandGuidelines.colors?.primary || '#6366F1',
+          date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          brand: brandVars,
+        };
+
+        // Get the schema renderer
+        const renderer = getSchemaRenderer(contentType, schema.templateId);
+        let html = '';
+        if (renderer) {
+          html = renderer(result.data, styleInput);
+        }
+
+        // Convert schema data into legacy sections format for the frontend
+        const sections = Object.entries(result.data)
+          .filter(([, v]) => typeof v === 'string' && (v as string).length > 0)
+          .slice(0, 8)
+          .map(([key, value], i) => ({
+            title: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            content: typeof value === 'string' ? value : JSON.stringify(value),
+            visualFormat: 'highlight-box' as const,
+          }));
+
+        console.log(`[generate] Schema result: ${result.validation.valid ? 'VALID' : 'INVALID'}, errors: ${result.validation.errors.length}, needsVerification: ${result.validation.needsVerification.length}`);
+
+        return new Response(
+          JSON.stringify({
+            visual: true,
+            schema: true,
+            sections,
+            schemaData: result.data,
+            html,
+            validation: result.validation,
+            templateId: schema.templateId,
+          }),
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+      } catch (schemaErr) {
+        console.error('[generate] Schema-driven generation failed, falling back to legacy:', schemaErr);
+        // Fall through to legacy generation
+      }
     }
 
     let systemPrompt = buildSystemPrompt(kb);

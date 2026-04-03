@@ -337,6 +337,7 @@ function GeneratePage() {
   // ── Visual Generation Pipeline State ──
   const [visualSections, setVisualSections] = useState<VisualSection[] | null>(null);
   const [planningPhase, setPlanningPhase] = useState<'idle' | 'planning' | 'rendering' | 'done'>('idle');
+  const [schemaHtml, setSchemaHtml] = useState<string | null>(null);
 
   // ── Content Variation Engine State ──
   const [variationOn, setVariationOn] = useState(false);
@@ -1151,6 +1152,7 @@ and exact talk tracks for when prospects bring them up.`;
     setGenerating(true);
     setSections([]);
     setVisualSections(null);
+    setSchemaHtml(null);
     setPlanningPhase('planning');
     setScores(null);
     setCompliance(null);
@@ -1187,6 +1189,10 @@ and exact talk tracks for when prospects bring them up.`;
         if (data.visual && Array.isArray(data.sections) && data.sections.length > 0) {
           setPlanningPhase('rendering');
           setVisualSections(data.sections);
+          // Store schema-rendered HTML if available
+          if (data.schema && data.html) {
+            setSchemaHtml(data.html);
+          }
           const generatedSections = visualToGeneratedSections(data.sections);
           setSections(generatedSections);
           setPlanningPhase('done');
@@ -1264,6 +1270,7 @@ and exact talk tracks for when prospects bring them up.`;
     setGenerating(true);
     setSections([]);
     setVisualSections(null);
+    setSchemaHtml(null);
     setPlanningPhase('planning');
     setScores(null);
     setCompliance(null);
@@ -1296,6 +1303,9 @@ and exact talk tracks for when prospects bring them up.`;
         if (data.visual && Array.isArray(data.sections) && data.sections.length > 0) {
           setPlanningPhase('rendering');
           setVisualSections(data.sections);
+          if (data.schema && data.html) {
+            setSchemaHtml(data.html);
+          }
           const generatedSections = visualToGeneratedSections(data.sections);
           setSections(generatedSections);
           setPlanningPhase('done');
@@ -1419,16 +1429,20 @@ and exact talk tracks for when prospects bring them up.`;
 
     toast('Generating PDF...', { icon: '●', duration: 3000, style: { fontSize: '13px' } });
 
+    // If we have schema-rendered HTML, send it directly for pixel-perfect PDF
+    const exportPayload = schemaHtml
+      ? { html: schemaHtml }
+      : {
+          sections, contentType, prospect,
+          prospectLogoBase64: prospectBranding?.logoBase64 || '',
+          prospectColor: prospectBranding?.primaryColor || '',
+          styleOverride: selectedStyle || undefined,
+          styleId: selectedStyleIdRef.current || undefined,
+          visualSections: visualSections || undefined,
+        };
     const res = await fetch('/api/export/pdf', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sections, contentType, prospect,
-        prospectLogoBase64: prospectBranding?.logoBase64 || '',
-        prospectColor: prospectBranding?.primaryColor || '',
-        styleOverride: selectedStyle || undefined,
-        styleId: selectedStyleIdRef.current || undefined,
-        visualSections: visualSections || undefined,
-      }),
+      body: JSON.stringify(exportPayload),
     });
 
     const contentTypeHeader = res.headers.get('Content-Type') || '';
@@ -1493,6 +1507,12 @@ and exact talk tracks for when prospects bring them up.`;
   const openPreview = async () => {
     setShowPreview(true);
     setPreviewLoading(true);
+    // If schema HTML is available, use it directly for preview
+    if (schemaHtml) {
+      setPreviewHtml(schemaHtml);
+      setPreviewLoading(false);
+      return;
+    }
     try {
       const res = await fetch('/api/export/pdf', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
